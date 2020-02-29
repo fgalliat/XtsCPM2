@@ -17,6 +17,20 @@ int con_ser_height() {
     return SER_CAP_HEIGHT;
 }
 
+void con_ser_init() {
+  SER_DESC.begin(115200);
+}
+
+bool con_ser_ready() {
+  if ( SER_DESC ) { return true; }
+  return false;
+}
+
+Print* con_ser() {
+  return &SER_DESC;
+}
+
+
 void con_ser_cls() {
   // do cls
   SER_DESC.write(27);

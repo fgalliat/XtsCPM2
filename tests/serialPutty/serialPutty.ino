@@ -6,7 +6,7 @@
 #include "OutputConsole.h"
 
 void setup() {
-    Serial.begin(115200);
+    con_ser_init();
 }
 
 
@@ -58,7 +58,8 @@ void loop() {
                 Serial.print( y );
             }
 
-            
+            con_ser_cursor(15, 45);
+            con_ser()->println( 12.125 );
 
 
         }
