@@ -3,7 +3,12 @@
  */
 
 #include "SerialTermConsole.h"
+#include "SerialDummyConsole.h"
 #include "OutputConsole.h"
+
+#include "GenericConsole.h"
+GenericConsole console(CONSOLE_MODE_SERIAL_VT100);
+
 
 void setup() {
     con_ser_init();
@@ -60,6 +65,9 @@ void loop() {
 
             con_ser_cursor(15, 45);
             con_ser()->println( 12.125 );
+
+            con_ser_cursor(17, 45);
+            console.println("Write from ganaric class");
 
 
         }
