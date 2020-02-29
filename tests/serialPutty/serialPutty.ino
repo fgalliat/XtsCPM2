@@ -2,6 +2,8 @@
  * Putty VT-xx escapes tests 
  */
 
+#include "SerialConsole.h"
+
 void setup() {
     Serial.begin(115200);
 }
@@ -22,29 +24,29 @@ void loop() {
 
             // http://www.termsys.demon.co.uk/vtansi.htm
 
-            // cls whole screen seq
-            Serial.write(27);
-            Serial.write("[2J");
-            // but doesn't reset cursor
-
-            // set cursor to origin 1,1
-            Serial.write(27);
-            Serial.write("[H"); // row,col ?
-
+            con_ser_cls();
 
             Serial.write("coucou");
 
-            // row 3, col 10 (1-based)
-            Serial.write(27);
-            Serial.write("[3;10f");
+            // row, col 1-Based
+            con_ser_cursor(3, 10);
+            
 
-            Serial.write(27);
-            Serial.write("[7m"); // reverse video
+            con_ser_attr_accent();
+            Serial.print("TOTO");
+            con_ser_attr_none();
 
-            Serial.write("TOTO");
+            Serial.println("");
 
-            Serial.write(27);
-            Serial.write("[0m"); // normal video (all attrs disabled)
+
+            con_ser_cursor(1, 1);
+            for(int x=0; x < con_ser_width(); x++) {
+                Serial.print( (x%10) );
+            }
+            for(int y=0; y < con_ser_height(); y++) {
+                con_ser_cursor(y+1, 1);
+                Serial.print( y );
+            }
         }
 
     }
