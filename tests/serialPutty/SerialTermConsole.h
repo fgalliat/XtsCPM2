@@ -1,6 +1,6 @@
 /**
  * Based on putty behavior
- * 
+ * vt100 console
  * 
  * Xtase - fgalliat @Feb2020
  */

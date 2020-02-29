@@ -2,7 +2,7 @@
  * Putty VT-xx escapes tests 
  */
 
-#include "SerialConsole.h"
+#include "SerialTermConsole.h"
 #include "OutputConsole.h"
 
 void setup() {
