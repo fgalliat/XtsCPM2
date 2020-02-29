@@ -3,6 +3,7 @@
  */
 
 #include "SerialConsole.h"
+#include "OutputConsole.h"
 
 void setup() {
     Serial.begin(115200);
@@ -26,6 +27,15 @@ void loop() {
 
             con_ser_cls();
 
+            con_ser_cursor(1, 1);
+            Serial.print( splash_screen );
+            con_ser_cursor(10, 40);
+            con_ser_attr_accent();
+            Serial.print("Missing BOOT-DISK /!\\");
+            con_ser_attr_none();
+            Serial.println();
+
+
             Serial.write("coucou");
 
             // row, col 1-Based
@@ -47,6 +57,10 @@ void loop() {
                 con_ser_cursor(y+1, 1);
                 Serial.print( y );
             }
+
+            
+
+
         }
 
     }
