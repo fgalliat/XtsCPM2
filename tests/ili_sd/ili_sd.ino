@@ -38,8 +38,8 @@ void loop() {
 
     File f;
 
-	// if (f = SD.open("C/O/CUBE3D.PAS", O_READ)) {
-	if (f = SD.open("foo.txt", O_READ)) {
+	if (f = SD.open("C/0/CUBE3D.PAS", O_READ)) {
+	// if (f = SD.open("foo.txt", O_READ)) {
 		while (f.available()) {
             int ch = f.read();
 			Serial.write( ch );
@@ -54,6 +54,6 @@ void loop() {
     }
 	
 
-    delay(2000);
+    delay(10000);
 
 }
