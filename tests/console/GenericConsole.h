@@ -111,7 +111,9 @@ class GenericConsole : public Print {
             }
         }
         if ( this->hasScreen() ) {
-            res = con_tft()->write(character);
+            // res = con_tft()->write(character);
+            con_tft_writeOneChar(character);
+            res = 1;
         }
         return res;
     }

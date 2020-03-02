@@ -20,16 +20,14 @@ Adafruit_ILI9486_Teensy tft;
 
 uint16_t tty_colors[] = {
   CLR_TXT_DEF, CLR_TXT_ACC
-}
+};
 
 uint16_t tty_bg_colors[] = {
   CLR_TXT_BCK, CLR_TXT_BCK
-}
+};
 
 char ttyMEMSEG[TFT_CAP_WIDTH*TFT_CAP_HEIGHT];
 char ttyAttrMEMSEG[TFT_CAP_WIDTH*TFT_CAP_HEIGHT];
-
-
 
 #define TFT_DESC tft
 
@@ -41,38 +39,35 @@ int con_tft_height() {
     return TFT_CAP_HEIGHT;
 }
 
-void con_tft_init() {
-    for(int i=0; i < TFT_CAP_WIDTH*TFT_CAP_HEIGHT; i++) {
-      ttyMEMSEG[i] = 0x00;
-      ttyAttrMEMSEG = 0x00;
-    }
+bool _inited = false;
 
+void con_tft_init() {
+    _inited = false;
+
+    // erase console mem
+    int mlen = TFT_CAP_WIDTH * TFT_CAP_HEIGHT;
+    memset( ttyMEMSEG, 0x00, mlen );
+    memset( ttyAttrMEMSEG, 0x00, mlen );
 
     SPI.begin();
     tft.begin();
     tft.setRotation(1);
     tft.setTextSize(1);
-    tft.fillScreen(BLACK);
+    tft.fillScreen(CLR_TXT_BCK);
     tft.setCursor(0,0);
     tft.setTextColor(CLR_TXT_DEF);
+
+    _inited = true;
 }
 
 bool con_tft_ready() {
-  return true;
+  return _inited;
 }
 
 Print* con_tft() {
   return &TFT_DESC;
 }
 
-
-void con_tft_cls() {
-  // do cls
-  tft.fillScreen(BLACK);
-
-  // set cursor Home
-  tft.setCursor(0, 0);
-}
 
 char currTtyAttr = 0x00;
 int ttyCursorX = 0;
@@ -81,10 +76,31 @@ int ttyCursorY = 0;
 // 1-based
 void con_tft_cursor(int row, int col) {
   // force cursor position
-  tft.setCursor( (col-1)*6, (row-1)*8);
   ttyCursorX = col-1;
   ttyCursorY = row-1;
+
+  if ( ttyCursorX < 0 ) { ttyCursorX = 0; }
+  if ( ttyCursorY < 0 ) { ttyCursorY = 0; }
+  if ( ttyCursorX >= TFT_CAP_WIDTH ) { ttyCursorX = TFT_CAP_WIDTH-1; }
+  if ( ttyCursorY >= TFT_CAP_HEIGHT ) { ttyCursorY = TFT_CAP_HEIGHT-1; }
+
+  // tft.setCursor( ttyCursorX*6, ttyCursorY*8);
 }
+
+void con_tft_cls() {
+  // do cls
+  tft.fillScreen(BLACK);
+
+  // erase console mem
+  int mlen = TFT_CAP_WIDTH * TFT_CAP_HEIGHT;
+  memset( ttyMEMSEG, 0x00, mlen );
+  memset( ttyAttrMEMSEG, 0x00, mlen );
+
+  // set cursor Home
+  // tft.setCursor(0, 0);
+  con_tft_cursor(1,1);
+}
+
 
 void con_tft_attr_accent() {
     tft.setTextColor(CLR_TXT_ACC);
@@ -96,25 +112,47 @@ void con_tft_attr_none() {
     currTtyAttr = 0x00;
 }
 
-void con_tty_writeOneChar(char ch) {
+void _redrawWholeFrame();
+
+void _scrollTop(int howMany=1) {
+  // scroll mem
+  int mlen = (howMany*TFT_CAP_WIDTH);
+  memmove( &ttyMEMSEG[0], &ttyMEMSEG[ mlen ], mlen );
+  memmove( &ttyAttrMEMSEG[0], &ttyAttrMEMSEG[ mlen ], mlen );
+
+  // blank mem
+  int mAddr = ( (TFT_CAP_HEIGHT - howMany)*TFT_CAP_WIDTH);
+  memset( &ttyMEMSEG[mAddr], 0x00, mlen );
+  memset( &ttyAttrMEMSEG[mAddr], 0x00, mlen );
+
+  _redrawWholeFrame();
+
+  con_tft_cursor( TFT_CAP_HEIGHT, 1 );
+}
+
+bool _needToScroll() {
+  return ttyCursorY >= TFT_CAP_HEIGHT;
+}
+
+
+void con_tft_writeOneChar(char ch) {
   int memAddr = (ttyCursorY * TFT_CAP_WIDTH)+ttyCursorX;
   // TODO : protect memAddr
+  // for now : protected by _cursor(row,col)
   ttyAttrMEMSEG[memAddr] = currTtyAttr;
   ttyMEMSEG[memAddr] = ch;
 
-  if ( ch == 0x0C ) { // \r
+  if ( ch == 0x0D ) { // \r
     ttyCursorX = 0;
     ttyCursorY++;
-    // TODO : need to scroll ?
+    if ( _needToScroll() ) { _scrollTop(1); }
     return;
   }
   if ( ch == 0x0A ) { // \n
     return;
   }
-  // int col = tty_colors[ ttyAttrMEMSEG[memAddr] ];
-  // int bg = tty_bg_colors[ ttyAttrMEMSEG[memAddr] ];
-  uint16_t col = tty_colors[ currTtyAttr ];
-  uint16_t bg  = tty_bg_colors[ currTtyAttr ];
+  uint16_t col = tty_colors[ (int)currTtyAttr ];
+  uint16_t bg  = tty_bg_colors[ (int)currTtyAttr ];
   int x = ttyCursorX * 6;
   int y = ttyCursorY * 8;
   tft.drawChar(x, y, ch, col, bg, 1);
@@ -122,6 +160,23 @@ void con_tty_writeOneChar(char ch) {
   if ( ttyCursorX >= TFT_CAP_WIDTH ) {
     ttyCursorX = 0;
     ttyCursorY++;
-    // TODO : need to scroll ?
+    if ( _needToScroll() ) { _scrollTop(1); }
   }
 }
+
+void _redrawWholeFrame() {
+  int mlen = TFT_CAP_WIDTH * TFT_CAP_HEIGHT;
+  char ch; int attr; uint16_t fg,bg;
+  int x = 0, y = 0;
+  for(int i=0; i < mlen; i++) {
+    ch = ttyMEMSEG[i];
+    if ( ch == 0x00 || ch == 0x0A || ch == 0x0D ) { continue; }
+    attr = (int)ttyAttrMEMSEG[i];
+    fg = tty_colors[ attr ];
+    bg = tty_bg_colors[ attr ];
+
+    tft.drawChar(x, y, ch, fg, bg, 1);
+    x += 6; if ( x >= 480 ) { x = 0; y += 8; }
+  }
+}
+

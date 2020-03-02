@@ -23,7 +23,7 @@ void loop() {
         console.println( (ch == 27 ? '^' : (char)ch) );
 
 
-        if ( ch == 9 ) {
+        if ( ch == 9 || ch == ' ' ) {
             // Tab
             //http://manpagesfr.free.fr/man/man4/console_codes.4.html
             // http://www.termsys.demon.co.uk/vtansi.htm
