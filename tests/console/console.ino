@@ -67,6 +67,8 @@ void loop() {
             console.cursor(17, 45);
             console.println("Write from ganaric class");
 
+        } else if (ch == 'a') {
+            _redrawWholeFrame();
         }
 
     }

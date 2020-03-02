@@ -116,12 +116,13 @@ void _redrawWholeFrame();
 
 void _scrollTop(int howMany=1) {
   // scroll mem
-  int mlen = (howMany*TFT_CAP_WIDTH);
-  memmove( &ttyMEMSEG[0], &ttyMEMSEG[ mlen ], mlen );
-  memmove( &ttyAttrMEMSEG[0], &ttyAttrMEMSEG[ mlen ], mlen );
+  int mLen = ( (TFT_CAP_HEIGHT - howMany)*TFT_CAP_WIDTH);
+  int mAddr = (howMany*TFT_CAP_WIDTH);
+  memmove( &ttyMEMSEG[0], &ttyMEMSEG[ mAddr ], mLen );
+  memmove( &ttyAttrMEMSEG[0], &ttyAttrMEMSEG[ mAddr ], mLen );
 
   // blank mem
-  int mAddr = ( (TFT_CAP_HEIGHT - howMany)*TFT_CAP_WIDTH);
+  int mlen = ( (howMany)*TFT_CAP_WIDTH);
   memset( &ttyMEMSEG[mAddr], 0x00, mlen );
   memset( &ttyAttrMEMSEG[mAddr], 0x00, mlen );
 
@@ -170,12 +171,13 @@ void _redrawWholeFrame() {
   int x = 0, y = 0;
   for(int i=0; i < mlen; i++) {
     ch = ttyMEMSEG[i];
-    if ( ch == 0x00 || ch == 0x0A || ch == 0x0D ) { continue; }
-    attr = (int)ttyAttrMEMSEG[i];
-    fg = tty_colors[ attr ];
-    bg = tty_bg_colors[ attr ];
-
-    tft.drawChar(x, y, ch, fg, bg, 1);
+    // ch = ch != 0x00 ? 'x' : 0x00;
+    if ( !( ch == 0x00 || ch == 0x0A || ch == 0x0D )) { 
+      attr = (int)ttyAttrMEMSEG[i];
+      fg = tty_colors[ attr ];
+      bg = tty_bg_colors[ attr ];
+      tft.drawChar(x, y, ch, fg, bg, 1);
+    }
     x += 6; if ( x >= 480 ) { x = 0; y += 8; }
   }
 }
