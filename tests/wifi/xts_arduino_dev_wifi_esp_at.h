@@ -55,7 +55,7 @@
 
 // forwards
 bool wifi_connectToAP(char* ssid, char* psk=NULL);
-char* wifi_wget(char* host, int port, char* query);
+char* wifi_wget(char* host, int port, char* query, char* headers=NULL);
 bool wifi_setWifiMode(int mode);
 int wifi_getWifiMode();
 
@@ -88,11 +88,19 @@ int wifi_getWifiMode();
         // add CRLF
         if (DBUG_WIFI) { Serial.print("WIFI >");Serial.println(cmd); }
         int tlen = strlen( cmd ) + 2;
-        if ( Serial.availableForWrite() < tlen ) {
-            Serial.println("NotEnoughtAvailableForWrite !!!!");
+        if ( WIFI_SERIAL.availableForWrite() < tlen ) {
+            Serial.println("NotEnoughtAvailableForWrite !!!! => div");
+            int max = WIFI_SERIAL.availableForWrite();
+            char sub[max+1];
+            for(int i=0; i < tlen-2; i+= max ) {
+                memset(sub, 0x00, max+1);
+                memcpy( sub, &cmd[i], min( max, (tlen-2-i) ) );
+                WIFI_SERIAL.print( sub );
+            }
+        } else {
+            WIFI_SERIAL.print( cmd );
         }
 
-        WIFI_SERIAL.print( cmd );
         WIFI_SERIAL.print( "\r\n" );
         WIFI_SERIAL.flush();
 
@@ -254,8 +262,9 @@ int wifi_getWifiMode();
         }
 
         Serial.println("Try to GET / @Home Server...");
-        char* ignored = wifi_wget((char*)"$home", 8090, "/");
-
+        // char* ignored = wifi_wget((char*)"$home", 8090, "/");
+        char* ignored = wifi_wget((char*)"$home", 8666, "/");
+        Serial.println( ignored );
 
         if (DBUG_WIFI) { Serial.println("Have finished !!!"); }
 
@@ -497,7 +506,7 @@ int wifi_getWifiMode();
     // return type is not yet certified, may use a packetHandler ....
     // ex. yat4l_wifi_wget("www.google.com", 80, "/search?q=esp8266" 
     // ex. yat4l_wifi_wget("$home", 8089, "/login?username=toto&pass=titi" 
-    char* wifi_wget(char* host, int port, char* query) {
+    char* wifi_wget(char* host, int port, char* query, char* headers) {
 
       char* usedHOST = host;
 
@@ -520,8 +529,12 @@ int wifi_getWifiMode();
       Serial.println("OK");
 
       char resp[512+1]; // _wifiReadline(resp); requires 512 bytes long
-      char fullQ[128];
-      sprintf( fullQ, "GET %s\r\n", query );
+      char fullQ[128+128+32];
+      sprintf( fullQ, "GET %s HTTP/1.1\r\n", query );
+      if ( headers != NULL ) {
+        //   strcat(fullQ, headers);
+          sprintf( fullQ, "%s%s\r\n", fullQ, headers );
+      }
 
       // TODO : add Authorization, Bearer .....
 
