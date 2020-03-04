@@ -119,7 +119,7 @@ bool remainingBufferInited = false;
     // will have few pbms w/ bin contents
     // removes CRLF
     // assumes that _line is 512+1 bytes allocated 
-    int _wifiReadline(char* _line, unsigned int timeout=WIFI_CMD_TIMEOUT) {
+    int _wifiReadline(char* _line, unsigned int timeout=WIFI_CMD_TIMEOUT, const char* HALT_ON=NULL) {
         memset(_line, 0x00, 512+1);
 
         if (!remainingBufferInited) {
@@ -175,6 +175,7 @@ bool foundSomeBytesToRead = false;
 while( true ) {
 
 bool foundCRLF = false;
+bool foundHALTON = false;
 bool overflowed = false;
 
         if ( millis() - t0 >= timeout ) { timReached = true; break; }
@@ -193,7 +194,32 @@ bool overflowed = false;
             }
 
             memset(seg, 0x00, 64+1);
+#if 0
             int rr = WIFI_SERIAL.readBytes( seg, tor );
+#else
+
+int haltOnCpt=0;
+for(int i=0; i < tor; i++) {
+    while( WIFI_SERIAL.available() <= 0 ) {}
+    seg[i] = WIFI_SERIAL.read();
+    if ( HALT_ON != NULL ) {
+        if ( seg[i] == HALT_ON[haltOnCpt++] ) {
+            if ( haltOnCpt >= strlen(HALT_ON) ) {
+                foundHALTON = true;
+                break;
+            }
+        } else {
+            haltOnCpt = 0;
+        }
+    }
+}
+int rr = tor;
+if ( foundHALTON ) { 
+    strcat( remainingBuffer, seg );
+    break; 
+}
+
+#endif
             if ( rr < tor ) {
                 Serial.print("Oups tor=");
                 Serial.print(tor);
@@ -220,6 +246,10 @@ bool overflowed = false;
         } // eof available loop
         yield();
 
+if ( foundHALTON ) {
+    Serial.println("Found HALTON");
+    break;
+}
 
         if ( overflowed || strlen(remainingBuffer) > remainingBufferLen ) {
             Serial.println("wget() Overflowed !! [2]");
@@ -631,9 +661,12 @@ Serial.println( "end of loop" );
 
 
     void wifi_closeSocket() {
-        _wifiSendCMD("AT+CIPCLOSE()");
+        // _wifiSendCMD("AT+CIPCLOSE()"); // was a bug
+        _wifiSendCMD("AT+CIPCLOSE");
         if ( ! _wifi_waitForOk() ) { return; }
     }
+
+    const int MAX_IPD_BLOC_LEN = 2048;
 
     // return type is not yet certified, may use a packetHandler ....
     // ex. yat4l_wifi_wget("www.google.com", 80, "/search?q=esp8266" 
@@ -693,7 +726,7 @@ Serial.println( "end of loop" );
 
         bool found = false;
         while (!found) {
-            int readed = _wifiReadline(resp);
+            int readed = _wifiReadline(resp, WIFI_CMD_TIMEOUT/3, "\r\nSEND OK\r\n");
             
             if (readed < 0) {
                 wifi_closeSocket();
@@ -740,6 +773,20 @@ Serial.println( "end of loop" );
                 Serial.println(ipd);
 
                 if ( readed == 4 ) {
+
+                    if ( indexOf(ipd, '+') > 0 ) {
+                        // found a + but garbage before...
+                        int idxP = indexOf(ipd, '+');
+                        memmove(&ipd[0], &ipd[idxP], 4-idxP);
+                        int cptP = 4-idxP;
+                        for(int i=idxP; i < 4; i++) {
+                            while( WIFI_SERIAL.available() <= 0 ) {;}
+                            ipd[cptP++] =  WIFI_SERIAL.read();
+                        }
+                        Serial.println("TRIED to restore a bloc");
+                        Serial.println(ipd);
+                    }
+
                     if ( equals( ipd, "+IPD" ) ) {
                         alreadyFoundAnIpdPacket = true;
                         Serial.println("Start reading +IPD bloc ");
@@ -761,7 +808,7 @@ Serial.println( "end of loop" );
                         Serial.print( ipdLenI );
                         Serial.println( " bytes" );
 
-                        if ( ipdLenI > 512 ) {
+                        if ( ipdLenI > MAX_IPD_BLOC_LEN ) {
                             Serial.println("(!!) THE BLOC IS TOO BIG ");
                             // todo store what i can
                             // read remaining to flush input
@@ -775,6 +822,12 @@ Serial.println( "end of loop" );
                             Serial.println("========================");
                             Serial.println( buff );
                             Serial.println("========================");
+
+                            if( WIFI_SERIAL.available() == 2 ) {
+                                // CR LF
+                                WIFI_SERIAL.read();
+                                WIFI_SERIAL.read();
+                            }
                         }
                         // break;
                         rt0 = millis();
@@ -798,11 +851,9 @@ Serial.println( "end of loop" );
         if ( !endsWith(closingSeq, (char*)"AT+CIPCLOSE()") ) {
             Serial.println("Some bytes remainging...");
             Serial.println(closingSeq);
-            // wifi_closeSocket();
-            // always error : Server has closed socket itself ?
-        } else {
-            // Server has closed socket itself ...
         }
+        // don't mind about error ...
+        wifi_closeSocket();
 
         // must not return an function-local pointer
       return NULL;

@@ -84,6 +84,9 @@ void loop() {
     char* ignored = wifi_wget((char*)"$home", 8666, api, (char*)HEADERS);
     Serial.println( ignored );
 
+    // MUST HALT on "SEND OK", too fast, get +IPD ...
+    wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);
+
 Serial.println( "-- EOF --" );
 
     while(true) delay(20000);
