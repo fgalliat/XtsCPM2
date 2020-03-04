@@ -718,12 +718,17 @@ Serial.println( "end of loop" );
 
         found = false;
         long rt0 = millis();
+        bool alreadyFoundAnIpdPacket = false;
         while (!found) {
 
             // +IPD,xxx:<...>
             char ipd[4+1]; memset(ipd, 0x00, 4+1);
             int readed = WIFI_SERIAL.readBytes(ipd, 4);
             if ( readed <= 0 ) {
+                if ( alreadyFoundAnIpdPacket && millis() - rt0 > 500 ) {
+                    Serial.println("HTTP-RESP -eof-");
+                    break;
+                }
                 if ( millis() - rt0 > 6000 ) {
                     Serial.println("HTTP-RESP timeout");
                     break;
@@ -736,16 +741,17 @@ Serial.println( "end of loop" );
 
                 if ( readed == 4 ) {
                     if ( equals( ipd, "+IPD" ) ) {
+                        alreadyFoundAnIpdPacket = true;
                         Serial.println("Start reading +IPD bloc ");
                         while( WIFI_SERIAL.available() <= 0 ) {;}
                         char ch;
                         ch = WIFI_SERIAL.read(); // ','
-                        Serial.print("##"); Serial.write(ch);
+                        // Serial.print("##"); Serial.write(ch);
                         char ipdLen[8+1]; memset(ipdLen, 0x00, 8+1);
                         int ipdLenCpt = 0;
                         while( WIFI_SERIAL.available() <= 0 ) {;}
                         while( (ch = WIFI_SERIAL.read()) != ':' ) {
-                            Serial.print("#)"); Serial.write(ch);
+                            // Serial.print("#)"); Serial.write(ch);
                             ipdLen[ipdLenCpt++] = ch;
                             if ( ipdLenCpt >= 8 ) { break; }
                             while( WIFI_SERIAL.available() <= 0 ) {;}
@@ -765,11 +771,13 @@ Serial.println( "end of loop" );
 
                             while( WIFI_SERIAL.available() <= 0 ) {;}
                             int readed = WIFI_SERIAL.readBytes( buff, ipdLenI );
+
                             Serial.println("========================");
                             Serial.println( buff );
                             Serial.println("========================");
                         }
-                        break;
+                        // break;
+                        rt0 = millis();
                     } else {
                         Serial.println("Not a +IPD bloc ");
                     }
@@ -777,34 +785,24 @@ Serial.println( "end of loop" );
 
             }
 
-
-
-            /*
-            int readed = _wifiReadline(resp);
-            
-            if (readed < 0) {
-                wifi_closeSocket();
-                return NULL;
-            }
-
-            if ( equals( resp, (char*)"CLOSED" ) ) {
-                wifi_closeSocket();
-                break;
-            } else if ( endsWith( resp, (char*)"CLOSED" ) ) {
-                Serial.println( resp );
-                break;
-            }
-
-            Serial.print( "rcv>" );
-            Serial.print( resp );
-            Serial.println( "<" );
-            */
         }
         Serial.println("READ OK");
 
+        // while( WIFI_SERIAL.available() <= 0 ) {;}
+        // memset(traillingCRLF, 0x00, 2+1);
+        // WIFI_SERIAL.readBytes(traillingCRLF, 2);
 
-        wifi_closeSocket();
+        char closingSeq[512+1];
+        readed = _wifiReadline(closingSeq, 500);
 
+        if ( !endsWith(closingSeq, (char*)"AT+CIPCLOSE()") ) {
+            Serial.println("Some bytes remainging...");
+            Serial.println(closingSeq);
+            // wifi_closeSocket();
+            // always error : Server has closed socket itself ?
+        } else {
+            // Server has closed socket itself ...
+        }
 
         // must not return an function-local pointer
       return NULL;
