@@ -169,8 +169,19 @@ bool remainingBufferInited = false;
         int ch;
         t0=millis();
         char seg[64+1]; int avi,tor;
+
+bool foundSomeBytesToRead = false;
+
+while( true ) {
+
+bool foundCRLF = false;
+bool overflowed = false;
+
+        if ( millis() - t0 >= timeout ) { timReached = true; break; }
+
         while ( (avi = WIFI_SERIAL.available()) > 0) {
-            if ( millis() - t0 >= timeout ) { timReached = true; break; }
+
+            foundSomeBytesToRead = true;
 
             tor = avi;
             if (avi > 64) {
@@ -193,45 +204,79 @@ bool remainingBufferInited = false;
                 Serial.println(seg);
             }
 
-            int idx;
-            if ( (idx = indexOf(seg, '\n')) == -1 ) {
-                Serial.println("Oups, did not find LF in read()");
-                strcat( remainingBuffer, seg ); // (!!) w/ bin content
-                waitForBufferNext += rr;
-                continue;
-            } else {
-                // memcpy(&_line[0], seg, idx+1);
-                memcpy(&_line[waitForBufferNext], seg, idx-1); // remove CRLF
-                strcat( remainingBuffer, &seg[idx+1] ); // (!!) w/ bin content
-                cpt = idx+1;
-
-                Serial.print("So, found at least >");
-                Serial.print(_line);
-                Serial.println("<");
-
-                return cpt;
-            }
-
-            // sprintf(_line, "%s", seg);
-            // cpt = rr;
-
-            /*
-
-            ch = WIFI_SERIAL.read();
-            if ( ch == -1 ) { timReached = true; break; }
-            if ( ch == '\r' ) { 
-                if (WIFI_SERIAL.available() > 0) {
-                    if ( WIFI_SERIAL.peek() == '\n' ) {
-                        continue; 
-                    }
-                }
+            if ( strlen(remainingBuffer) + strlen(seg) > remainingBufferLen ) {
+                Serial.println("wget() Overflowed !! [1]");
+                // TODO copy @least whats possible
+                overflowed = true;
                 break;
             }
-            if ( ch == '\n' ) { break; }
-            _line[ cpt++ ] = (char)ch;
-            */
-        }
+
+            strcat( remainingBuffer, seg );
+
+            if ( indexOf(seg, '\n') > -1 ) {
+                foundCRLF = true;
+            }
+
+        } // eof available loop
         yield();
+
+
+        if ( overflowed || strlen(remainingBuffer) > remainingBufferLen ) {
+            Serial.println("wget() Overflowed !! [2]");
+            break;
+        }
+
+if ( avi <= 0 && foundCRLF ) {
+    Serial.println( "found a line & no more to read" );
+        break;
+    }
+
+    if ( avi <= 0 && timReached ) {
+        return -1;
+    }
+
+    if ( timReached ) {
+        Serial.println( "timReached" );
+        break;
+    }
+    // if ( timReached ) {
+    //     t0 = millis();
+    //     timReached = false;
+    // }
+
+}
+
+Serial.println( "end of loop" );
+
+        if ( strlen(remainingBuffer) > 0 ) {
+            int idx = indexOf(remainingBuffer, '\n');
+            int tlen = strlen(remainingBuffer);
+            int idx2;
+            if ( idx == -1 ) {
+                Serial.println("Oups did not find LF, have to come back later");
+                idx = min(512, strlen(remainingBuffer));
+                idx2 = idx;
+            } else {
+                idx--; // remove CRLF
+                idx2 = idx+2;
+            } 
+            
+            memcpy(_line, remainingBuffer, idx);
+            int slen = tlen - (idx2);
+            memmove(&remainingBuffer[0], &remainingBuffer[idx2], slen);
+            memset(&remainingBuffer[slen], 0x00, idx2);
+            Serial.print("So, buffered at least >");
+            Serial.print(_line);
+            Serial.println("<");
+            return strlen(_line);
+            
+        }
+
+
+
+
+
+
 
         if ( _line[0] == 0x00 && timReached ) {
             return -1;
@@ -250,10 +295,10 @@ bool remainingBufferInited = false;
     #define _RET_OK 1
     #define _RET_ERROR 2
 
-    int _wifi_waitForOk(char* dest=NULL) {
+    int _wifi_waitForOk(char* dest=NULL, int timeout=WIFI_CMD_TIMEOUT) {
         char resp[512+1];
         while (true) {
-            int readed = _wifiReadline(resp);
+            int readed = _wifiReadline(resp, timeout);
 
             yield();
 
@@ -576,7 +621,7 @@ bool remainingBufferInited = false;
         sprintf(cmd, "AT+CWJAP=\"%s\",\"%s\"", ssid, psk);
         _wifiSendCMD(cmd);
 
-        return _wifi_waitForOk() == _RET_OK;
+        return _wifi_waitForOk(NULL, 12000) == _RET_OK;
     }
 
     bool wifi_disconnectFromAP() { return false; }
