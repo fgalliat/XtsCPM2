@@ -14,7 +14,7 @@ bool wifi_home_conf_init = false;
 #define WIFI_FULL_CONF_LEN 2048
 char fullWifiConf[ WIFI_FULL_CONF_LEN ];
 
-#define WIFI_CONF_FILE yat4l_fs_getAssetsFileEntry( (char*)"wifi.psk")
+#define WIFI_CONF_FILE fs_getAssetsFileEntry( (char*)"wifi.psk")
 
 // char* _wifi_getLocalHomeServer() {
 //     return NULL;

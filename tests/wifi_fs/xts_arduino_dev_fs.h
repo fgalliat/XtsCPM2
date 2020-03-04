@@ -1,11 +1,37 @@
 /**
  * 
- * YAT4L FileSystem routines impl.
+ * YATDB FileSystem routines impl.
  * 
- * Xtase - fgalliat @Dec 2019
+ * Xtase - fgalliat @Mar 2020
  */
 
-int yat4l_fs_readTextFile(char* fileName, char* dest, int maxLen) {
+const int __tmpDiskFileNameLen = 4+8+1+3+1;
+char __tmpDiskFileName[__tmpDiskFileNameLen]; 
+
+char* fs_getDiskFileName(char* diskFileName) {
+    if ( indexOf(diskFileName, ':') == -1 ) {
+        // ex. foo.txt
+        return diskFileName;
+    }
+    memset(__tmpDiskFileName, 0x00, __tmpDiskFileNameLen);
+    sprintf( __tmpDiskFileName, "%c/0/%s", diskFileName[0], &diskFileName[2] );
+    return __tmpDiskFileName;
+}
+
+char* fs_getAssetsFileEntry(char* assetName) {
+    if ( indexOf(assetName, ':') > -1 ) {
+        // ex. y:pack1.pak
+        return fs_getDiskFileName(assetName);
+    }
+    const int asDNlen = 1+1+8+1+3+1;
+    char assetDiskName[asDNlen];
+    memset(assetDiskName, 0x00, asDNlen);
+    sprintf( assetDiskName, "Z:%s", assetName );
+    return fs_getDiskFileName( assetDiskName );
+}
+
+
+int fs_readTextFile(char* fileName, char* dest, int maxLen) {
     if ( fileName == NULL || dest == NULL || maxLen < 0 ) {
         return -1;
     }
@@ -34,7 +60,7 @@ return cpt;
 }
 
 // stops on 0x00 (because of TEXTFile)
-int yat4l_fs_writeTextFile(char* fileName, char* source, int maxLen) {
+int fs_writeTextFile(char* fileName, char* source, int maxLen) {
     if ( fileName == NULL || source == NULL || maxLen < 0 ) {
         return -1;
     }

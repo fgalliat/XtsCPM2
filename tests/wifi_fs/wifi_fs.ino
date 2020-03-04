@@ -7,8 +7,25 @@
 
 #include "connect.h"
 
+// ==================================================
+// SD FS Section
+#include <SPI.h>
+#include "SdFat.h"
+#include "sdios.h"
+
+// SdFatSdio SD;
+SdFat SD;
+
+bool fs_setup() {
+    if ( ! SD.begin(BUILTIN_SDCARD) ) {
+        return false;
+    }
+    return true;
+}
+// ==================================================
 
 #include "xts_string.h"
+#include "xts_arduino_dev_fs.h"
 
 #define dbug Serial.println
 
@@ -69,6 +86,18 @@ void setup() {
 
     while(!Serial) {}
 
+    if ( !fs_setup() ) {
+        Serial.println("Fs init error");
+        Serial.println("Halting");
+        while(true) delay(20000);
+    }
+
+    Serial.println( fs_getAssetsFileEntry( (char*)"ishar.pak") );
+    Serial.println( fs_getAssetsFileEntry( (char*)"y:pack1.pak") );
+    Serial.println( fs_getDiskFileName( (char*)"D:") );
+    Serial.println( fs_getDiskFileName( (char*)"D:zork.com") );
+
+/*
     Serial.println( "setup" );
     wifi_setup();
 
@@ -77,12 +106,13 @@ void setup() {
 
     Serial.println( "init" );
     wifi_init();
-
+*/
 }
 
 
 void loop() {
-    // Serial.println( "loop" );
+    Serial.println( "loop" );
+    while(true) delay(20000);
 
     char* api = (char*)"/sensors/sensor/1";
     char* ignored = wifi_wget((char*)"$home", 8000, api, (char*)HEADERS);
