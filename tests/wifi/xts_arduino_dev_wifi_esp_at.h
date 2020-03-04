@@ -661,8 +661,11 @@ Serial.println( "end of loop" );
       Serial.println("OK");
 
       char resp[512+1]; // _wifiReadline(resp); requires 512 bytes long
-      char fullQ[128+128+32];
+      char fullQ[512+32];
       sprintf( fullQ, "GET %s HTTP/1.1\r\n", query );
+
+      sprintf( fullQ, "%sHost: %s\r\n", fullQ, usedHOST );
+
       if ( headers != NULL ) {
         //   strcat(fullQ, headers);
           sprintf( fullQ, "%s%s\r\n", fullQ, headers );

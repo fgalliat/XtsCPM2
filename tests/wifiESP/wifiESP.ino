@@ -106,7 +106,6 @@ void setup()
     Serial.println("Connected to server");
     // Make a HTTP request
     client.println("GET /asciilogo.txt HTTP/1.1");
-    // client.println("Host: arduino.cc");
 
     // char* api = (char*)"/sensors/sensor/1";
     // client.print("GET ");
@@ -126,6 +125,7 @@ delay(1000);
   int tlen; char buff[1024+1]; 
   while ( (tlen = client.available() ) > 0) {
       memset( buff, 0x00, 1024+1 );
+      if ( tlen > 1024 ) { tlen = 1024; }
     int cpt = client.readBytes(buff, tlen);
     Serial.print( buff );
   }
