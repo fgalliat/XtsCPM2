@@ -822,6 +822,10 @@ Serial.println( "end of loop" );
                             Serial.println("========================");
                             Serial.println( buff );
                             Serial.println("========================");
+                            Serial.print( readed );
+                            Serial.print( " on " );
+                            Serial.println( ipdLenI );
+                            Serial.println("========================");
 
                             if( WIFI_SERIAL.available() == 2 ) {
                                 // CR LF
@@ -833,6 +837,11 @@ Serial.println( "end of loop" );
                         rt0 = millis();
                     } else {
                         Serial.println("Not a +IPD bloc ");
+
+                        // just for now ...
+                        while( WIFI_SERIAL.available() > 0 ) {
+                            WIFI_SERIAL.read();
+                        }
                     }
                 }
 
