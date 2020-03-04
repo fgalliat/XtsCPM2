@@ -133,18 +133,20 @@ bool remainingBufferInited = false;
             int idx = indexOf(remainingBuffer, '\n');
             int tlen = strlen(remainingBuffer);
             if ( idx == -1 ) {
+                #if DBUG_WIFI
                 Serial.println("Oups did not find LF, have to look further");
-                // memcpy(_line, remainingBuffer, tlen);
-                // waitForBufferNext = tlen;
+                #endif
             } else {
                 // memcpy(_line, remainingBuffer, idx+1);
                 memcpy(_line, remainingBuffer, idx-1); // remove CRLF
                 int slen = tlen - (idx+1);
                 memmove(&remainingBuffer[0], &remainingBuffer[idx+1], slen);
                 memset(&remainingBuffer[slen], 0x00, idx+1);
+                #if DBUG_WIFI
                 Serial.print("So, buffered at least >");
                 Serial.print(_line);
                 Serial.println("<");
+                #endif
                 return idx+1;
             }
         }
@@ -189,8 +191,10 @@ bool overflowed = false;
                 Serial.println("Oups, will overflow");
                 tor = 64;
             } else {
+                #if DBUG_WIFI
                 Serial.print("So, will read ");
                 Serial.println(tor);
+                #endif
             }
 
             memset(seg, 0x00, 64+1);
@@ -226,8 +230,10 @@ if ( foundHALTON ) {
                 Serial.print(" rr=");
                 Serial.println(rr);
             } else {
+                #if DBUG_WIFI
                 Serial.print("So, read :");
                 Serial.println(seg);
+                #endif
             }
 
             if ( strlen(remainingBuffer) + strlen(seg) > remainingBufferLen ) {
@@ -246,44 +252,46 @@ if ( foundHALTON ) {
         } // eof available loop
         yield();
 
-if ( foundHALTON ) {
-    Serial.println("Found HALTON");
-    break;
-}
+        if ( foundHALTON ) {
+            #if DBUG_WIFI
+            Serial.println("Found HALTON");
+            #endif
+            break;
+        }
 
         if ( overflowed || strlen(remainingBuffer) > remainingBufferLen ) {
             Serial.println("wget() Overflowed !! [2]");
             break;
         }
 
-if ( avi <= 0 && foundCRLF ) {
-    Serial.println( "found a line & no more to read" );
-        break;
-    }
+        if ( avi <= 0 && foundCRLF ) {
+            #if DBUG_WIFI
+            Serial.println( "found a line & no more to read" );
+            #endif
+            break;
+        }
 
-    if ( avi <= 0 && timReached ) {
-        return -1;
-    }
+        if ( avi <= 0 && timReached ) {
+            return -1;
+        }
 
-    if ( timReached ) {
-        Serial.println( "timReached" );
-        break;
-    }
-    // if ( timReached ) {
-    //     t0 = millis();
-    //     timReached = false;
-    // }
+        if ( timReached ) {
+            Serial.println( "timReached" );
+            break;
+        }
 
 }
-
+#if DBUG_WIFI
 Serial.println( "end of loop" );
-
+#endif
         if ( strlen(remainingBuffer) > 0 ) {
             int idx = indexOf(remainingBuffer, '\n');
             int tlen = strlen(remainingBuffer);
             int idx2;
             if ( idx == -1 ) {
+                #if DBUG_WIFI
                 Serial.println("Oups did not find LF, have to come back later");
+                #endif
                 idx = min(512, strlen(remainingBuffer));
                 idx2 = idx;
             } else {
@@ -295,19 +303,16 @@ Serial.println( "end of loop" );
             int slen = tlen - (idx2);
             memmove(&remainingBuffer[0], &remainingBuffer[idx2], slen);
             memset(&remainingBuffer[slen], 0x00, idx2);
+            #if DBUG_WIFI
             Serial.print("So, buffered at least >");
             Serial.print(_line);
             Serial.println("<");
+            #endif
             return strlen(_line);
             
         }
 
-
-
-
-
-
-
+        /*
         if ( _line[0] == 0x00 && timReached ) {
             return -1;
         }
@@ -319,6 +324,8 @@ Serial.println( "end of loop" );
         if ( t < 0 ) { _line[0] = 0x00; return -1; }
 
         return t;
+        */
+       return -1;
     }
 
     #define _RET_TIMEOUT 0
@@ -705,22 +712,11 @@ Serial.println( "end of loop" );
       }
       sprintf( fullQ, "%s\r\n", fullQ );
 
-      // TODO : add Authorization, Bearer .....
-
       sprintf(cmd, "AT+CIPSEND=%d", strlen( fullQ ));
       _wifiSendCMD( cmd );
       _wifiReadline(resp);
-    //   Serial.println(cmd);
-
-    //   Serial.println(fullQ);
       sprintf( fullQ, "%s+++", fullQ );
       _wifiSendCMD( fullQ );
-    //   _wifiReadline(resp);
-    //   Serial.println(resp);
-      
-
-    //   Serial.println("+++");
-    //   _wifiSendCMD("+++"); // EOT
       _wifiReadline(resp);
 
 
@@ -759,7 +755,7 @@ Serial.println( "end of loop" );
             int readed = WIFI_SERIAL.readBytes(ipd, 4);
             if ( readed <= 0 ) {
                 if ( alreadyFoundAnIpdPacket && millis() - rt0 > 500 ) {
-                    Serial.println("HTTP-RESP -eof-");
+                    // Serial.println("HTTP-RESP -eof-");
                     break;
                 }
                 if ( millis() - rt0 > 6000 ) {
@@ -767,10 +763,12 @@ Serial.println( "end of loop" );
                     break;
                 }
             } else {
+                #if DBUG_WIFI
                 Serial.print("found ");
                 Serial.print( readed );
                 Serial.println(" bytes to read.");
                 Serial.println(ipd);
+                #endif
 
                 if ( readed == 4 ) {
 
@@ -783,13 +781,17 @@ Serial.println( "end of loop" );
                             while( WIFI_SERIAL.available() <= 0 ) {;}
                             ipd[cptP++] =  WIFI_SERIAL.read();
                         }
+                        #if DBUG_WIFI
                         Serial.println("TRIED to restore a bloc");
                         Serial.println(ipd);
+                        #endif
                     }
 
                     if ( equals( ipd, "+IPD" ) ) {
                         alreadyFoundAnIpdPacket = true;
+                        #if DBUG_WIFI
                         Serial.println("Start reading +IPD bloc ");
+                        #endif
                         while( WIFI_SERIAL.available() <= 0 ) {;}
                         char ch;
                         ch = WIFI_SERIAL.read(); // ','
@@ -804,9 +806,11 @@ Serial.println( "end of loop" );
                             while( WIFI_SERIAL.available() <= 0 ) {;}
                         }
                         int ipdLenI = atoi(ipdLen);
+                        #if DBUG_WIFI
                         Serial.print( "found a bloc of " );
                         Serial.print( ipdLenI );
                         Serial.println( " bytes" );
+                        #endif
 
                         if ( ipdLenI > MAX_IPD_BLOC_LEN ) {
                             Serial.println("(!!) THE BLOC IS TOO BIG ");
@@ -822,10 +826,12 @@ Serial.println( "end of loop" );
                             Serial.println("========================");
                             Serial.println( buff );
                             Serial.println("========================");
+                            #if DBUG_WIFI
                             Serial.print( readed );
                             Serial.print( " on " );
                             Serial.println( ipdLenI );
                             Serial.println("========================");
+                            #endif
 
                             if( WIFI_SERIAL.available() == 2 ) {
                                 // CR LF
@@ -857,9 +863,11 @@ Serial.println( "end of loop" );
         char closingSeq[512+1];
         readed = _wifiReadline(closingSeq, 500);
 
-        if ( !endsWith(closingSeq, (char*)"AT+CIPCLOSE()") ) {
+        if ( !endsWith(closingSeq, (char*)"AT+CIPCLOSE") ) {
+            #if DBUG_WIFI
             Serial.println("Some bytes remainging...");
             Serial.println(closingSeq);
+            #endif
         }
         // don't mind about error ...
         wifi_closeSocket();
