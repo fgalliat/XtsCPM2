@@ -733,6 +733,48 @@ Serial.println( "end of loop" );
                 Serial.print( readed );
                 Serial.println(" bytes to read.");
                 Serial.println(ipd);
+
+                if ( readed == 4 ) {
+                    if ( equals( ipd, "+IPD" ) ) {
+                        Serial.println("Start reading +IPD bloc ");
+                        while( WIFI_SERIAL.available() <= 0 ) {;}
+                        char ch;
+                        ch = WIFI_SERIAL.read(); // ','
+                        Serial.print("##"); Serial.write(ch);
+                        char ipdLen[8+1]; memset(ipdLen, 0x00, 8+1);
+                        int ipdLenCpt = 0;
+                        while( WIFI_SERIAL.available() <= 0 ) {;}
+                        while( (ch = WIFI_SERIAL.read()) != ':' ) {
+                            Serial.print("#)"); Serial.write(ch);
+                            ipdLen[ipdLenCpt++] = ch;
+                            if ( ipdLenCpt >= 8 ) { break; }
+                            while( WIFI_SERIAL.available() <= 0 ) {;}
+                        }
+                        int ipdLenI = atoi(ipdLen);
+                        Serial.print( "found a bloc of " );
+                        Serial.print( ipdLenI );
+                        Serial.println( " bytes" );
+
+                        if ( ipdLenI > 512 ) {
+                            Serial.println("(!!) THE BLOC IS TOO BIG ");
+                            // todo store what i can
+                            // read remaining to flush input
+                        } else {
+                            char buff[ipdLenI+1];
+                            memset(buff, 0x00, ipdLenI+1);
+
+                            while( WIFI_SERIAL.available() <= 0 ) {;}
+                            int readed = WIFI_SERIAL.readBytes( buff, ipdLenI );
+                            Serial.println("========================");
+                            Serial.println( buff );
+                            Serial.println("========================");
+                        }
+                        break;
+                    } else {
+                        Serial.println("Not a +IPD bloc ");
+                    }
+                }
+
             }
 
 
