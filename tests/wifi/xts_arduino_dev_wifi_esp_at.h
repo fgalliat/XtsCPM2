@@ -713,9 +713,31 @@ Serial.println( "end of loop" );
         }
         Serial.println("SEND OK");
 
+        char traillingCRLF[2+1]; memset(traillingCRLF, 0x00, 2+1);
+        int readed = WIFI_SERIAL.readBytes(traillingCRLF, 2);
 
         found = false;
+        long rt0 = millis();
         while (!found) {
+
+            // +IPD,xxx:<...>
+            char ipd[4+1]; memset(ipd, 0x00, 4+1);
+            int readed = WIFI_SERIAL.readBytes(ipd, 4);
+            if ( readed <= 0 ) {
+                if ( millis() - rt0 > 6000 ) {
+                    Serial.println("HTTP-RESP timeout");
+                    break;
+                }
+            } else {
+                Serial.print("found ");
+                Serial.print( readed );
+                Serial.println(" bytes to read.");
+                Serial.println(ipd);
+            }
+
+
+
+            /*
             int readed = _wifiReadline(resp);
             
             if (readed < 0) {
@@ -734,6 +756,7 @@ Serial.println( "end of loop" );
             Serial.print( "rcv>" );
             Serial.print( resp );
             Serial.println( "<" );
+            */
         }
         Serial.println("READ OK");
 
