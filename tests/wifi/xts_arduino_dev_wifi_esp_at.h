@@ -87,14 +87,17 @@ int wifi_getWifiMode();
     void _wifiSendCMD(const char* cmd) {
         // add CRLF
         if (DBUG_WIFI) { Serial.print("WIFI >");Serial.println(cmd); }
-        int tlen = strlen( cmd ) + 2;
-        if ( WIFI_SERIAL.availableForWrite() < tlen ) {
-            Serial.println("NotEnoughtAvailableForWrite !!!! => div");
-            int max = WIFI_SERIAL.availableForWrite();
+        int tlen = strlen( cmd ) + 2; // +2 cf CRLF
+        int mlen = WIFI_SERIAL.availableForWrite();
+        if ( mlen < tlen ) {
+            Serial.print("NotEnoughtAvailableForWrite !!!! => div");
+            Serial.println(mlen);
+            int max = mlen;
             char sub[max+1];
             for(int i=0; i < tlen-2; i+= max ) {
                 memset(sub, 0x00, max+1);
                 memcpy( sub, &cmd[i], min( max, (tlen-2-i) ) );
+                Serial.print(">"); Serial.println(sub);
                 WIFI_SERIAL.print( sub );
             }
         } else {
@@ -108,12 +111,47 @@ int wifi_getWifiMode();
         // Serial.println("Sent packet");
     }
 
+// const int remainingBufferLen = (64*2);
+const int remainingBufferLen = (512+64);
+char remainingBuffer[remainingBufferLen+1];
+bool remainingBufferInited = false;
+
+    // will have few pbms w/ bin contents
     // removes CRLF
     // assumes that _line is 512+1 bytes allocated 
     int _wifiReadline(char* _line, unsigned int timeout=WIFI_CMD_TIMEOUT) {
+        memset(_line, 0x00, 512+1);
+
+        if (!remainingBufferInited) {
+            memset(remainingBuffer, 0x00, remainingBufferLen+1);
+            remainingBufferInited = true;
+        }
+
+        int waitForBufferNext = 0;
+
+        if ( strlen(remainingBuffer) > 0 ) {
+            int idx = indexOf(remainingBuffer, '\n');
+            int tlen = strlen(remainingBuffer);
+            if ( idx == -1 ) {
+                Serial.println("Oups did not find LF, have to look further");
+                // memcpy(_line, remainingBuffer, tlen);
+                // waitForBufferNext = tlen;
+            } else {
+                // memcpy(_line, remainingBuffer, idx+1);
+                memcpy(_line, remainingBuffer, idx-1); // remove CRLF
+                int slen = tlen - (idx+1);
+                memmove(&remainingBuffer[0], &remainingBuffer[idx+1], slen);
+                memset(&remainingBuffer[slen], 0x00, idx+1);
+                Serial.print("So, buffered at least >");
+                Serial.print(_line);
+                Serial.println("<");
+                return idx+1;
+            }
+        }
+
+
         // Serial.println("::_wifiReadline()");
 
-        memset(_line, 0x00, 512+1);
         // Serial.print("WIFI READ >");Serial.println(timeout);
         yield();
 
@@ -129,9 +167,55 @@ int wifi_getWifiMode();
 
         int cpt = 0;
         int ch;
-        // t0=millis();
-        while (WIFI_SERIAL.available() > 0) {
+        t0=millis();
+        char seg[64+1]; int avi,tor;
+        while ( (avi = WIFI_SERIAL.available()) > 0) {
             if ( millis() - t0 >= timeout ) { timReached = true; break; }
+
+            tor = avi;
+            if (avi > 64) {
+                Serial.println("Oups, will overflow");
+                tor = 64;
+            } else {
+                Serial.print("So, will read ");
+                Serial.println(tor);
+            }
+
+            memset(seg, 0x00, 64+1);
+            int rr = WIFI_SERIAL.readBytes( seg, tor );
+            if ( rr < tor ) {
+                Serial.print("Oups tor=");
+                Serial.print(tor);
+                Serial.print(" rr=");
+                Serial.println(rr);
+            } else {
+                Serial.print("So, read :");
+                Serial.println(seg);
+            }
+
+            int idx;
+            if ( (idx = indexOf(seg, '\n')) == -1 ) {
+                Serial.println("Oups, did not find LF in read()");
+                strcat( remainingBuffer, seg ); // (!!) w/ bin content
+                waitForBufferNext += rr;
+                continue;
+            } else {
+                // memcpy(&_line[0], seg, idx+1);
+                memcpy(&_line[waitForBufferNext], seg, idx-1); // remove CRLF
+                strcat( remainingBuffer, &seg[idx+1] ); // (!!) w/ bin content
+                cpt = idx+1;
+
+                Serial.print("So, found at least >");
+                Serial.print(_line);
+                Serial.println("<");
+
+                return cpt;
+            }
+
+            // sprintf(_line, "%s", seg);
+            // cpt = rr;
+
+            /*
 
             ch = WIFI_SERIAL.read();
             if ( ch == -1 ) { timReached = true; break; }
@@ -145,6 +229,7 @@ int wifi_getWifiMode();
             }
             if ( ch == '\n' ) { break; }
             _line[ cpt++ ] = (char)ch;
+            */
         }
         yield();
 
@@ -261,10 +346,12 @@ int wifi_getWifiMode();
             }
         }
 
-        Serial.println("Try to GET / @Home Server...");
-        // char* ignored = wifi_wget((char*)"$home", 8090, "/");
-        char* ignored = wifi_wget((char*)"$home", 8666, "/");
-        Serial.println( ignored );
+        // Serial.println("Try to GET / @Home Server...");
+        // // char* ignored = wifi_wget((char*)"$home", 8090, "/");
+        // char* ignored = wifi_wget((char*)"$home", 8666, "/");
+        // Serial.println( ignored );
+
+        delay(3000);
 
         if (DBUG_WIFI) { Serial.println("Have finished !!!"); }
 
@@ -535,21 +622,25 @@ int wifi_getWifiMode();
         //   strcat(fullQ, headers);
           sprintf( fullQ, "%s%s\r\n", fullQ, headers );
       }
+      sprintf( fullQ, "%s\r\n", fullQ );
 
       // TODO : add Authorization, Bearer .....
 
       sprintf(cmd, "AT+CIPSEND=%d", strlen( fullQ ));
       _wifiSendCMD( cmd );
       _wifiReadline(resp);
-      Serial.println(cmd);
+    //   Serial.println(cmd);
 
+    //   Serial.println(fullQ);
+      sprintf( fullQ, "%s+++", fullQ );
       _wifiSendCMD( fullQ );
-      _wifiReadline(resp);
-      Serial.println(fullQ);
+    //   _wifiReadline(resp);
+    //   Serial.println(resp);
+      
 
-      _wifiSendCMD("+++"); // EOT
+    //   Serial.println("+++");
+    //   _wifiSendCMD("+++"); // EOT
       _wifiReadline(resp);
-      Serial.println("+++");
 
 
         bool found = false;
@@ -568,8 +659,9 @@ int wifi_getWifiMode();
                 break;
             }
 
-            Serial.print("SEND>");
-            Serial.println(resp);
+            Serial.print("send>");
+            Serial.print(resp);
+            Serial.println("<");
         }
         Serial.println("SEND OK");
 
@@ -591,7 +683,9 @@ int wifi_getWifiMode();
                 break;
             }
 
-            Serial.println( resp );
+            Serial.print( "rcv>" );
+            Serial.print( resp );
+            Serial.println( "<" );
         }
         Serial.println("READ OK");
 

@@ -65,6 +65,9 @@ void setup() {
     Serial.println( "setup" );
     wifi_setup();
 
+    Serial.println( "reset" );
+    wifi_resetModule();
+
     Serial.println( "init" );
     wifi_init();
 
@@ -78,6 +81,8 @@ void loop() {
     char* ignored = wifi_wget((char*)"$home", 8666, "/sensors/sensor/1", (char*)HEADERS);
     Serial.println( ignored );
 
-    delay(20000);
+Serial.println( "-- EOF --" );
+
+    while(true) delay(20000);
 
 }
