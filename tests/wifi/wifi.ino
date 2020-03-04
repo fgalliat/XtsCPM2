@@ -78,7 +78,9 @@ void loop() {
 
     // Serial.println( "loop" );
 
-    char* ignored = wifi_wget((char*)"$home", 8666, "/sensors/sensor/1", (char*)HEADERS);
+    char* api = (char*)"'http://192.168.1.134:8666/sensors/sensor/1'";
+
+    char* ignored = wifi_wget((char*)"$home", 8666, api, (char*)HEADERS);
     Serial.println( ignored );
 
 Serial.println( "-- EOF --" );
