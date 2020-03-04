@@ -28,7 +28,7 @@ void _wifi_refreshHomeConf() {
     memset( wifi_home_conf, 0x00, WIFI_HOME_CONF_LEN );
  
     char tmp[ WIFI_HOME_CONF_LEN ];
-    int read = yat4l_fs_readTextFile( WIFI_CONF_FILE, tmp, WIFI_HOME_CONF_LEN );
+    int read = fs_readTextFile( WIFI_CONF_FILE, tmp, WIFI_HOME_CONF_LEN );
     if ( read < 0 ) {
         Serial.println("Error could not read WiFi config !!!!");
         return;
@@ -55,7 +55,7 @@ void _wifi_refreshHomeConf() {
 
 char homeSSID[32];
 bool homeSSID_init = false;
-char* yat4l_wifi_getHomeSSID(bool refresh=false) {
+char* wifi_getHomeSSID(bool refresh=false) {
     if ( refresh || !homeSSID_init || !wifi_home_conf_init ) { 
         _wifi_refreshHomeConf(); 
         char* tokn = str_split(wifi_home_conf, ':', 0);
@@ -66,17 +66,17 @@ char* yat4l_wifi_getHomeSSID(bool refresh=false) {
     return homeSSID;
 }
 
-bool yat4l_wifi_isAtHome(bool refresh/*=false*/) {
-    char* curSSID = yat4l_wifi_getSSID();
-    return curSSID != NULL && equals( curSSID, yat4l_wifi_getHomeSSID() );
+bool wifi_isAtHome(bool refresh/*=false*/) {
+    char* curSSID = wifi_getSSID();
+    return curSSID != NULL && equals( curSSID, wifi_getHomeSSID() );
 }
 
 
 char homeSRV[32];
-char* yat4l_wifi_getHomeServer(bool refresh/*=false*/) {
+char* wifi_getHomeServer(bool refresh/*=false*/) {
     if ( refresh || !wifi_home_conf_init ) { _wifi_refreshHomeConf(); }
 
-    int confNum = yat4l_wifi_isAtHome() ? 1 : 2;
+    int confNum = wifi_isAtHome() ? 1 : 2;
     char* tokn = str_split(wifi_home_conf, ':', confNum);
     sprintf( homeSRV, "%s", tokn );
     free(tokn);
@@ -84,7 +84,7 @@ char* yat4l_wifi_getHomeServer(bool refresh/*=false*/) {
 }
 
 bool _wifi_readConf() {
-    int read = yat4l_fs_readTextFile( WIFI_CONF_FILE, fullWifiConf, WIFI_FULL_CONF_LEN );
+    int read = fs_readTextFile( WIFI_CONF_FILE, fullWifiConf, WIFI_FULL_CONF_LEN );
     if (read > 0 && !wifi_home_conf_init) _wifi_refreshHomeConf(); 
     return read > -1;
 }
@@ -106,7 +106,7 @@ bool _wifi_savePSKs() {
             // Serial.println(" save home conf : ");
             // Serial.println(wifi_home_conf);
             sprintf( fullWifiConf, "%s\n", wifi_home_conf );
-            bool ok = yat4l_fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) );
+            bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) );
             return ok;
         }
     }
@@ -131,18 +131,18 @@ bool _wifi_savePSKs() {
         // Serial.println(fullWifiConf);
         // Serial.println("---------------");
 
-        bool ok = yat4l_fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+        bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
         return ok;
     } else {
         // Serial.println(" saved dummy conf");
-        bool ok = yat4l_fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+        bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
         return ok;
     }
 
     return false;
 }
 
-bool yat4l_wifi_setHomeConfig(char* homeSSID, char* homeLocal, char* homeRemote) {
+bool wifi_setHomeConfig(char* homeSSID, char* homeLocal, char* homeRemote) {
     // TODO : BEWARE 64+32+32
     memset( wifi_home_conf, 0x00, WIFI_HOME_CONF_LEN);
     sprintf(wifi_home_conf, "%s:%s:%s", homeSSID, homeLocal, homeRemote);
@@ -155,11 +155,11 @@ bool yat4l_wifi_setHomeConfig(char* homeSSID, char* homeLocal, char* homeRemote)
    return _wifi_savePSKs();
 }
 
-bool yat4l_wifi_setNoHomeConfig() {
-    return yat4l_wifi_setHomeConfig( (char*)"#####", (char*)"##.##.##.##", (char*)"##.####.###");
+bool wifi_setNoHomeConfig() {
+    return wifi_setHomeConfig( (char*)"#####", (char*)"##.##.##.##", (char*)"##.####.###");
 }
 
-bool yat4l_wifi_addWifiPSK(char* ssid, char* psk) {
+bool wifi_addWifiPSK(char* ssid, char* psk) {
     _wifi_readConf();
     if ( ssid == NULL || psk == NULL || strlen(ssid) == 0 ) { return false; }
     if ( strlen( fullWifiConf ) + 64 + 64 +1 >= WIFI_FULL_CONF_LEN ) { return false; }
@@ -170,7 +170,7 @@ bool yat4l_wifi_addWifiPSK(char* ssid, char* psk) {
         // Serial.println("---------------");
 
     // return _wifi_savePSKs();
-    bool ok = yat4l_fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+    bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
     return ok;
 }
 
@@ -273,11 +273,11 @@ char* __WIFI_GET_KNWON_SSIDS() {
     return known_ssids;
 }
 
-bool yat4l_wifi_connectToAP(int conf) {
+bool wifi_connectToAP(int conf) {
     if ( conf < -1 || conf > 99 ) { return false; }
     char* ssids = __WIFI_GET_KNWON_SSIDS();
     if ( ssids == NULL ) { return false; }
     char* ssid = str_split( ssids, '\n', conf );
     if ( ssid == NULL ) { return false; }
-    return yat4l_wifi_connectToAP( ssid );
+    return wifi_connectToAP( ssid );
 }

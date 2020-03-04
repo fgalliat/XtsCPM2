@@ -5,7 +5,7 @@
  known issue w/ more than 1 +IPD packet ....
 */
 
-#include "connect.h"
+// #include "connect.h"
 
 // ==================================================
 // SD FS Section
@@ -33,6 +33,7 @@ bool fs_setup() {
  #define HEADERS "Authorization: Bearer eyJhbGciOi"
 #endif
 
+/*
 char* wifi_getHomeServer() {
     #ifdef HOME_SERVER
     return (char*)HOME_SERVER;
@@ -56,6 +57,7 @@ char* __WIFI_GET_KNWON_SSIDS() {
     return (char*)"MyBox";
     #endif
 }
+*/
 
 int _kbhit() { return Serial.available(); }
 uint8_t _getch() {
@@ -75,10 +77,14 @@ uint8_t _getche() {
     return (uint8_t)c;
 }
 
-
+// forward
+bool wifi_isAtHome(bool refresh=false);
+char* wifi_getHomeServer(bool refresh=false);
+char* __WIFI_GET_PSK(char* ssid);
+char* __WIFI_GET_KNWON_SSIDS();
 
 #include "xts_arduino_dev_wifi_esp_at.h"
-
+#include "xts_arduino_soft_wifi.h"
 
 
 void setup() {
@@ -96,6 +102,11 @@ void setup() {
     Serial.println( fs_getAssetsFileEntry( (char*)"y:pack1.pak") );
     Serial.println( fs_getDiskFileName( (char*)"D:") );
     Serial.println( fs_getDiskFileName( (char*)"D:zork.com") );
+
+    char* wifiPsksFile = fs_getDiskFileName( (char*)"Z:WIFI.PSK");
+    char wifiPsksConf[ 1024+1 ]; wifiPsksConf[1024]=0x00;
+    int read = fs_readTextFile(wifiPsksFile, wifiPsksConf, 1024);
+    Serial.println( wifiPsksConf );
 
 /*
     Serial.println( "setup" );
