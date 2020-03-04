@@ -90,14 +90,18 @@ int wifi_getWifiMode();
         int tlen = strlen( cmd ) + 2; // +2 cf CRLF
         int mlen = WIFI_SERIAL.availableForWrite();
         if ( mlen < tlen ) {
+            #if DBUG_WIFI
             Serial.print("NotEnoughtAvailableForWrite !!!! => div");
             Serial.println(mlen);
+            #endif
             int max = mlen;
             char sub[max+1];
             for(int i=0; i < tlen-2; i+= max ) {
                 memset(sub, 0x00, max+1);
                 memcpy( sub, &cmd[i], min( max, (tlen-2-i) ) );
+#if DBUG_WIFI
                 Serial.print(">"); Serial.println(sub);
+#endif
                 WIFI_SERIAL.print( sub );
             }
         } else {
@@ -736,12 +740,15 @@ Serial.println( "end of loop" );
                 break;
             }
 
+#if DBUG_WIFI
             Serial.print("send>");
             Serial.print(resp);
             Serial.println("<");
+#endif
         }
+#if DBUG_WIFI
         Serial.println("SEND OK");
-
+#endif
         char traillingCRLF[2+1]; memset(traillingCRLF, 0x00, 2+1);
         int readed = WIFI_SERIAL.readBytes(traillingCRLF, 2);
 
