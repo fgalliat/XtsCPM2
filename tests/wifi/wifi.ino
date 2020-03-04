@@ -1,3 +1,10 @@
+/*
+ Xtase - fgalliat @Mar 2020
+ ESP12 AT lib demo
+
+ known issue w/ more than 1 +IPD packet ....
+*/
+
 #include "connect.h"
 
 
@@ -75,17 +82,17 @@ void setup() {
 
 
 void loop() {
-
     // Serial.println( "loop" );
 
-    // char* api = (char*)"'http://192.168.1.134:8666/sensors/sensor/1'";
     char* api = (char*)"/sensors/sensor/1";
-
-    char* ignored = wifi_wget((char*)"$home", 8666, api, (char*)HEADERS);
+    char* ignored = wifi_wget((char*)"$home", 8000, api, (char*)HEADERS);
     Serial.println( ignored );
 
-    // MUST HALT on "SEND OK", too fast, get +IPD ...
-    wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);
+    api = (char*)"/rss/titles/1/arduino";
+    wifi_wget((char*)"$home", 8000, api, (char*)HEADERS);
+
+    // get +IPD ... in previous packet !!!!! => but w/ multiple packets
+    // wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);
 
 Serial.println( "-- EOF --" );
 
