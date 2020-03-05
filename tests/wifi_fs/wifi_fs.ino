@@ -1,6 +1,6 @@
 /*
  Xtase - fgalliat @Mar 2020
- ESP12 AT lib demo
+ ESP12 AT lib demo + Fs Support for WiFi config & REST API key
 
  known issue w/ more than 1 +IPD packet ....
 */
@@ -74,29 +74,29 @@ void setup() {
         while(true) delay(20000);
     }
 
-    Serial.println( fs_getAssetsFileEntry( (char*)"ishar.pak") );
-    Serial.println( fs_getAssetsFileEntry( (char*)"y:pack1.pak") );
-    Serial.println( fs_getDiskFileName( (char*)"D:") );
-    Serial.println( fs_getDiskFileName( (char*)"D:zork.com") );
+    // Serial.println( fs_getAssetsFileEntry( (char*)"ishar.pak") );
+    // Serial.println( fs_getAssetsFileEntry( (char*)"y:pack1.pak") );
+    // Serial.println( fs_getDiskFileName( (char*)"D:") );
+    // Serial.println( fs_getDiskFileName( (char*)"D:zork.com") );
 
-    char* wifiPsksFile = fs_getDiskFileName( (char*)"Z:WIFI.PSK");
-    char wifiPsksConf[ 1024+1 ]; wifiPsksConf[1024]=0x00;
-    int read = fs_readTextFile(wifiPsksFile, wifiPsksConf, 1024);
-    // Serial.println( wifiPsksConf );
+    // char* wifiPsksFile = fs_getDiskFileName( (char*)"Z:WIFI.PSK");
+    // char wifiPsksConf[ 1024+1 ]; wifiPsksConf[1024]=0x00;
+    // int read = fs_readTextFile(wifiPsksFile, wifiPsksConf, 1024);
+    // // Serial.println( wifiPsksConf );
 
 
-    Serial.println( "setup" );
+    Serial.println( "WiFi setup" );
     if ( ! wifi_setup() ) {
         Serial.println("WiFi init error");
         Serial.println("Halting");
         while(true) delay(20000);
     }
 
-    Serial.println( "reset" );
-    wifi_resetModule();
+    // Serial.println( "reset" );
+    // wifi_resetModule();
 
 
-    Serial.println( "init" );
+    Serial.println( "WiFi init" );
     wifi_init();
 
 }
@@ -128,8 +128,7 @@ void loop() {
 
     // get +IPD ... in previous packet !!!!! => but w/ multiple packets
     // wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);
-
-Serial.println( "-- EOF --" );
+    Serial.println( "-- EOF --" );
 
     while(true) delay(20000);
 
