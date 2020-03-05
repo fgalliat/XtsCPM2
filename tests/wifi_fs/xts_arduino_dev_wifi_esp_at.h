@@ -396,9 +396,9 @@ Serial.println( "end of loop" );
         if (DBUG_WIFI) { Serial.print("Module mode set : "); 
         Serial.println(ok ? "OK" : "NOK"); }
 
-        int mode = wifi_getWifiMode();
-        if (DBUG_WIFI) { Serial.print("Module mode : "); 
-        Serial.println(mode); }
+        // int mode = wifi_getWifiMode();
+        // if (DBUG_WIFI) { Serial.print("Module mode : "); 
+        // Serial.println(mode); }
 
         char* ssids = __WIFI_GET_KNWON_SSIDS();
         Serial.println("Configured APs ...");
@@ -407,9 +407,9 @@ Serial.println( "end of loop" );
         if ( ssids != NULL ) {
             Serial.println("Select your AP (1 to 9)");
             int ch = -1;
-            while( _kbhit() <= 0 ) {
-                delay(5);
-            }
+            // while( _kbhit() <= 0 ) {
+            //     delay(5);
+            // }
             ch = _getch(); // no echo
 
             while( _kbhit() > 0  ) {
@@ -422,7 +422,7 @@ Serial.println( "end of loop" );
                     char ssid[32+1]; memset(ssid, 0x00, 32+1);
                     char* vol = str_split(ssids, '\n', ch);
                     sprintf(ssid, "%s", vol);
-                    Serial.println("Connecting to AP ...");
+                    Serial.print("Connecting to AP : ");
                     Serial.println(ssid);
                     ok = wifi_connectToAP(ssid);
                     // if (DBUG_WIFI) 

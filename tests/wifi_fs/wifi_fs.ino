@@ -86,7 +86,11 @@ void setup() {
 
 
     Serial.println( "setup" );
-    wifi_setup();
+    if ( ! wifi_setup() ) {
+        Serial.println("WiFi init error");
+        Serial.println("Halting");
+        while(true) delay(20000);
+    }
 
     Serial.println( "reset" );
     wifi_resetModule();
