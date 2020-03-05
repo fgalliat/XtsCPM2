@@ -128,8 +128,8 @@ void loop() {
 
     // get +IPD ... in previous packet !!!!! => but w/ multiple packets
     // wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);
-    Serial.println( "-- EOF --" );
 
+    Serial.println( "-- EOF --" );
     while(true) delay(20000);
 
 }
