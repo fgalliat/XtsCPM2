@@ -437,7 +437,7 @@ Serial.println( "end of loop" );
         // char* ignored = wifi_wget((char*)"$home", 8666, "/");
         // Serial.println( ignored );
 
-        delay(3000);
+        // delay(3000);
 
         if (DBUG_WIFI) { Serial.println("Have finished !!!"); }
 

@@ -281,3 +281,29 @@ bool wifi_connectToAP(int conf) {
     if ( ssid == NULL ) { return false; }
     return wifi_connectToAP( ssid );
 }
+
+const int bearerLen = 512;
+const int httpHeaderLen = bearerLen + 64;
+char httpHeader[ httpHeaderLen+1 ];
+
+char* getHttpAuthorizationForAPI(char* apiName) {
+    char bearerFileName[128+1]; memset(bearerFileName, 0x00, 128+1);
+    sprintf(bearerFileName, "Z:%s.API", apiName);
+
+    char bearerContent[ bearerLen+1 ];
+    memset(bearerContent, 0x00, bearerLen+1);
+    
+    int read = fs_readTextFile( fs_getDiskFileName( bearerFileName) , bearerContent, bearerLen);
+    if ( read <= 0 ) {
+        Serial.println("No key for that API");
+        return NULL;
+    }
+    // Serial.println( bearerContent );
+
+    memset(httpHeader, 0x00, httpHeaderLen+1);
+    sprintf(httpHeader, "Authorization: %s", bearerContent);
+    return httpHeader;
+}
+
+
+

@@ -5,7 +5,7 @@
  known issue w/ more than 1 +IPD packet ....
 */
 
-// #include "connect.h"
+#include "xts_string.h"
 
 // ==================================================
 // SD FS Section
@@ -16,48 +16,20 @@
 // SdFatSdio SD;
 SdFat SD;
 
+#include "xts_arduino_dev_fs.h"
+
+
 bool fs_setup() {
     if ( ! SD.begin(BUILTIN_SDCARD) ) {
         return false;
     }
     return true;
 }
-// ==================================================
 
-#include "xts_string.h"
-#include "xts_arduino_dev_fs.h"
+// ==================================================
+// Console Section
 
 #define dbug Serial.println
-
-#ifndef HEADERS
- #define HEADERS "Authorization: Bearer eyJhbGciOi"
-#endif
-
-/*
-char* wifi_getHomeServer() {
-    #ifdef HOME_SERVER
-    return (char*)HOME_SERVER;
-    #else
-    return (char*)"myserver";
-    #endif
-}
-
-char* __WIFI_GET_PSK(char* ssid) {
-    #ifdef PSK
-    return (char*)PSK;
-    #else
-    return (char*)"MyPSK";
-    #endif
-}
-
-char* __WIFI_GET_KNWON_SSIDS() {
-    #ifdef SSID
-    return (char*)SSID;
-    #else
-    return (char*)"MyBox";
-    #endif
-}
-*/
 
 int _kbhit() { return Serial.available(); }
 uint8_t _getch() {
@@ -77,6 +49,9 @@ uint8_t _getche() {
     return (uint8_t)c;
 }
 
+// ==================================================
+// Network Section
+
 // forward
 bool wifi_isAtHome(bool refresh=false);
 char* wifi_getHomeServer(bool refresh=false);
@@ -86,6 +61,7 @@ char* __WIFI_GET_KNWON_SSIDS();
 #include "xts_arduino_dev_wifi_esp_at.h"
 #include "xts_arduino_soft_wifi.h"
 
+// ============================================
 
 void setup() {
     Serial.begin(115200);
@@ -106,31 +82,47 @@ void setup() {
     char* wifiPsksFile = fs_getDiskFileName( (char*)"Z:WIFI.PSK");
     char wifiPsksConf[ 1024+1 ]; wifiPsksConf[1024]=0x00;
     int read = fs_readTextFile(wifiPsksFile, wifiPsksConf, 1024);
-    Serial.println( wifiPsksConf );
+    // Serial.println( wifiPsksConf );
 
-/*
+
     Serial.println( "setup" );
     wifi_setup();
 
     Serial.println( "reset" );
     wifi_resetModule();
 
+
     Serial.println( "init" );
     wifi_init();
-*/
+
 }
 
 
 void loop() {
     Serial.println( "loop" );
-    while(true) delay(20000);
+
+    char* HEADERS = getHttpAuthorizationForAPI( (char*) "sensors");
+    Serial.println("Authorization:");
+    Serial.println(HEADERS);
+
+    int port = 8000;
+    if ( !wifi_isAtHome() ) {
+        port = 8090;
+    }
+
+    Serial.println("Socket port:");
+    Serial.println(port);
+
+    Serial.println( "halt" ); while(true) delay(20000);
+
+
 
     char* api = (char*)"/sensors/sensor/1";
-    char* ignored = wifi_wget((char*)"$home", 8000, api, (char*)HEADERS);
+    char* ignored = wifi_wget((char*)"$home", port, api, (char*)HEADERS);
     Serial.println( ignored );
 
     api = (char*)"/rss/titles/1/arduino";
-    wifi_wget((char*)"$home", 8000, api, (char*)HEADERS);
+    wifi_wget((char*)"$home", port, api, (char*)HEADERS);
 
     // get +IPD ... in previous packet !!!!! => but w/ multiple packets
     // wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);
