@@ -117,9 +117,7 @@ void loop() {
     Serial.println("Socket port:");
     Serial.println(port);
 
-    Serial.println( "halt" ); while(true) delay(20000);
-
-
+    // Serial.println( "halt" ); while(true) delay(20000);
 
     char* api = (char*)"/sensors/sensor/1";
     char* ignored = wifi_wget((char*)"$home", port, api, (char*)HEADERS);
