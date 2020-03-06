@@ -2,7 +2,7 @@
  Xtase - fgalliat @Mar 2020
  ESP12 AT lib demo + Fs Support for WiFi config & REST API key
 
- known issue w/ more than 1 +IPD packet ....
+ known issue : wget() w/ more than 1 +IPD packet ....
 */
 
 #include "xts_string.h"
@@ -105,26 +105,35 @@ void setup() {
 void loop() {
     Serial.println( "loop" );
 
+    const int maxHttpResponseLen = 1024;
+    char httpResponse[maxHttpResponseLen+1];
+
     char* HEADERS = getHttpAuthorizationForAPI( (char*) "sensors");
-    Serial.println("Authorization:");
-    Serial.println(HEADERS);
+    // Serial.println("Authorization:");
+    // Serial.println(HEADERS);
 
     int port = 8000;
     if ( !wifi_isAtHome() ) {
         port = 8090;
     }
-
     Serial.println("Socket port:");
     Serial.println(port);
 
     // Serial.println( "halt" ); while(true) delay(20000);
 
     char* api = (char*)"/sensors/sensor/1";
-    char* ignored = wifi_wget((char*)"$home", port, api, (char*)HEADERS);
-    Serial.println( ignored );
+    memset(httpResponse, 0x00, maxHttpResponseLen+1);
+    int httpCode = wifi_wget((char*)"$home", port, api, httpResponse, maxHttpResponseLen, (char*)HEADERS);
+    Serial.print( "HTTP-CODE:" );
+    Serial.println( httpCode );
+    Serial.println( "__________________________" );
+    Serial.println( httpResponse );
+    Serial.println( "__________________________" );
 
     api = (char*)"/rss/titles/1/arduino";
-    wifi_wget((char*)"$home", port, api, (char*)HEADERS);
+    memset(httpResponse, 0x00, maxHttpResponseLen+1);
+    httpCode = wifi_wget((char*)"$home", port, api, httpResponse, maxHttpResponseLen, (char*)HEADERS);
+    Serial.println( httpResponse );
 
     // get +IPD ... in previous packet !!!!! => but w/ multiple packets
     // wifi_wget("arduino.cc", 80, "/asciilogo.txt", NULL);

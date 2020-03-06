@@ -8,36 +8,10 @@
  * LOOK AT : https://forum.pjrc.com/threads/27850-A-Guide-To-Using-ESP8266-With-TEENSY-3
  * NO MORE USES : https://github.com/bportaluri/WiFiEsp
  * 
- * 
- * STILL TODO
- *  connectToAp(SSID, ?PSK?) -> PSK : from file / from interactive KB read
- *  listAPs()
- *  getSSID()
- *  isAtHome()
- *  getHomeServerName()
- *  wget(server, port, query)
- * 
- * Cf z:/wifi.psk
- *  storeAP(ssid, psk)
- *  getAPpsk(ssid)
- *  setHome(ssid, local_home, remote_home)
- *  isAtHome()
- * 
- * Cf textFile(s)
- *  write(char* content)
- *  read() => char* => split(content, '\n', x)
- *  appendLine(char*) => appends line+"\n"
- * 
- * Cf input
- *  _kbreadLine() => char* (w/o CR/LF)
- *  may be based on _kbhit() + _getch() / _getche()
- * 
- * Make an interactive system
- *  prompt SSID, PSK => add it
- *  prompt SSID, PSK => change it
+ * known issue : wget() w/ more than 1 +IPD packet ....
  */
 
-// forwards
+// forwards external
 /*extern*/ int _kbhit();
 /*extern*/ uint8_t _getch();
 /*extern*/ uint8_t _getche();
@@ -53,11 +27,12 @@
     // AP : wifi soft AP server
     const int WIFI_MODE_AP = 2;
 
-// forwards
-bool wifi_connectToAP(char* ssid, char* psk=NULL);
-char* wifi_wget(char* host, int port, char* query, char* headers=NULL);
-bool wifi_setWifiMode(int mode);
-int wifi_getWifiMode();
+    // forwards internal
+    bool wifi_connectToAP(char* ssid, char* psk=NULL);
+    int wifi_wget(char* host, int port, char* query, char* dest, int maxLength, char* headers=NULL);
+    bool wifi_setWifiMode(int mode);
+    int wifi_getWifiMode();
+    bool wifi_testModule();
 
     bool wifi_setup() { 
         WIFI_SERIAL.begin(WIFI_SERIAL_BAUDS); 
@@ -115,10 +90,10 @@ int wifi_getWifiMode();
         // Serial.println("Sent packet");
     }
 
-// const int remainingBufferLen = (64*2);
-const int remainingBufferLen = (512+64);
-char remainingBuffer[remainingBufferLen+1];
-bool remainingBufferInited = false;
+    // const int remainingBufferLen = (64*2);
+    const int remainingBufferLen = (512+64);
+    char remainingBuffer[remainingBufferLen+1];
+    bool remainingBufferInited = false;
 
     // will have few pbms w/ bin contents
     // removes CRLF
@@ -176,118 +151,118 @@ bool remainingBufferInited = false;
         t0=millis();
         char seg[64+1]; int avi,tor;
 
-bool foundSomeBytesToRead = false;
+        bool foundSomeBytesToRead = false;
 
-while( true ) {
+        while( true ) {
 
-bool foundCRLF = false;
-bool foundHALTON = false;
-bool overflowed = false;
+            bool foundCRLF = false;
+            bool foundHALTON = false;
+            bool overflowed = false;
 
-        if ( millis() - t0 >= timeout ) { timReached = true; break; }
+            if ( millis() - t0 >= timeout ) { timReached = true; break; }
 
-        while ( (avi = WIFI_SERIAL.available()) > 0) {
+            while ( (avi = WIFI_SERIAL.available()) > 0) {
 
-            foundSomeBytesToRead = true;
+                foundSomeBytesToRead = true;
 
-            tor = avi;
-            if (avi > 64) {
-                Serial.println("Oups, will overflow");
-                tor = 64;
-            } else {
+                tor = avi;
+                if (avi > 64) {
+                    Serial.println("Oups, will overflow");
+                    tor = 64;
+                } else {
+                    #if DBUG_WIFI
+                    Serial.print("So, will read ");
+                    Serial.println(tor);
+                    #endif
+                }
+
+                memset(seg, 0x00, 64+1);
+    #if 0
+                int rr = WIFI_SERIAL.readBytes( seg, tor );
+    #else
+
+                int haltOnCpt=0;
+                for(int i=0; i < tor; i++) {
+                    while( WIFI_SERIAL.available() <= 0 ) {}
+                    seg[i] = WIFI_SERIAL.read();
+                    if ( HALT_ON != NULL ) {
+                        if ( seg[i] == HALT_ON[haltOnCpt++] ) {
+                            if ( haltOnCpt >= strlen(HALT_ON) ) {
+                                foundHALTON = true;
+                                break;
+                            }
+                        } else {
+                            haltOnCpt = 0;
+                        }
+                    }
+                }
+                int rr = tor;
+                if ( foundHALTON ) { 
+                    strcat( remainingBuffer, seg );
+                    break; 
+                }
+
+    #endif
+                if ( rr < tor ) {
+                    Serial.print("Oups tor=");
+                    Serial.print(tor);
+                    Serial.print(" rr=");
+                    Serial.println(rr);
+                } else {
+                    #if DBUG_WIFI
+                    Serial.print("So, read :");
+                    Serial.println(seg);
+                    #endif
+                }
+
+                if ( strlen(remainingBuffer) + strlen(seg) > remainingBufferLen ) {
+                    Serial.println("wget() Overflowed !! [1]");
+                    // TODO copy @least whats possible
+                    overflowed = true;
+                    break;
+                }
+
+                strcat( remainingBuffer, seg );
+
+                if ( indexOf(seg, '\n') > -1 ) {
+                    foundCRLF = true;
+                }
+
+            } // eof available loop
+            yield();
+
+            if ( foundHALTON ) {
                 #if DBUG_WIFI
-                Serial.print("So, will read ");
-                Serial.println(tor);
+                Serial.println("Found HALTON");
                 #endif
-            }
-
-            memset(seg, 0x00, 64+1);
-#if 0
-            int rr = WIFI_SERIAL.readBytes( seg, tor );
-#else
-
-int haltOnCpt=0;
-for(int i=0; i < tor; i++) {
-    while( WIFI_SERIAL.available() <= 0 ) {}
-    seg[i] = WIFI_SERIAL.read();
-    if ( HALT_ON != NULL ) {
-        if ( seg[i] == HALT_ON[haltOnCpt++] ) {
-            if ( haltOnCpt >= strlen(HALT_ON) ) {
-                foundHALTON = true;
                 break;
             }
-        } else {
-            haltOnCpt = 0;
-        }
-    }
-}
-int rr = tor;
-if ( foundHALTON ) { 
-    strcat( remainingBuffer, seg );
-    break; 
-}
 
-#endif
-            if ( rr < tor ) {
-                Serial.print("Oups tor=");
-                Serial.print(tor);
-                Serial.print(" rr=");
-                Serial.println(rr);
-            } else {
-                #if DBUG_WIFI
-                Serial.print("So, read :");
-                Serial.println(seg);
-                #endif
-            }
-
-            if ( strlen(remainingBuffer) + strlen(seg) > remainingBufferLen ) {
-                Serial.println("wget() Overflowed !! [1]");
-                // TODO copy @least whats possible
-                overflowed = true;
+            if ( overflowed || strlen(remainingBuffer) > remainingBufferLen ) {
+                Serial.println("wget() Overflowed !! [2]");
                 break;
             }
 
-            strcat( remainingBuffer, seg );
-
-            if ( indexOf(seg, '\n') > -1 ) {
-                foundCRLF = true;
+            if ( avi <= 0 && foundCRLF ) {
+                #if DBUG_WIFI
+                Serial.println( "found a line & no more to read" );
+                #endif
+                break;
             }
 
-        } // eof available loop
-        yield();
+            if ( avi <= 0 && timReached ) {
+                return -1;
+            }
 
-        if ( foundHALTON ) {
-            #if DBUG_WIFI
-            Serial.println("Found HALTON");
-            #endif
-            break;
-        }
+            if ( timReached ) {
+                Serial.println( "timReached" );
+                break;
+            }
 
-        if ( overflowed || strlen(remainingBuffer) > remainingBufferLen ) {
-            Serial.println("wget() Overflowed !! [2]");
-            break;
-        }
-
-        if ( avi <= 0 && foundCRLF ) {
-            #if DBUG_WIFI
-            Serial.println( "found a line & no more to read" );
-            #endif
-            break;
-        }
-
-        if ( avi <= 0 && timReached ) {
-            return -1;
-        }
-
-        if ( timReached ) {
-            Serial.println( "timReached" );
-            break;
-        }
-
-}
-#if DBUG_WIFI
-Serial.println( "end of loop" );
-#endif
+        } // end of while true
+        #if DBUG_WIFI
+        Serial.println( "end of loop" );
+        #endif
         if ( strlen(remainingBuffer) > 0 ) {
             int idx = indexOf(remainingBuffer, '\n');
             int tlen = strlen(remainingBuffer);
@@ -316,19 +291,6 @@ Serial.println( "end of loop" );
             
         }
 
-        /*
-        if ( _line[0] == 0x00 && timReached ) {
-            return -1;
-        }
-        yield();
-
-        if ( _line[0] == 0x00 ) { return 0; }
-
-        int t = strlen(_line);
-        if ( t < 0 ) { _line[0] = 0x00; return -1; }
-
-        return t;
-        */
        return -1;
     }
 
@@ -369,7 +331,7 @@ Serial.println( "end of loop" );
         return -1;
     }
 
-    bool wifi_testModule();
+    
 
 
     // TODO : call it
@@ -431,11 +393,6 @@ Serial.println( "end of loop" );
                 }
             }
         }
-
-        // Serial.println("Try to GET / @Home Server...");
-        // // char* ignored = wifi_wget((char*)"$home", 8090, "/");
-        // char* ignored = wifi_wget((char*)"$home", 8666, "/");
-        // Serial.println( ignored );
 
         // delay(3000);
 
@@ -680,9 +637,11 @@ Serial.println( "end of loop" );
     const int MAX_IPD_BLOC_LEN = 2048;
 
     // return type is not yet certified, may use a packetHandler ....
-    // ex. yat4l_wifi_wget("www.google.com", 80, "/search?q=esp8266" 
-    // ex. yat4l_wifi_wget("$home", 8089, "/login?username=toto&pass=titi" 
-    char* wifi_wget(char* host, int port, char* query, char* headers) {
+    // ex. wifi_wget("www.google.com", 80, "/search?q=esp8266" 
+    // ex. wifi_wget("$home", 8089, "/login?username=toto&pass=titi" 
+    // TODO : return HTTP reposnse code
+    int wifi_wget(char* host, int port, char* query, char* dest, int maxLength, char* headers) {
+      int httpResponseCode = -1;
 
       char* usedHOST = host;
 
@@ -752,7 +711,7 @@ Serial.println( "end of loop" );
         char traillingCRLF[2+1]; memset(traillingCRLF, 0x00, 2+1);
         int readed = WIFI_SERIAL.readBytes(traillingCRLF, 2);
 
-        found = false;
+        found = false; // never set to true ...
         long rt0 = millis();
         bool alreadyFoundAnIpdPacket = false;
         while (!found) {
@@ -795,7 +754,6 @@ Serial.println( "end of loop" );
                     }
 
                     if ( equals( ipd, "+IPD" ) ) {
-                        alreadyFoundAnIpdPacket = true;
                         #if DBUG_WIFI
                         Serial.println("Start reading +IPD bloc ");
                         #endif
@@ -821,7 +779,7 @@ Serial.println( "end of loop" );
 
                         if ( ipdLenI > MAX_IPD_BLOC_LEN ) {
                             Serial.println("(!!) THE BLOC IS TOO BIG ");
-                            // todo store what i can
+                            // TODO : store what i can
                             // read remaining to flush input
                         } else {
                             char buff[ipdLenI+1];
@@ -830,10 +788,55 @@ Serial.println( "end of loop" );
                             while( WIFI_SERIAL.available() <= 0 ) {;}
                             int readed = WIFI_SERIAL.readBytes( buff, ipdLenI );
 
+                            if ( !alreadyFoundAnIpdPacket ) {
+                                // try to read HTTP REPONSE CODE
+                                if ( startsWith(buff, (char*)"HTTP") ) {
+                                    int spIdx = indexOf(buff, ' ');
+                                    int crIdx = indexOf(buff, '\r');
+                                    if ( crIdx > -1 ) {
+                                        spIdx = crIdx - (3+1); // How... dirty 
+                                        char responseCodeStr[3+1];
+                                        int cpt=0;
+                                        memset(responseCodeStr, 0x00, 3+1);
+                                        for(int i=spIdx; i < crIdx; i++) {
+                                            responseCodeStr[cpt++] = buff[i];
+                                            if ( cpt >= 3 ) { break; }
+                                        }
+                                        httpResponseCode = atoi(responseCodeStr);
+                                        #if DBUG_WIFI
+                                        Serial.print("HTTP RESP CODE : ");
+                                        Serial.println(responseCodeStr);
+                                        Serial.println(httpResponseCode);
+                                        #endif
+                                    }
+                                } // startsWith HTTP/1.1 200
+
+                                // try to read HTTP REPONSE W/O Headers
+                                const char* headerEndSeq = "\r\n\r\n";
+                                int headerEndSeqCpt = 0;
+                                int endOfHeaderPos = 0;
+                                for( int i = 0; i < ipdLenI; i++ ) {
+                                    if ( buff[i] == headerEndSeq[headerEndSeqCpt] ) {
+                                        headerEndSeqCpt++;
+                                        if ( headerEndSeqCpt >= 4 ) {
+                                            endOfHeaderPos = i+1;
+                                            break;
+                                        }
+                                    } else {
+                                        headerEndSeqCpt=0;
+                                    }
+                                }
+
+                                if (endOfHeaderPos < ipdLenI) {
+                                    int maxLen = min(maxLength, ipdLenI);
+                                    memcpy( dest, &buff[endOfHeaderPos], maxLen );
+                                }
+                            } // eoif alreadyIPD
+
+                            #if DBUG_WIFI
                             Serial.println("========================");
                             Serial.println( buff );
                             Serial.println("========================");
-                            #if DBUG_WIFI
                             Serial.print( readed );
                             Serial.print( " on " );
                             Serial.println( ipdLenI );
@@ -846,7 +849,7 @@ Serial.println( "end of loop" );
                                 WIFI_SERIAL.read();
                             }
                         }
-                        // break;
+                        alreadyFoundAnIpdPacket = true;
                         rt0 = millis();
                     } else {
                         Serial.println("Not a +IPD bloc ");
@@ -861,11 +864,9 @@ Serial.println( "end of loop" );
             }
 
         }
+        #if DBUG_WIFI
         Serial.println("READ OK");
-
-        // while( WIFI_SERIAL.available() <= 0 ) {;}
-        // memset(traillingCRLF, 0x00, 2+1);
-        // WIFI_SERIAL.readBytes(traillingCRLF, 2);
+        #endif
 
         char closingSeq[512+1];
         readed = _wifiReadline(closingSeq, 500);
@@ -879,19 +880,8 @@ Serial.println( "end of loop" );
         // don't mind about error ...
         wifi_closeSocket();
 
-        // must not return an function-local pointer
-      return NULL;
+      return httpResponseCode;
     }
 
-
-    // // return type is not yet certified, may use a packetHandler ....
-    // // ex. yat4l_wifi_wget("www.google.com", 80, "/search?q=esp8266" 
-    // // ex. yat4l_wifi_wget("$home", 8089, "/login?username=toto&pass=titi" 
-    // char* yat4l_wifi_wget(char* host, int port, char* query) {
-    //     return NULL;
-    // }
-
-    // bool yat4l_wifi_isAtHome() { return false; }
-    // char* yat4l_wifi_getHomeServer() { return NULL; }
 
 
