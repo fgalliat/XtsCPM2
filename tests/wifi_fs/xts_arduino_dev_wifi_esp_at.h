@@ -654,14 +654,18 @@
 
       char cmd[128];
       sprintf(cmd, "AT+CIPSTART=\"TCP\",\"%s\",%d", usedHOST, port);
+      #if DBUG_WIFI
       Serial.println(cmd);
+      #endif
 
       _wifiSendCMD(cmd);
       if (! _wifi_waitForOk() ) {
           wifi_closeSocket();
-          return NULL;
+          return -1;
       }
+      #if DBUG_WIFI
       Serial.println("OK");
+      #endif
 
       char resp[512+1]; // _wifiReadline(resp); requires 512 bytes long
       char fullQ[512+32];
@@ -689,12 +693,12 @@
             
             if (readed < 0) {
                 wifi_closeSocket();
-                return NULL;
+                return -1;
             }
 
             if ( equals( resp, (char*)"ERROR" ) ) {
                 wifi_closeSocket();
-                return NULL;
+                return -1;
             } else if ( equals( resp, (char*)"SEND OK" ) ) {
                 break;
             }
