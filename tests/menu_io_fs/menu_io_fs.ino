@@ -9,6 +9,7 @@
 #include "xts_dev_joystick.h"
 Joystick joystick;
 
+#include "xts_res_console.h"
 #include "xts_soft_console.h"
 IOConsole console( CONSOLE_MODE_SERIAL_VT100 | CONSOLE_MODE_TFT );
 
@@ -22,7 +23,9 @@ void setup() {
     // Serial.begin(115200);
     console.setup();
 
+    bool allOk = true;
     bool sdOk = fileSystem.setup();
+    allOk &= sdOk;
 
     console.cls();
     console.println("Joystick ... OK");
@@ -33,6 +36,14 @@ void setup() {
         console.println("FileSyst ... NOK");
     }
     console.println("");
+
+    delay(300);
+
+    if ( allOk ) {
+        console.cls();
+        console.print( splash_screen_SD );
+    }
+
 }
 
 void xts_handler() {

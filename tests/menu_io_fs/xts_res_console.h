@@ -7,7 +7,7 @@
 
 #define BR "\r\n"
 
-const char* splash_screen = 
+const char* splash_screen_SD = 
 BR
 "        __________________________" BR 
 "       |   |                  |   |" BR 
