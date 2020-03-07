@@ -217,9 +217,6 @@ int IOConsole::menu(int x1, int y1, int x2, int y2, char* title, char* items[], 
     gotoXY( x1+2, yOfItems );
     write( '>' );
 
-    // release cursor
-    gotoXY( x1, y2+1 );
-
     int selectedItem = 0; 
 
     while( true ) {
@@ -231,7 +228,27 @@ int IOConsole::menu(int x1, int y1, int x2, int y2, char* title, char* items[], 
                     xts_handler();
                     delay(50);
                 }
+                // release cursor
+                gotoXY( x1, y2+1 );
                 return selectedItem;
+            } else if ( joystick.isDirUp() ) {
+                while ( joystick.isDirUp() ) {
+                    xts_handler();
+                    delay(50);
+                }
+                gotoXY( x1+2, yOfItems+selectedItem ); write( ' ' );
+                selectedItem--;
+                if ( selectedItem < 0 ) { selectedItem = nbItems-1; }
+                gotoXY( x1+2, yOfItems+selectedItem ); write( '>' );
+            } else if ( joystick.isDirDown() ) {
+                while ( joystick.isDirDown() ) {
+                    xts_handler();
+                    delay(50);
+                }
+                gotoXY( x1+2, yOfItems+selectedItem ); write( ' ' );
+                selectedItem++;
+                if ( selectedItem > nbItems-1 ) { selectedItem = 0; }
+                gotoXY( x1+2, yOfItems+selectedItem ); write( '>' );
             }
         }
 

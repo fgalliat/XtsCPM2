@@ -101,10 +101,16 @@ void once() {
         (char*)"Exit",
     };
 
-    int choice = console.menu(x1, y1, x2, y2, title, items, nbItems, clearBehindWindow);
+    int choice = -1;
+    while ( choice != nbItems-1 )
+    {
+        choice = console.menu(x1, y1, x2, y2, title, items, nbItems, clearBehindWindow);
+        
+        console.print( "Ya choosed : " );
+        console.println( choice );
+    }
 
-    console.print( "Ya choosed : " );
-    console.println( choice );
+    
 }
 
 void loop() {
