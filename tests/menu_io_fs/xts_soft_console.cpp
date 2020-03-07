@@ -5,6 +5,8 @@
  * Xtase - fgalliat @Feb2020
  */
 
+#include <Arduino.h>
+
 #include "xts_soft_console.h"
 
 #include "xts_dev_serial_term_console.h"
