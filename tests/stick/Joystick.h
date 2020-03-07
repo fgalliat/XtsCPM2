@@ -55,8 +55,9 @@ class Joystick {
             return true;
         }
 
+        // 0..7
         uint8_t readX() {
-            return readAxis( JOY_X_AXIS );
+            return 7 - readAxis( JOY_X_AXIS );
         }
 
         uint8_t readY() {
