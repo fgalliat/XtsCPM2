@@ -1,6 +1,8 @@
 /**
  * Joystick class
  * 
+ * Analog Stick (2 Axis) + 3 btns
+ * 
  * Xtase - fgalliat @Mar 2020
  */
 

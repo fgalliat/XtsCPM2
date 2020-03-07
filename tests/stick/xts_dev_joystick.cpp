@@ -6,7 +6,7 @@
 
 #include <Arduino.h>
 
-#include "Joystick.h"
+#include "xts_dev_joystick.h"
 
 // private symbols
 bool Joystick::incDebounce(int idx) {
