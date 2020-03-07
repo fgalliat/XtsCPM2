@@ -18,3 +18,13 @@
    - [ ] Inputs
      - [.] Serial in
      - [ ] Ms ChatPad via UART
+
+
+ - w/ Joystick
+    - fix debounce
+    - add OutputConsole
+      - add TextBox
+      - make menu
+      - add Serial ArrowKeys Support too
+ - continue WifiFs w/ menu support
+ - OutputConsole.setMode(...)

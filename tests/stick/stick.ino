@@ -23,4 +23,5 @@ void loop() {
 
     Serial.println( joystick.toString() );
 
+    delay(100);
 }

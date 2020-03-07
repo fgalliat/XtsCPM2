@@ -19,11 +19,15 @@ class Joystick {
       uint8_t btnPins[nbBtns] = { 
           JOY_BTN0, JOY_BTN1, JOY_BTN2
       };
+
+      // value to adjust
+      uint8_t debounceMax = 2; // for 100ms latency
+
       uint8_t debounce[2 + nbBtns]; // [x][y][...] are not debounce values
       uint8_t states[2 + nbBtns];
       void incDebounce(int idx) {
-          if ( debounce[idx] >= 0xFF ) { return; }
-          debounce[idx]++;
+        if ( debounce[idx] >= debounceMax ) { return; }
+        debounce[idx]++;
       }
       void decDebounce(int idx) {
           if ( debounce[idx] <= 0x00 ) { return; }
@@ -31,12 +35,10 @@ class Joystick {
       }
       uint8_t readAxis(int pin) {
           int v = analogRead( pin );
-          v /= 128; // 0..1024 -> 0..8
+          // v /= 128; // 0..1024 -> 0..8
+          v = v >> 7; // div128 : 0..1024 -> 0..8
           return v;
       }
-
-      // value to adjust
-      uint8_t debounceMax = 5;
 
     public:
         Joystick() {
@@ -77,7 +79,8 @@ class Joystick {
             states[0] = debounce[0];
             states[1] = debounce[1];
             for(int i=0; i < nbBtns; i++) {
-                states[2+1] = debounce[2+i] >= debounceMax;
+                // states[2+i] = debounce[2+i] >= debounceMax ? 1 : 0;
+                states[2+i] = debounce[2+i];
             }
         }
 
