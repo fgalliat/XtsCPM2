@@ -22,16 +22,22 @@ class Joystick {
 
       // value to adjust
       uint8_t debounceMax = 2; // for 100ms latency
+      bool changedState = false;
+      uint8_t lastX,lastY;
 
       uint8_t debounce[2 + nbBtns]; // [x][y][...] are not debounce values
       uint8_t states[2 + nbBtns];
-      void incDebounce(int idx) {
-        if ( debounce[idx] >= debounceMax ) { return; }
+      bool incDebounce(int idx) {
+        if ( debounce[idx] >= debounceMax ) { return false; }
         debounce[idx]++;
+        if ( debounce[idx] >= debounceMax ) { return true; }
+        return false;
       }
-      void decDebounce(int idx) {
-          if ( debounce[idx] <= 0x00 ) { return; }
+      bool decDebounce(int idx) {
+          if ( debounce[idx] <= 0x00 ) { return false; }
           debounce[idx]--;
+          if ( debounce[idx] <= 0x00 ) { return true; }
+          return false;
       }
       uint8_t readAxis(int pin) {
           int v = analogRead( pin );
@@ -44,6 +50,8 @@ class Joystick {
         Joystick() {
             memset( debounce, 0x00, 2 + nbBtns );
             memset( states, 0x00, 2 + nbBtns );
+            lastX = 3;
+            lastY = 3;
         }
 
         bool setup() {
@@ -65,11 +73,12 @@ class Joystick {
         }
 
         void poll() {
+            changedState = false;
             for(int i=0; i < nbBtns; i++) {
                 if ( digitalRead( btnPins[i] ) == LOW ) {
-                    incDebounce(2+i);
+                    changedState |= incDebounce(2+i);
                 } else {
-                    decDebounce(2+i);
+                    changedState |= decDebounce(2+i);
                 }
             }
             uint8_t vx = readX();
@@ -77,16 +86,54 @@ class Joystick {
             debounce[0] = vx;
             debounce[1] = vy;
 
+            if ( lastX != vx || lastY != vy ) {
+                changedState = true;
+                lastX = vx;
+                lastY = vy;
+            }
+
             states[0] = debounce[0];
             states[1] = debounce[1];
             for(int i=0; i < nbBtns; i++) {
-                // states[2+i] = debounce[2+i] >= debounceMax ? 1 : 0;
-                states[2+i] = debounce[2+i];
+                states[2+i] = debounce[2+i] >= debounceMax ? 1 : 0;
+                // states[2+i] = debounce[2+i];
             }
         }
 
         uint8_t* getState() {
             return states;
+        }
+
+        bool isDirLeft() {
+            return states[0] <= 1;
+        }
+
+        bool isDirRight() {
+            return states[0] >= 6;
+        }
+
+        bool isDirUp() {
+            return states[1] <= 1;
+        }
+
+        bool isDirDown() {
+            return states[1] >= 6;
+        }
+
+        bool isBtn0() {
+            return states[2] >= 1;
+        }
+
+        bool isBtn1() {
+            return states[3] >= 1;
+        }
+
+        bool isBtn3() {
+            return states[4] >= 1;
+        }
+
+        bool hasChangedState() {
+            return changedState;
         }
 
         char _str[64+1];

@@ -21,7 +21,9 @@ void loop() {
 
     joystick.poll();
 
-    Serial.println( joystick.toString() );
+    if ( joystick.hasChangedState() ) {
+        Serial.println( joystick.toString() );
+    }
 
     delay(100);
 }
