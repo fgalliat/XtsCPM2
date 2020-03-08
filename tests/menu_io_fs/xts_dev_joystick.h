@@ -10,16 +10,17 @@
 #define JOY_Y_AXIS 36
 // Joystick integrated push button
 #define JOY_BTN0  24
-#define JOY_BTN1  25
-#define JOY_BTN2  26
+#define JOY_BTNMENU  25
+#define JOY_BTN1  26
+#define JOY_BTN2  27
 
 
 class Joystick {
 
     private:
-      static const int nbBtns = 3;
+      static const int nbBtns = 4;
       uint8_t btnPins[nbBtns] = { 
-          JOY_BTN0, JOY_BTN1, JOY_BTN2
+          JOY_BTN0, JOY_BTNMENU, JOY_BTN1, JOY_BTN2
       };
 
       // value to adjust
@@ -52,8 +53,9 @@ class Joystick {
         bool isDirUp();
         bool isDirDown();
         bool isBtn0();
+        bool isBtnMenu();
         bool isBtn1();
-        bool isBtn3();
+        bool isBtn2();
         bool hasChangedState();
 
         char* toString();

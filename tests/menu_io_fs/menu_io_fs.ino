@@ -63,12 +63,13 @@ void setup() {
 
 }
 
-void xts_handler() {
-    joystick.poll();
-}
 
 
-void once() {
+bool inMenu = false;
+void menu() {
+    if ( inMenu ) { return; }
+    inMenu = true;
+
     int margin = 5;
 
     int hMargin = margin;
@@ -110,7 +111,21 @@ void once() {
         console.println( choice );
     }
 
-    
+    inMenu = false;
+}
+
+void xts_handler() {
+    joystick.poll();
+
+    if ( joystick.hasChangedState() ) {
+        if ( joystick.isBtnMenu() ) {
+            menu();
+        }
+    }
+}
+
+void once() {
+    menu();
 }
 
 void loop() {

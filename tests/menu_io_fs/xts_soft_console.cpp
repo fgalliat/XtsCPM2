@@ -231,6 +231,14 @@ int IOConsole::menu(int x1, int y1, int x2, int y2, char* title, char* items[], 
                 // release cursor
                 gotoXY( x1, y2+1 );
                 return selectedItem;
+            } else if ( joystick.isBtn1() ) {
+                while ( joystick.isBtn1() ) {
+                    xts_handler();
+                    delay(50);
+                }
+                // release cursor
+                gotoXY( x1, y2+1 );
+                return selectedItem;
             } else if ( joystick.isDirUp() ) {
                 while ( joystick.isDirUp() ) {
                     xts_handler();

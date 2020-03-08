@@ -104,12 +104,16 @@ bool Joystick::isBtn0() {
     return states[2] >= 1;
 }
 
-bool Joystick::isBtn1() {
+bool Joystick::isBtnMenu() {
     return states[3] >= 1;
 }
 
-bool Joystick::isBtn3() {
+bool Joystick::isBtn1() {
     return states[4] >= 1;
+}
+
+bool Joystick::isBtn2() {
+    return states[5] >= 1;
 }
 
 bool Joystick::hasChangedState() {
@@ -120,7 +124,7 @@ bool Joystick::hasChangedState() {
 char _str[64+1];
 char* Joystick::toString() {
     memset(_str, 0x00, 64+1);
-    sprintf(_str, "X= %d, Y= %d [%d][%d][%d]", states[0], states[1], states[2], states[3], states[4]);
+    sprintf(_str, "X= %d, Y= %d [%d][%d][%d][%d]", states[0], states[1], states[2], states[3], states[4], states[5]);
     return _str;
 }
 
