@@ -110,4 +110,26 @@ int Fs::writeTextFile(char* fileName, char* source, int maxLen) {
 return i;
 }
 
+// (!!) doesn't eraese dest buffer
+int readBinFile(char* fileName, uint8_t* dest, int maxLen) {
+    if ( fileName == NULL || dest == NULL || maxLen < 0 ) {
+        return -1;
+    }
+    
+    File f = SD.open( fileName, O_READ );
+    if ( !f ) {
+        return -1;
+    }
 
+    int cpt=0, ch;
+    while(true) {
+        ch = f.read();
+        if ( ch == -1 ) { break; }
+        dest[cpt] = (uint8_t)ch;
+        cpt++;
+        if ( cpt >= maxLen ) { break; }
+    }
+
+    f.close();
+    return cpt;
+}
