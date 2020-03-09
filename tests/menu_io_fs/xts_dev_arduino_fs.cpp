@@ -1,3 +1,4 @@
+#include "top.h"
 /**
  * 
  * YATDB FileSystem API impl.
@@ -6,9 +7,10 @@
  */
 #include <Arduino.h>
 
+
 #include "xts_string.h"
 
-#include "xts_arduino_dev_fs.h"
+#include "xts_dev_fs.h"
 
 // ===== Hardware section =====
 #include <SPI.h>
@@ -16,7 +18,7 @@
 #include "sdios.h"
 
 // SdFatSdio SD;
-SdFat SD;
+FS_CLASS SD;
 // ===== Hardware section =====
 
 const int __tmpDiskFileNameLen = 4+8+1+3+1;

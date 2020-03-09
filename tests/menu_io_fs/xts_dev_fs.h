@@ -5,6 +5,8 @@
  * Xtase - fgalliat @Mar 2020
  */
 
+#define FS_CLASS SdFat
+
 class Fs {
     public:
 
