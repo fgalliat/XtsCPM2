@@ -162,7 +162,7 @@ typedef struct Note {
 
     
     // ex. "MONKEY.T5K"
-    bool playTuneFile(Buzzer* _this, char* tuneStreamName) { 
+    bool _playTuneFile(Buzzer* _this, char* tuneStreamName) { 
         if (_this->isMute()) { return true; } 
         _this->noTone();
 
@@ -313,6 +313,6 @@ typedef struct Note {
 // to move away
 void Buzzer::playTuneFile(char* filename, bool btnBreaks) {
     // btnBreaks is ignored for now ...
-    ::playTuneFile( this, filename);
+    _playTuneFile( this, filename);
 }
 

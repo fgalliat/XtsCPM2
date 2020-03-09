@@ -100,9 +100,10 @@ void menu() {
 
     char* title = (char*)"[ Main Menu ]";
 
-    int nbItems = 5;
+    int nbItems = 6;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
+        (char*)"Play MONKEY.T5K",
         (char*)"Enable Serial Console",
         (char*)"Disable Serial Console",
         (char*)"WiFi menu",
@@ -111,12 +112,15 @@ void menu() {
     };
 
     int choice = -1;
-    while ( choice != nbItems-1 )
-    {
+    while ( choice != nbItems-1 ) {
         choice = console.menu(x1, y1, x2, y2, title, items, nbItems, clearBehindWindow);
         
         console.print( "Ya choosed : " );
         console.println( choice );
+
+        if ( choice == 0 ) {
+            buzzer.playTuneFile("MONKEY.T5K");
+        }
     }
 
     inMenu = false;

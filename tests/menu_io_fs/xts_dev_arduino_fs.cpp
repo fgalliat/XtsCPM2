@@ -111,7 +111,7 @@ return i;
 }
 
 // (!!) doesn't eraese dest buffer
-int readBinFile(char* fileName, uint8_t* dest, int maxLen) {
+int Fs::readBinFile(char* fileName, uint8_t* dest, int maxLen) {
     if ( fileName == NULL || dest == NULL || maxLen < 0 ) {
         return -1;
     }
