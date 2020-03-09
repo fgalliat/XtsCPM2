@@ -201,6 +201,21 @@ void IOConsole::window(int x1, int y1, int x2, int y2, char* title, bool clearBe
     drawHline( x1+1, y1+2, x2-1, '~' ); // under title line
 }
 
+void IOConsole::warn(char* message) {
+    int x = 5;
+    int y = 5;
+    int x2 = x+ (1+1+2+1+strlen(message)+1+2+1+1);
+    int y2 = y+5;
+
+    window(x,y,x2,y2," Warning ", true);
+    attr_accent();
+    gotoXY( x+1, y+3 );
+    print( " !! " ); print( message ); print( " !! " );
+    attr_none();
+
+    gotoXY( 1, y2+1 );
+}
+
 
 
 // blocking method, invokes xts_handler when possible

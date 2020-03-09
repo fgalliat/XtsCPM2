@@ -51,6 +51,8 @@ class IOConsole : public Print {
     void window(int x1, int y1, int x2, int y2, char* title, bool clearBehind=true);
     int menu(int x1, int y1, int x2, int y2, char* title, char* items[], int nbItems, bool clearBehind=true);
 
+    void warn(char* message);
+
     // inheritance
     size_t write(uint8_t character);
 };
