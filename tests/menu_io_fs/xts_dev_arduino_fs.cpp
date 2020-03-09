@@ -17,7 +17,6 @@
 #include "SdFat.h"
 #include "sdios.h"
 
-// SdFatSdio SD;
 FS_CLASS SD;
 // ===== Hardware section =====
 

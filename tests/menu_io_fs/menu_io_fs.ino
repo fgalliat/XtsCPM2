@@ -18,10 +18,15 @@ IOConsole console( CONSOLE_MODE_SERIAL_VT100 | CONSOLE_MODE_TFT );
 #include "xts_dev_fs.h"
 Fs fileSystem;
 
+#include "xts_dev_buzzer.h"
+Buzzer buzzer;
+
+
 void once();
 
 void setup() {
     joystick.setup();
+    buzzer.setup();
 
     // use console...
     // Serial.begin(115200);
