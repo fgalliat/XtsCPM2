@@ -21,6 +21,9 @@ Fs fileSystem;
 #include "xts_dev_buzzer.h"
 Buzzer buzzer;
 
+#include "xts_dev_soundcard.h"
+SoundCard snd;
+
 
 void once();
 
@@ -36,6 +39,9 @@ void setup() {
     bool sdOk = fileSystem.setup();
     allOk &= sdOk;
 
+    bool sndOk = snd.setup();
+    allOk &= sndOk;
+
     console.cls();
     console.println("Joystick ... OK");
     console.println("Console  ... OK");
@@ -43,6 +49,11 @@ void setup() {
         console.println("FileSyst ... OK");
     } else {
         console.println("FileSyst ... NOK");
+    }
+    if ( sndOk ) {
+        console.println("SoundCard ... OK");
+    } else {
+        console.println("SoundCard ... NOK");
     }
     console.println("");
 
@@ -78,8 +89,8 @@ bool audioMenu() {
     int nbItems = 7;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
-        (char*)"MUTE Speaker",
-        (char*)"MUTE MP3",
+        (char*)"MUTE Speaker  ",
+        (char*)"MUTE Music  ",
         (char*)"VOLUME MP3",
         (char*)"Test Speaker",
         (char*)"Test MP3",
@@ -96,24 +107,31 @@ bool audioMenu() {
 
         if ( choice == 0 ) {
             if ( buzzer.isMute() ) {
+                items[choice] = (char*)"MUTE Speaker  ";
                 buzzer.unmute();
                 buzzer.tone(400, 200);
             } else {
+                items[choice] = (char*)"UNMUTE Speaker";
                 buzzer.noTone();
                 buzzer.mute();
             }
         } else if ( choice == 1 ) {
-            console.println(" (UN)MUTE MP3 ");
+            if ( buzzer.isMute() ) {
+                items[choice] = (char*)"MUTE Music  ";
+                snd.unmute();
+            } else {
+                items[choice] = (char*)"UNMUTE Music";
+                snd.mute();
+            }
         } else if ( choice == 2 ) {
             console.println(" VOLUME MP3 (slider) ");
         } else if ( choice == 3 ) {
             buzzer.playTuneFile( (char*)"MONKEY.T5K");
         } else if ( choice == 4 ) {
-            console.println(" TEST MP3 ");
+            snd.play(1);
         } else if ( choice == 5 ) {
-            buzzer.playTuneFile( (char*)"MONKEY.T5K");
+            // ...
         } else if ( choice == 6 ) {
-        } else if ( choice == 7 ) {
             return false;
         } else if ( choice == -1 ) {
             return true;
