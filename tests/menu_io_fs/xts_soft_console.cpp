@@ -274,22 +274,24 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
         xts_handler();
 
         if ( joystick.hasChangedState() ) {
-            if ( joystick.isBtn0() ) {
-                while ( joystick.isBtn0() ) {
+            if ( joystick.isBtn0() || joystick.isBtn1() ) {
+                // Btn #0, #1 -> OK
+                while ( joystick.isBtn0() || joystick.isBtn0() ) {
                     xts_handler();
                     delay(50);
                 }
                 // release cursor
                 gotoXY( x1, y2+1 );
                 return selectedItem;
-            } else if ( joystick.isBtn1() ) {
-                while ( joystick.isBtn1() ) {
+            } else if ( joystick.isBtn2() ) {
+                // Btn #2 -> Esc
+                while ( joystick.isBtn2() ) {
                     xts_handler();
                     delay(50);
                 }
                 // release cursor
                 gotoXY( x1, y2+1 );
-                return selectedItem;
+                return -1;
             } else if ( joystick.isDirUp() ) {
                 while ( joystick.isDirUp() ) {
                     xts_handler();

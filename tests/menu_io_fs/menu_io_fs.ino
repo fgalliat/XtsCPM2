@@ -174,7 +174,8 @@ void menu() {
         if ( choice == 0 ) {
             buzzer.playTuneFile( (char*) "MONKEY.T5K");
         } else if ( choice == AUDIO_SUBMENU_ITEM ) {
-            if ( audioMenu() ) { break; }
+            // if ( audioMenu() ) { break; }
+            audioMenu();
         }
     }
 
