@@ -129,6 +129,25 @@ bool audioMenu() {
             buzzer.playTuneFile( (char*)"MONKEY.T5K");
         } else if ( choice == 4 ) {
             snd.play(1);
+            delay(100);
+            while( snd.isPlaying() ) {
+                console.gotoXY(1,1);
+                console.print("PLAY");
+
+                xts_handler();
+                if ( joystick.isBtn1() ) {
+                    while (joystick.isBtn1()) {
+                        joystick.poll();
+                        delay(50);
+                    }
+                    break;
+                }
+
+                delay(100);
+            }
+            snd.stop();
+            console.gotoXY(1,1);
+            console.print("    ");    
         } else if ( choice == 5 ) {
             // ...
         } else if ( choice == 6 ) {
