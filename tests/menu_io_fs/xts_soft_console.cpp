@@ -219,15 +219,51 @@ void IOConsole::warn(char* message) {
 
 
 // blocking method, invokes xts_handler when possible
-int IOConsole::menu(int x1, int y1, int x2, int y2, char* title, char* items[], int nbItems, bool clearBehind) {
+int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int x2, int y2, bool clearBehind) {
+    int w = -1;
+    int h = -1;
+
+    if ( y2 < 0 ) {
+        h = 4 + nbItems;
+    }
+    if ( x2 < 0 ) {
+        w = 0;
+        for(int i=0; i < nbItems; i++) {
+            if ( items[i] != NULL ) {
+                int t = strlen(items[i]);
+                if ( t > w ) { w = t; }
+            }
+        }
+        w = 4 + w + 2;
+    }
+
+    if ( x1 < 0 ) {
+        x1 = ( getWidth() - w ) / 2;
+    }
+
+    if ( y1 < 0 ) {
+        y1 = ( getHeight() - h ) / 2;
+    }
+
+    if ( x2 < 0 ) {
+        x2 = x1 + w;
+    }
+    if ( y2 < 0 ) {
+        y2 = y1 + h;
+    }
+
+
+
     window(x1, y1, x2, y2, title, clearBehind);
 
     // draws items
     int yOfItems = y1+3;
     for(int i=0; i < nbItems; i++) {
         if (!clearBehind) { drawHline( x1+1, yOfItems+i, x2-1, ' ' ); }
-        gotoXY( x1+4, yOfItems+i );
-        print( items[i] );
+        if ( items[i] != NULL ) {
+            gotoXY( x1+4, yOfItems+i );
+            print( items[i] );
+        }
     }
     gotoXY( x1+2, yOfItems );
     write( '>' );

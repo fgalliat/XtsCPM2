@@ -49,7 +49,7 @@ class IOConsole : public Print {
     void drawHline(int x1, int y1, int x2, char fill='-');
 
     void window(int x1, int y1, int x2, int y2, char* title, bool clearBehind=true);
-    int menu(int x1, int y1, int x2, int y2, char* title, char* items[], int nbItems, bool clearBehind=true);
+    int menu(char* title, char* items[], int nbItems, int x1=-1, int y1=-1, int x2=-1, int y2=-1, bool clearBehind=true);
 
     void warn(char* message);
 

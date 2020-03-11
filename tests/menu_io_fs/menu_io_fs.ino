@@ -71,6 +71,56 @@ void setup() {
 
 }
 
+// =====================================================
+bool audioMenu() {
+    char* title = (char*)"[ Audio Menu ]";
+
+    int nbItems = 7;
+    char* items[nbItems] = {
+        //      12345678901234567890123456789012
+        (char*)"MUTE Speaker",
+        (char*)"MUTE MP3",
+        (char*)"VOLUME MP3",
+        (char*)"Test Speaker",
+        (char*)"Test MP3",
+        (char*)"",
+        (char*)"Exit",
+    };
+
+    int choice = -1;
+    while ( choice != nbItems-1 ) {
+        choice = console.menu(title, items, nbItems);
+        
+        console.print( "Ya choosed : " );
+        console.println( choice );
+
+        if ( choice == 0 ) {
+            if ( buzzer.isMute() ) {
+                buzzer.unmute();
+                buzzer.tone(400, 200);
+            } else {
+                buzzer.noTone();
+                buzzer.mute();
+            }
+        } else if ( choice == 1 ) {
+            console.println(" (UN)MUTE MP3 ");
+        } else if ( choice == 2 ) {
+            console.println(" VOLUME MP3 (slider) ");
+        } else if ( choice == 3 ) {
+            buzzer.playTuneFile( (char*)"MONKEY.T5K");
+        } else if ( choice == 4 ) {
+            console.println(" TEST MP3 ");
+        } else if ( choice == 5 ) {
+            buzzer.playTuneFile( (char*)"MONKEY.T5K");
+        } else if ( choice == 6 ) {
+        } else if ( choice == 7 ) {
+            return false;
+        } else if ( choice == -1 ) {
+            return true;
+        }
+    }
+    return false; // false, doesn't kill previous menu
+}
 
 
 bool inMenu = false;
@@ -100,10 +150,13 @@ void menu() {
 
     char* title = (char*)"[ Main Menu ]";
 
-    int nbItems = 6;
+    const int AUDIO_SUBMENU_ITEM = 1;
+
+    int nbItems = 7;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
         (char*)"Play MONKEY.T5K",
+        (char*)"Audio ->",
         (char*)"Enable Serial Console",
         (char*)"Disable Serial Console",
         (char*)"WiFi menu",
@@ -113,13 +166,15 @@ void menu() {
 
     int choice = -1;
     while ( choice != nbItems-1 ) {
-        choice = console.menu(x1, y1, x2, y2, title, items, nbItems, clearBehindWindow);
+        choice = console.menu(title, items, nbItems, x1, y1, x2, y2, clearBehindWindow);
         
         console.print( "Ya choosed : " );
         console.println( choice );
 
         if ( choice == 0 ) {
-            buzzer.playTuneFile("MONKEY.T5K");
+            buzzer.playTuneFile( (char*) "MONKEY.T5K");
+        } else if ( choice == AUDIO_SUBMENU_ITEM ) {
+            if ( audioMenu() ) { break; }
         }
     }
 
