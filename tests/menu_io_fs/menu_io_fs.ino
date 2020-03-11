@@ -116,7 +116,7 @@ bool audioMenu() {
                 buzzer.mute();
             }
         } else if ( choice == 1 ) {
-            if ( buzzer.isMute() ) {
+            if ( snd.isMute() ) {
                 items[choice] = (char*)"MUTE Music  ";
                 snd.unmute();
             } else {

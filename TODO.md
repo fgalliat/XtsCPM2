@@ -31,8 +31,8 @@
  - [ ] DFPlayer
 
      - [x] solder
-     - [ ] wire
-     - [ ] lib w/ API
+     - [x] wire
+     - [x] lib w/ API
      - [ ] read JUKE.BAD again
 
          - [ ] update JUKE.BAD (81 songs)
