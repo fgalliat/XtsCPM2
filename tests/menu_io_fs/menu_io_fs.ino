@@ -12,6 +12,9 @@
 #include "xts_dev_joystick.h"
 Joystick joystick;
 
+#include "xts_dev_rgbled.h"
+RGBLed led;
+
 #include "xts_soft_console.h"
 IOConsole console( CONSOLE_MODE_SERIAL_VT100 | CONSOLE_MODE_TFT );
 
@@ -29,6 +32,7 @@ void once();
 
 void setup() {
     joystick.setup();
+    led.setup();
     buzzer.setup();
 
     // use console...
@@ -39,11 +43,14 @@ void setup() {
     bool sdOk = fileSystem.setup();
     allOk &= sdOk;
 
+    led.drive_led(true);
     bool sndOk = snd.setup();
+    led.drive_led(false);
     allOk &= sndOk;
 
     console.cls();
     console.println("Joystick ... OK");
+    console.println("Leds     ... OK");
     console.println("Console  ... OK");
     if ( sdOk ) {
         console.println("FileSyst ... OK");
@@ -60,6 +67,8 @@ void setup() {
     delay(300);
 
     if ( allOk ) {
+        led.rgb( 209, 228, 194 ); // pastel green
+        
         // remove Serial VTconsole
         console.setMode( CONSOLE_MODE_TFT );
 
@@ -74,6 +83,8 @@ void setup() {
 
         once();
     } else {
+        led.rgb( 187,  74, 230 ); // purple
+        
         console.println("");
         console.println(" - System is not OK -");
         console.println(" Halting.");

@@ -14,6 +14,9 @@
 
 #include "xts_dev_buzzer.h"
 
+#include "xts_dev_rgbled.h"
+extern RGBLed led;
+
 // for tune files
 #include "xts_dev_fs.h"
 extern Fs fileSystem;
@@ -125,9 +128,9 @@ bool __playTuneT53(Buzzer* _this, unsigned char* tuneStream, bool btnStop);
 uint8_t audiobuff[AUDIO_BUFF_SIZE];
 void cleanAudioBuff() { memset(audiobuff, 0x00, AUDIO_BUFF_SIZE); }
 
-void led3(bool state) { /* TODO */ }
-void led2(bool state) { /* TODO */ }
-void led1(bool state) { /* TODO */ }
+void led3(bool state) { if (state) { led.clr_blue(); } }
+void led2(bool state) { if (state) { led.clr_green(); } }
+void led1(bool state) { if (state) { led.clr_red(); } }
 
 typedef struct Note {
     unsigned char note;
@@ -215,6 +218,7 @@ typedef struct Note {
             // note 0 -> silence
             if ( note > 0 ) {
                 _this->tone(notes[ note-1 ], duration);
+                led.off();
                 led2( note > 30 );
                 led3( note > 36 );
             }
@@ -232,6 +236,7 @@ typedef struct Note {
 
         led2(false);
         led3(false);
+        led.off();
         return true;
     } // end of play T5K function
 
