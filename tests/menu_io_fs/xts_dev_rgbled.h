@@ -21,7 +21,7 @@ class RGBLed {
         bool setup();
         void rgb(uint8_t r, uint8_t g, uint8_t b);
         void off();
-        void drive_led(bool state);
+        void drive_led(bool state = true);
         void clr_red();
         void clr_green();
         void clr_blue();

@@ -12,6 +12,9 @@
 
 #include "xts_dev_fs.h"
 
+#include "xts_dev_rgbled.h"
+extern RGBLed led;
+
 // ===== Hardware section =====
 #include <SPI.h>
 #include "SdFat.h"
@@ -62,8 +65,10 @@ int Fs::readTextFile(char* fileName, char* dest, int maxLen) {
 
     if ( maxLen == 0 ) { return 0; }
 
+    led.drive_led();
     File f = SD.open( fileName, O_READ );
     if ( !f ) {
+        led.drive_led(false);
         return -1;
     }
 
@@ -77,6 +82,7 @@ int Fs::readTextFile(char* fileName, char* dest, int maxLen) {
     }
 
     f.close();
+    led.drive_led(false);
 
 return cpt;
 }
@@ -89,8 +95,10 @@ int Fs::writeTextFile(char* fileName, char* source, int maxLen) {
 
     if ( maxLen == 0 ) { return 0; }
 
+    led.drive_led();
     File f = SD.open( fileName, O_CREAT | O_WRITE );
     if ( !f ) {
+        led.drive_led(false);
         return -1;
     }
     // erase file content
@@ -106,6 +114,7 @@ int Fs::writeTextFile(char* fileName, char* source, int maxLen) {
     f.flush();
 
     f.close();
+    led.drive_led(false);
 
 return i;
 }
@@ -116,8 +125,10 @@ int Fs::readBinFile(char* fileName, uint8_t* dest, int maxLen) {
         return -1;
     }
     
+    led.drive_led();
     File f = SD.open( fileName, O_READ );
     if ( !f ) {
+        led.drive_led(false);
         return -1;
     }
 
@@ -131,5 +142,6 @@ int Fs::readBinFile(char* fileName, uint8_t* dest, int maxLen) {
     }
 
     f.close();
+    led.drive_led(false);
     return cpt;
 }

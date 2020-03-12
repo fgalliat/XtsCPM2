@@ -46,9 +46,7 @@ void setup() {
     bool sdOk = fileSystem.setup();
     allOk &= sdOk;
 
-    led.drive_led(true);
     bool sndOk = snd.setup();
-    led.drive_led(false);
     allOk &= sndOk;
 
     console.cls();
