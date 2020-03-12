@@ -202,12 +202,13 @@ void IOConsole::window(int x1, int y1, int x2, int y2, char* title, bool clearBe
 }
 
 void IOConsole::warn(char* message) {
+    char* title = (char*)" Warning ";
     int x = 5;
     int y = 5;
-    int x2 = x+ (1+1+2+1+strlen(message)+1+2+1+1);
+    int x2 = x+ (1+1+2+1+ max(strlen(title), strlen(message))+1+2+1+1);
     int y2 = y+5;
 
-    window(x,y,x2,y2," Warning ", true);
+    window(x,y,x2,y2,title, true);
     attr_accent();
     gotoXY( x+1, y+3 );
     print( " !! " ); print( message ); print( " !! " );
@@ -234,6 +235,11 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
                 if ( t > w ) { w = t; }
             }
         }
+
+        if ( strlen(title) > w ) {
+            w = strlen(title);
+        }
+
         w = 4 + w + 2;
     }
 
