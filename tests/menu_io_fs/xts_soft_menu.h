@@ -38,12 +38,9 @@ void menu() {
 
     char* title = (char*)"[ Main Menu ]";
 
-    const int AUDIO_SUBMENU_ITEM = 1;
-
-    int nbItems = 7;
+    int nbItems = 6;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
-        (char*)"Play MONKEY.T5K",
         (char*)"Audio   ->",
         (char*)"WiFi    ->",
         (char*)"Console ->",
@@ -56,18 +53,18 @@ void menu() {
     while ( choice != nbItems-1 ) {
         choice = console.menu(title, items, nbItems, x1, y1, x2, y2, clearBehindWindow);
         
-        console.print( "Ya choosed : " );
-        console.println( choice );
+        // console.print( "Ya choosed : " );
+        // console.println( choice );
 
         if ( choice == 0 ) {
-            buzzer.playTuneFile( (char*) "MONKEY.T5K");
-        } else if ( choice == AUDIO_SUBMENU_ITEM ) {
             // if ( audioMenu() ) { break; }
             audioMenu();
-        } else if ( choice == 2 ) {
+        } else if ( choice == 1 ) {
             wifiMenu();
-        } else if ( choice == 3 ) {
+        } else if ( choice == 2 ) {
             consoleMenu();
+        } else if ( choice == -1 ) {
+            break;
         } 
     }
 
@@ -189,6 +186,12 @@ bool wifiMenu() {
     return false; // false, doesn't kill previous menu
 }
 
+const char* activSerial = "Activate Serial  ";
+const char* deactivSerial = "DeActivate Serial  ";
+
+const char* activScreen = "Activate Screen  ";
+const char* deactivScreen = "DeActivate Screen  ";
+bool conSerialRaw = false;
 
 bool consoleMenu() {
     char* title = (char*)"[ Console Menu ]";
@@ -196,24 +199,48 @@ bool consoleMenu() {
     int nbItems = 5;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
-        (char*)"Activate Serial  ",
+        (char*)activSerial,
+        (char*)deactivScreen,
         (char*)"Serial mode ->",
-        (char*)"DeActivate Screen ",
         (char*)"",
         (char*)"Exit",
     };
+
+    if ( console.hasSerial() ) {
+        items[0] = (char*)deactivSerial;
+    }
+
+    if ( !console.hasScreen() ) {
+        items[1] = (char*)activScreen;
+    }
 
     int choice = -1;
     while ( choice != nbItems-1 ) {
         choice = console.menu(title, items, nbItems);
         
         if ( choice == 0 ) {
-            // if ( serial is activated ) ...
-            items[choice] = (char*)"DeActivate Serial";
+            if ( console.hasSerial() ) {
+                // remove serial
+                console.setMode( CONSOLE_MODE_TFT );
+                items[choice] = (char*)activSerial;
+            } else {
+                // add serial
+                console.setMode( CONSOLE_MODE_TFT | (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100) );
+                items[choice] = (char*)deactivSerial;
+            }
         } else if ( choice == 1 ) {
-            // serial mode menu
+            // TODO : add confirm dialog
+            if ( console.hasScreen() ) {
+                // remove screen
+                console.setMode( (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100) );
+                items[choice] = (char*)activScreen;
+            } else {
+                // add screen
+                console.setMode( CONSOLE_MODE_TFT | (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100) );
+                items[choice] = (char*)deactivScreen;
+            }
         } else if ( choice == 2 ) {
-            // DeActivate screen
+            // serial mode menu
         } else if ( choice == 3 ) {
             // ...
         } else if ( choice == 4 ) {

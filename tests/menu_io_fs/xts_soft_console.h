@@ -15,14 +15,14 @@ class IOConsole : public Print {
     private:
         uint8_t mode;
 
+    public:
+
+    IOConsole(uint8_t mode);
+
         bool hasSerial();
         bool isSerialDummy();
 
         bool hasScreen();
-
-    public:
-
-    IOConsole(uint8_t mode);
 
     void setMode(uint8_t mode);
 
