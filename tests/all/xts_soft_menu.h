@@ -5,9 +5,12 @@
  * Xtase - fgalliat @Mar2020
  */
 
+#include "xts_string.h"
+
 // sub menus returns true if need to kill caller menu
 bool audioMenu();
 bool wifiMenu();
+bool wifiConnectMenu();
 bool consoleMenu();
 
 bool inMenu = false;
@@ -41,9 +44,9 @@ void menu() {
     int nbItems = 6;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
-        (char*)"Audio   ->",
-        (char*)"WiFi    ->",
         (char*)"Console ->",
+        (char*)"WiFi    ->",
+        (char*)"Audio   ->",
         (char*)"WiFi menu",
         (char*)"",
         (char*)"Exit",
@@ -53,16 +56,12 @@ void menu() {
     while ( choice != nbItems-1 ) {
         choice = console.menu(title, items, nbItems, x1, y1, x2, y2, clearBehindWindow);
         
-        // console.print( "Ya choosed : " );
-        // console.println( choice );
-
         if ( choice == 0 ) {
-            // if ( audioMenu() ) { break; }
-            audioMenu();
+            consoleMenu();
         } else if ( choice == 1 ) {
             wifiMenu();
         } else if ( choice == 2 ) {
-            consoleMenu();
+            audioMenu();
         } else if ( choice == -1 ) {
             break;
         } 
@@ -183,17 +182,7 @@ bool wifiMenu() {
             // reset wifi
             wifi.resetAdapter();
         } else if ( choice == 2 ) {
-            // ssid sub menu
-            // temp code !!! 
-            bool ok = wifi.connectToAp(0);
-            if ( !ok ) {
-                console.warn((char*)"Not connected !");
-            } else {
-                console.print( "IP : " );
-                console.println( wifi.getIp() );
-                console.print( "SSID : " );
-                console.println( wifi.getSSID() );
-            }
+            wifiConnectMenu();
         } else if ( choice == 3 ) {
             // wget temp
             memset(httpResponse, 0x00, maxHttpResponseLen+1);
@@ -229,6 +218,53 @@ bool wifiMenu() {
         }
     }
     return false; // false, doesn't kill previous menu
+}
+
+bool wifiConnectMenu() {
+    char* title = (char*)"[ WiFi SSID Menu ]";
+
+    char* ssids = wifi.listAp();
+    if ( ssids == NULL ) {
+        led.clr_red();
+        console.warn("No WiFi SSID Found !");
+        return true;
+    }
+    int nbSsids = str_count(ssids, '\n');
+    char* items[ nbSsids +2 ];
+    items[ nbSsids ] = (char*)"";
+    items[ nbSsids+1 ] = (char*)"Exit"; 
+    int nbItems = nbSsids+2;
+
+    for(int i=0; i < nbSsids; i++) {
+        items[i] = str_split(ssids, '\n', i);
+    }
+
+    int choice = -1;
+    while ( choice != nbItems-1 ) {
+        choice = console.menu(title, items, nbItems);
+        if ( choice == -1 ) {
+            return true;
+        } else if ( choice == nbItems-1 ) {
+            return false;
+        } else {
+            if ( strlen( items[choice] ) > 0 ) {
+                bool ok = wifi.connectToAp(choice);
+
+                if ( !ok ) {
+                    console.warn((char*)"Not connected !");
+                } else {
+                    console.print( "IP : " );
+                    console.println( wifi.getIp() );
+                    console.print( "SSID : " );
+                    console.println( wifi.getSSID() );
+
+                    return false;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 const char* activSerial = "Activate Serial  ";
