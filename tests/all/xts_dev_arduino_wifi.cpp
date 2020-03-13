@@ -28,30 +28,51 @@ extern IOConsole console;
 // Extra Software layer routines
 #include "xts_soft_wifi.h"
 
+#define LED_BEGIN_OP  { led.clr_green(); }
+#define LED_END_OP    { led.off(); }
+#define LED_FAILED_OP { led.clr_red(); }
+
+
 WiFi::WiFi() {
     // ....
 }
 
 bool WiFi::setup() {
+    LED_BEGIN_OP;
     if ( wifi_setup() ) {
         bool ok;
         ok = wifi_setWifiMode( WIFI_MODE_STA );
         ok &= wifi_testModule();
+        if (ok) { LED_END_OP; }
+        else { LED_FAILED_OP; }
         return ok;
     }
+    LED_FAILED_OP;
     return false;
 }
 
 bool WiFi::resetAdapter() {
-    return wifi_resetModule();
+    LED_BEGIN_OP;
+    bool ok = wifi_resetModule();
+    if (ok) { LED_END_OP; }
+    else { LED_FAILED_OP; }
+    return ok;
 }
 
 bool WiFi::connectToAp(char* ssid, char* PSK) {
-    return wifi_connectToAP(ssid, PSK);
+    LED_BEGIN_OP;
+    bool ok = wifi_connectToAP(ssid, PSK);
+    if (ok) { LED_END_OP; }
+    else { LED_FAILED_OP; }
+    return ok;
 }
 
 bool WiFi::connectToAp(int confNum) {
-    return wifi_connectToAP(confNum);
+    LED_BEGIN_OP;
+    bool ok = wifi_connectToAP(confNum);
+    if (ok) { LED_END_OP; }
+    else { LED_FAILED_OP; }
+    return ok;
 }
 
 // \n separated + list ONLY known SSID even if not available...
@@ -72,6 +93,7 @@ bool WiFi::isAtHome() {
 // returns HTTP code
 // if apiKeyName startsWith "Authorization" : use value as direct HttpHeader
 int WiFi::wget(char* host, int port, char* url, char* dest, int maxDestLen, char* apiKeyName) {
+    LED_BEGIN_OP;
     char* headers = NULL;
     if ( apiKeyName != NULL ) {
         if ( startsWith(apiKeyName, (char*)"Authorization") ) {
@@ -81,5 +103,6 @@ int WiFi::wget(char* host, int port, char* url, char* dest, int maxDestLen, char
         }
     }
     int rc = wifi_wget( host, port, url, dest, maxDestLen, headers);
+    LED_END_OP;
     return rc;
 }
