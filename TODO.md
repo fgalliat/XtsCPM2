@@ -1,9 +1,19 @@
  - [x] find PuttyCOM VTEsc for CLS, LOCATE
  - [x] find PuttyCOM int scan keys for arrowKeys
-
+ - [ ] WiFi
+    - [ ] menu
+       - [x] add loading / connecting indicators (@least w/ RGB led ?)
+       - [ ] add SSID choice
+       - [ ] ? add SSID free value cap. ?
+    - [x] access to HomeServer
+       - [x] connect to AP
+       - [x] isAtHome ?
+       - [x] wget() w/ Bearer key
+          - [x] Temp measure
+          - [x] Rss titles
+          - [ ] Arduinos tour
  - [ ] make VT100 based display when SD error (ascii art disk "picture"
    splash screen)
-
  - I/O modes
    - [x] Outputs
      - [x] Serial Stream
