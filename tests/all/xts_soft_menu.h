@@ -165,16 +165,17 @@ bool wifiMenu() {
         (char*)"Exit",
     };
 
-    int homePort = 8000;
-    if ( ! wifi.isAtHome() ) {
-        homePort = 8090;
-    }
-    char* apiKeyName = (char*)"sensors";
-
     int choice = -1;
     while ( choice != nbItems-1 ) {
         choice = console.menu(title, items, nbItems);
-        
+
+        // must be reset : if change the WiFi config ...
+        int homePort = 8000;
+        if ( ! wifi.isAtHome() ) {
+            homePort = 8090;
+        }
+        char* apiKeyName = (char*)"sensors";
+
         if ( choice == 0 ) {
             // if ( wifi is activated ) ...
             items[choice] = (char*)"DeActivate WiFi";
