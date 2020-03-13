@@ -46,7 +46,7 @@ bool WiFi::resetAdapter() {
     return wifi_resetModule();
 }
 
-bool WiFi::connectToAp(char* ssid, char* PSK=NULL) {
+bool WiFi::connectToAp(char* ssid, char* PSK) {
     return wifi_connectToAP(ssid, PSK);
 }
 
@@ -68,7 +68,7 @@ char* WiFi::getSSID() {
 
 // returns HTTP code
 // if apiKeyName startsWith "Authorization" : use value as direct HttpHeader
-int WiFi::wget(char* host, int port, char* url, char* dest, int maxDestLen, char* apiKeyName=NULL) {
+int WiFi::wget(char* host, int port, char* url, char* dest, int maxDestLen, char* apiKeyName) {
     char* headers = NULL;
     if ( apiKeyName != NULL ) {
         if ( startsWith(apiKeyName, (char*)"Authorization") ) {

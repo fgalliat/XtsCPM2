@@ -16,6 +16,12 @@
 /*extern*/ uint8_t _getch();
 /*extern*/ uint8_t _getche();
 
+char* wifi_getHomeServer(bool refresh=false);
+
+char* __WIFI_GET_KNWON_SSIDS();
+char* __WIFI_GET_PSK(char* ssid);
+
+
     #define WIFI_SERIAL Serial5
     #define WIFI_CMD_TIMEOUT 6000
     #define WIFI_SERIAL_BAUDS 115200 
@@ -611,7 +617,7 @@
         }
 
         if ( psk == NULL ) {
-            dbug("No PSK provided for that SSID");
+            console.warn("No PSK provided for that SSID");
             return false;
         }
 

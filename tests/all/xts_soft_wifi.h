@@ -66,7 +66,7 @@ char* wifi_getHomeSSID(bool refresh=false) {
     return homeSSID;
 }
 
-bool wifi_isAtHome(bool refresh/*=false*/) {
+bool wifi_isAtHome(bool refresh=false) {
     char* curSSID = wifi_getSSID();
     return curSSID != NULL && equals( curSSID, wifi_getHomeSSID() );
 }
@@ -106,7 +106,7 @@ bool _wifi_savePSKs() {
             // Serial.println(" save home conf : ");
             // Serial.println(wifi_home_conf);
             sprintf( fullWifiConf, "%s\n", wifi_home_conf );
-            bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) );
+            bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) );
             return ok;
         }
     }
@@ -131,11 +131,11 @@ bool _wifi_savePSKs() {
         // Serial.println(fullWifiConf);
         // Serial.println("---------------");
 
-        bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+        bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
         return ok;
     } else {
         // Serial.println(" saved dummy conf");
-        bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+        bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
         return ok;
     }
 
@@ -170,7 +170,7 @@ bool wifi_addWifiPSK(char* ssid, char* psk) {
         // Serial.println("---------------");
 
     // return _wifi_savePSKs();
-    bool ok = fs_writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+    bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
     return ok;
 }
 
@@ -181,8 +181,11 @@ void __DBUG_WIFI_CONF() {
 }
 
 void __ERASE_WIFI_CONF() {
+    console.attr_accent();
     console.println("(ii) Erasing Wifi Conf");
-    SD.remove( WIFI_CONF_FILE );
+    console.attr_none();
+    
+    fs.eraseFile( WIFI_CONF_FILE );
     memset(fullWifiConf, 0x00, WIFI_FULL_CONF_LEN);
 }
 
