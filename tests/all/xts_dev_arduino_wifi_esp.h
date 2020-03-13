@@ -173,7 +173,9 @@ char* __WIFI_GET_PSK(char* ssid);
 
                 tor = avi;
                 if (avi > 64) {
-                    Serial.println("Oups, will overflow");
+                    console.attr_accent();
+                    console.println("Oups, will overflow");
+                    console.attr_none();
                     tor = 64;
                 } else {
                     #if DBUG_WIFI
@@ -210,10 +212,12 @@ char* __WIFI_GET_PSK(char* ssid);
 
     #endif
                 if ( rr < tor ) {
-                    Serial.print("Oups tor=");
-                    Serial.print(tor);
-                    Serial.print(" rr=");
-                    Serial.println(rr);
+                    console.attr_accent();
+                    console.print("Oups tor=");
+                    console.print(tor);
+                    console.print(" rr=");
+                    console.println(rr);
+                    console.attr_none();
                 } else {
                     #if DBUG_WIFI
                     Serial.print("So, read :");
@@ -222,7 +226,7 @@ char* __WIFI_GET_PSK(char* ssid);
                 }
 
                 if ( strlen(remainingBuffer) + strlen(seg) > remainingBufferLen ) {
-                    Serial.println("wget() Overflowed !! [1]");
+                    console.warn("wget() Overflowed !! [1]");
                     // TODO copy @least whats possible
                     overflowed = true;
                     break;
@@ -245,7 +249,7 @@ char* __WIFI_GET_PSK(char* ssid);
             }
 
             if ( overflowed || strlen(remainingBuffer) > remainingBufferLen ) {
-                Serial.println("wget() Overflowed !! [2]");
+                console.warn("wget() Overflowed !! [2]");
                 break;
             }
 
@@ -261,7 +265,7 @@ char* __WIFI_GET_PSK(char* ssid);
             }
 
             if ( timReached ) {
-                Serial.println( "timReached" );
+                console.warn( "timReached" );
                 break;
             }
 
@@ -311,7 +315,7 @@ char* __WIFI_GET_PSK(char* ssid);
 
             yield();
 
-            if ( readed == -1 ) { Serial.println("TIMEOUT--"); return _RET_TIMEOUT; }
+            if ( readed == -1 ) { console.println("TIMEOUT--"); return _RET_TIMEOUT; }
             if ( strlen( resp ) > 0 ) {
                 if (DBUG_WIFI) { Serial.print("-->"); Serial.println(resp); }
                 
@@ -343,37 +347,37 @@ char* __WIFI_GET_PSK(char* ssid);
     // TODO : call it
     bool wifi_init() {
         unsigned long t0 = millis();
-        if (DBUG_WIFI) { Serial.println("Waiting for Serial2"); }
+        if (DBUG_WIFI) { console.println("Waiting for Serial2"); }
         while(WIFI_SERIAL.available() > 0) {
             WIFI_SERIAL.read();
         }
-        if (DBUG_WIFI) { Serial.println("Found some garbage"); }
+        if (DBUG_WIFI) { console.println("Found some garbage"); }
 
 
         bool ok = false;
-        // Serial.println("Reset Module");
+        // console.println("Reset Module");
         // yat4l_wifi_resetModule(); 
         
-        if (DBUG_WIFI) { Serial.println("Test for Module"); }
+        if (DBUG_WIFI) { console.println("Test for Module"); }
         ok = wifi_testModule();
-        if (DBUG_WIFI) { Serial.print("Tested Module : "); 
-        Serial.println(ok ? "OK" : "NOK"); }
+        if (DBUG_WIFI) { console.print("Tested Module : "); 
+        console.println(ok ? "OK" : "NOK"); }
 
-        if (DBUG_WIFI) { Serial.println("set mode for Module"); }
+        if (DBUG_WIFI) { console.println("set mode for Module"); }
         ok = wifi_setWifiMode( WIFI_MODE_STA );
-        if (DBUG_WIFI) { Serial.print("Module mode set : "); 
-        Serial.println(ok ? "OK" : "NOK"); }
+        if (DBUG_WIFI) { console.print("Module mode set : "); 
+        console.println(ok ? "OK" : "NOK"); }
 
         // int mode = wifi_getWifiMode();
         // if (DBUG_WIFI) { Serial.print("Module mode : "); 
         // Serial.println(mode); }
 
         char* ssids = __WIFI_GET_KNWON_SSIDS();
-        Serial.println("Configured APs ...");
-        Serial.println(ssids);
+        console.println("Configured APs ...");
+        console.println(ssids);
 
         if ( ssids != NULL ) {
-            Serial.println("Select your AP (1 to 9)");
+            console.println("Select your AP (1 to 9)");
             int ch = -1;
             // while( _kbhit() <= 0 ) {
             //     delay(5);
@@ -390,19 +394,19 @@ char* __WIFI_GET_PSK(char* ssid);
                     char ssid[32+1]; memset(ssid, 0x00, 32+1);
                     char* vol = str_split(ssids, '\n', ch);
                     sprintf(ssid, "%s", vol);
-                    Serial.print("Connecting to AP : ");
-                    Serial.println(ssid);
+                    console.print("Connecting to AP : ");
+                    console.println(ssid);
                     ok = wifi_connectToAP(ssid);
                     // if (DBUG_WIFI) 
-                    { Serial.print("Connected to AP : ");
-                    Serial.println(ok ? "OK" : "NOK"); }
+                    { console.print("Connected to AP : ");
+                    console.println(ok ? "OK" : "NOK"); }
                 }
             }
         }
 
         // delay(3000);
 
-        if (DBUG_WIFI) { Serial.println("Have finished !!!"); }
+        if (DBUG_WIFI) { console.println("Have finished !!!"); }
 
         ok = true;
         return ok;
@@ -419,13 +423,13 @@ char* __WIFI_GET_PSK(char* ssid);
         delay(300);
 
         unsigned long t0 = millis();
-        Serial.println("Waiting for Serial2");
+        console.println("Waiting for Serial2");
         while( !WIFI_SERIAL ) {
             delay(10);
             if ( millis() - t0 >= 1500 ) { return false; }
         }
 
-        Serial.println("Check for garbage");
+        console.println("Check for garbage");
 
         t0 = millis();
 
@@ -454,7 +458,7 @@ char* __WIFI_GET_PSK(char* ssid);
         }
         yield();
 
-        Serial.println("Found some garbage");
+        console.println("Found some garbage");
 
         return true;
     }
@@ -472,8 +476,8 @@ char* __WIFI_GET_PSK(char* ssid);
         bool ok = _wifi_waitForOk( resp ) == _RET_OK;
         int mode = -1;
         if ( ok && startsWith(resp, (char*)"+CWMODE:") ) {
-            // Serial.println("Found a mode :");
-            // Serial.println(resp);
+            // console.println("Found a mode :");
+            // console.println(resp);
             mode = atoi( &resp[8] );
         }
         return mode; 
@@ -510,7 +514,7 @@ char* __WIFI_GET_PSK(char* ssid);
 
             // when not connected seems to finish with "+" (no netmask)
             if ( equals( resp, (char*)"+" ) ) {
-                // Serial.println( "EJECT II" );
+                // console.println( "EJECT II" );
                 break;
             }
 
@@ -559,7 +563,7 @@ char* __WIFI_GET_PSK(char* ssid);
 
             // when not connected seems to finish with "+" (no netmask)
             if ( equals( resp, (char*)"+" ) ) {
-                // Serial.println( "EJECT II" );
+                // console.println( "EJECT II" );
                 break;
             }
 
@@ -731,11 +735,11 @@ char* __WIFI_GET_PSK(char* ssid);
             int readed = WIFI_SERIAL.readBytes(ipd, 4);
             if ( readed <= 0 ) {
                 if ( alreadyFoundAnIpdPacket && millis() - rt0 > 500 ) {
-                    // Serial.println("HTTP-RESP -eof-");
+                    // console.println("HTTP-RESP -eof-");
                     break;
                 }
                 if ( millis() - rt0 > 6000 ) {
-                    Serial.println("HTTP-RESP timeout");
+                    console.println("HTTP-RESP timeout");
                     break;
                 }
             } else {
@@ -788,7 +792,7 @@ char* __WIFI_GET_PSK(char* ssid);
                         #endif
 
                         if ( ipdLenI > MAX_IPD_BLOC_LEN ) {
-                            Serial.println("(!!) THE BLOC IS TOO BIG ");
+                            console.warn("(!!) THE BLOC IS TOO BIG ");
                             // TODO : store what i can
                             // read remaining to flush input
                         } else {
@@ -862,7 +866,9 @@ char* __WIFI_GET_PSK(char* ssid);
                         alreadyFoundAnIpdPacket = true;
                         rt0 = millis();
                     } else {
-                        Serial.println("Not a +IPD bloc ");
+                        console.attr_accent();
+                        console.println("Not a +IPD bloc ");
+                        console.attr_none();
 
                         // just for now ...
                         while( WIFI_SERIAL.available() > 0 ) {
