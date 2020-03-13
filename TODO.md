@@ -5,7 +5,7 @@
    splash screen)
 
  - I/O modes
-   - [ ] Outputs
+   - [x] Outputs
      - [x] Serial Stream
      - [x] Serial VT100
      - [x] Screen (tft) w/ VT-Ext Support
@@ -16,7 +16,8 @@
          - [x] where color could be colors[ attr[ (y\*w)+x ] ] & bg = bg_colors[ attr[ (y*w)+x ] ]
          - [x] instead of using 'if'....
    - [ ] Inputs
-     - [.] Serial in
+     - [x] [.] Serial in -> still todo : arrow Keys => Joystick control
+     - [x] Analog Stick + btns
      - [ ] Ms ChatPad via UART
 
 
@@ -25,7 +26,7 @@
     - [x] add OutputConsole
       - [x] add TextBox
       - [x] make menu
-      - add Serial ArrowKeys Support too
+      - [ ] add Serial ArrowKeys Support too
  - continue WifiFs w/ menu support
  - [x] OutputConsole.setMode(...)
  - [ ] DFPlayer
@@ -33,7 +34,7 @@
      - [x] solder
      - [x] wire
      - [x] lib w/ API
-     - [ ] read JUKE.BAD again
+     - [ ] read JUKE.BAD again (see mem consumption ...)
 
          - [ ] update JUKE.BAD (81 songs)
          - [ ] Mp3.play() -> char* -> songname
