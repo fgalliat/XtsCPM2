@@ -3,7 +3,7 @@
  - [ ] WiFi
     - [ ] menu
        - [x] add loading / connecting indicators (@least w/ RGB led ?)
-       - [ ] add SSID choice
+       - [x] add SSID choice
        - [ ] ? add SSID free value cap. ?
     - [x] access to HomeServer
        - [x] connect to AP
