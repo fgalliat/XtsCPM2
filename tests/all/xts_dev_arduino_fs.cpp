@@ -55,6 +55,13 @@ char* Fs::getAssetsFileEntry(char* assetName) {
     return this->getDiskFileName( assetDiskName );
 }
 
+bool Fs::eraseFile(char* fileName) {
+    if ( fileName == NULL ) {
+        return false;
+    }
+    SD.remove( fileName );
+    return true;
+}
 
 int Fs::readTextFile(char* fileName, char* dest, int maxLen) {
     if ( fileName == NULL || dest == NULL || maxLen < 0 ) {

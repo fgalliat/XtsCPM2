@@ -16,6 +16,8 @@ class Fs {
         char* getDiskFileName(char* diskFileName);
         char* getAssetsFileEntry(char* assetName);
 
+        bool  eraseFile(char* fileName);
+
         // (!!) doesn't eraese dest buffer
         int readBinFile(char* fileName, uint8_t* dest, int maxLen);
 
