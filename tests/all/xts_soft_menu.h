@@ -147,20 +147,29 @@ bool audioMenu() {
     return false; // false, doesn't kill previous menu
 }
 
+const int maxHttpResponseLen = 1024;
+char httpResponse[maxHttpResponseLen+1];
 
 bool wifiMenu() {
     char* title = (char*)"[ WiFi Main Menu ]";
 
-    int nbItems = 6;
+    int nbItems = 7;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
-        (char*)"Activate WiFi  ",
+        (char*)"Activate WiFi  ",  // in facts : module is always active ...
+        (char*)"Reset WiFi",
         (char*)"Connect AP ->",
         (char*)"Test WGet temp",
         (char*)"Test WGet rss",
         (char*)"",
         (char*)"Exit",
     };
+
+    int homePort = 8000;
+    if ( ! wifi.isAtHome() ) {
+        homePort = 8090;
+    }
+    char* apiKeyName = (char*)"sensors";
 
     int choice = -1;
     while ( choice != nbItems-1 ) {
@@ -170,14 +179,49 @@ bool wifiMenu() {
             // if ( wifi is activated ) ...
             items[choice] = (char*)"DeActivate WiFi";
         } else if ( choice == 1 ) {
-            // ssid sub menu
+            // reset wifi
+            wifi.resetAdapter();
         } else if ( choice == 2 ) {
-            // wget temp
+            // ssid sub menu
+            // temp code !!! 
+            bool ok = wifi.connectToAp(0);
+            if ( !ok ) {
+                console.warn((char*)"Not connected !");
+            } else {
+                console.print( "IP : " );
+                console.println( wifi.getIp() );
+                console.print( "SSID : " );
+                console.println( wifi.getSSID() );
+            }
         } else if ( choice == 3 ) {
-            // wget rss
+            // wget temp
+            memset(httpResponse, 0x00, maxHttpResponseLen+1);
+            int rc = wifi.wget( (char*)"$home", homePort, (char*)"/sensors/sensor/1", httpResponse, maxHttpResponseLen, apiKeyName);
+            if ( rc >= 400 ) {
+                console.attr_accent();
+                console.print( "HTTP-ERR " );
+                console.println( rc );
+                console.attr_none();
+                console.println(httpResponse);
+            } else {
+                console.println(httpResponse);
+            }
         } else if ( choice == 4 ) {
-            // ...
+            // wget rss
+            memset(httpResponse, 0x00, maxHttpResponseLen+1);
+            int rc = wifi.wget( (char*)"$home", homePort, (char*)"/rss/titles/1/arduino", httpResponse, maxHttpResponseLen, apiKeyName);
+            if ( rc >= 400 ) {
+                console.attr_accent();
+                console.print( "HTTP-ERR " );
+                console.println( rc );
+                console.attr_none();
+                console.println(httpResponse);
+            } else {
+                console.println(httpResponse);
+            }
         } else if ( choice == 5 ) {
+            // ...
+        } else if ( choice == 6 ) {
             return false;
         } else if ( choice == -1 ) {
             return true;

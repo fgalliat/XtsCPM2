@@ -11,7 +11,7 @@
 #include "xts_string.h"
 
 #include "xts_dev_fs.h"
-extern Fs fs;
+extern Fs fileSystem;
 
 #include "xts_dev_rgbled.h"
 extern RGBLed led;
@@ -64,6 +64,9 @@ char* WiFi::getIp() {
 }
 char* WiFi::getSSID() {
     return wifi_getSSID();
+}
+bool WiFi::isAtHome() {
+    return wifi_isAtHome();
 }
 
 // returns HTTP code

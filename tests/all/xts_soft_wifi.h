@@ -14,7 +14,7 @@ bool wifi_home_conf_init = false;
 #define WIFI_FULL_CONF_LEN 2048
 char fullWifiConf[ WIFI_FULL_CONF_LEN ];
 
-#define WIFI_CONF_FILE fs.getAssetsFileEntry( (char*)"wifi.psk")
+#define WIFI_CONF_FILE fileSystem.getAssetsFileEntry( (char*)"wifi.psk")
 
 // char* _wifi_getLocalHomeServer() {
 //     return NULL;
@@ -28,7 +28,7 @@ void _wifi_refreshHomeConf() {
     memset( wifi_home_conf, 0x00, WIFI_HOME_CONF_LEN );
  
     char tmp[ WIFI_HOME_CONF_LEN ];
-    int read = fs.readTextFile( WIFI_CONF_FILE, tmp, WIFI_HOME_CONF_LEN );
+    int read = fileSystem.readTextFile( WIFI_CONF_FILE, tmp, WIFI_HOME_CONF_LEN );
     if ( read < 0 ) {
         console.warn("Error could not read WiFi config !!!!");
         return;
@@ -84,7 +84,7 @@ char* wifi_getHomeServer(bool refresh/*=false*/) {
 }
 
 bool _wifi_readConf() {
-    int read = fs.readTextFile( WIFI_CONF_FILE, fullWifiConf, WIFI_FULL_CONF_LEN );
+    int read = fileSystem.readTextFile( WIFI_CONF_FILE, fullWifiConf, WIFI_FULL_CONF_LEN );
     if (read > 0 && !wifi_home_conf_init) _wifi_refreshHomeConf(); 
     return read > -1;
 }
@@ -106,7 +106,7 @@ bool _wifi_savePSKs() {
             // Serial.println(" save home conf : ");
             // Serial.println(wifi_home_conf);
             sprintf( fullWifiConf, "%s\n", wifi_home_conf );
-            bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) );
+            bool ok = fileSystem.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) );
             return ok;
         }
     }
@@ -131,11 +131,11 @@ bool _wifi_savePSKs() {
         // Serial.println(fullWifiConf);
         // Serial.println("---------------");
 
-        bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+        bool ok = fileSystem.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
         return ok;
     } else {
         // Serial.println(" saved dummy conf");
-        bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+        bool ok = fileSystem.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
         return ok;
     }
 
@@ -170,7 +170,7 @@ bool wifi_addWifiPSK(char* ssid, char* psk) {
         // Serial.println("---------------");
 
     // return _wifi_savePSKs();
-    bool ok = fs.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
+    bool ok = fileSystem.writeTextFile( WIFI_CONF_FILE, fullWifiConf, strlen( fullWifiConf ) ) > -1;
     return ok;
 }
 
@@ -185,7 +185,7 @@ void __ERASE_WIFI_CONF() {
     console.println("(ii) Erasing Wifi Conf");
     console.attr_none();
     
-    fs.eraseFile( WIFI_CONF_FILE );
+    fileSystem.eraseFile( WIFI_CONF_FILE );
     memset(fullWifiConf, 0x00, WIFI_FULL_CONF_LEN);
 }
 
@@ -297,7 +297,7 @@ char* getHttpAuthorizationForAPI(char* apiName) {
     char bearerContent[ bearerLen+1 ];
     memset(bearerContent, 0x00, bearerLen+1);
     
-    int read = fs.readTextFile( fs.getDiskFileName(bearerFileName) , bearerContent, bearerLen);
+    int read = fileSystem.readTextFile( fileSystem.getDiskFileName(bearerFileName) , bearerContent, bearerLen);
     if ( read <= 0 ) {
         char msg[64+1]; memset(msg, 0x00, 64+1);
         sprintf(msg, "No key found for API : %s", apiName );

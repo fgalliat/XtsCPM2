@@ -23,8 +23,8 @@ class WiFi {
         char* getIp();
         char* getSSID();
 
-        // char* ggetHomeServer();
-        // bool isAtHome();
+        // char* getHomeServer();
+        bool isAtHome();
 
         // returns HTTP code
         // if apiKeyName startsWith "Authorization" : use value as direct HttpHeader
