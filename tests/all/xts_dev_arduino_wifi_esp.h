@@ -54,7 +54,7 @@
             int ch = WIFI_SERIAL.read();
             // Serial.write(ch);
         }
-        Serial.println("module powered");
+        // Serial.println("module powered");
 
         return true; 
     }

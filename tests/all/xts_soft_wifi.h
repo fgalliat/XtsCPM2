@@ -14,7 +14,7 @@ bool wifi_home_conf_init = false;
 #define WIFI_FULL_CONF_LEN 2048
 char fullWifiConf[ WIFI_FULL_CONF_LEN ];
 
-#define WIFI_CONF_FILE fs_getAssetsFileEntry( (char*)"wifi.psk")
+#define WIFI_CONF_FILE fs.getAssetsFileEntry( (char*)"wifi.psk")
 
 // char* _wifi_getLocalHomeServer() {
 //     return NULL;
@@ -28,9 +28,9 @@ void _wifi_refreshHomeConf() {
     memset( wifi_home_conf, 0x00, WIFI_HOME_CONF_LEN );
  
     char tmp[ WIFI_HOME_CONF_LEN ];
-    int read = fs_readTextFile( WIFI_CONF_FILE, tmp, WIFI_HOME_CONF_LEN );
+    int read = fs.readTextFile( WIFI_CONF_FILE, tmp, WIFI_HOME_CONF_LEN );
     if ( read < 0 ) {
-        Serial.println("Error could not read WiFi config !!!!");
+        console.warn("Error could not read WiFi config !!!!");
         return;
     }
 
@@ -84,7 +84,7 @@ char* wifi_getHomeServer(bool refresh/*=false*/) {
 }
 
 bool _wifi_readConf() {
-    int read = fs_readTextFile( WIFI_CONF_FILE, fullWifiConf, WIFI_FULL_CONF_LEN );
+    int read = fs.readTextFile( WIFI_CONF_FILE, fullWifiConf, WIFI_FULL_CONF_LEN );
     if (read > 0 && !wifi_home_conf_init) _wifi_refreshHomeConf(); 
     return read > -1;
 }
@@ -177,11 +177,11 @@ bool wifi_addWifiPSK(char* ssid, char* psk) {
 // not to expose public
 void __DBUG_WIFI_CONF() {
     _wifi_readConf();
-    Serial.print( fullWifiConf );
+    console.print( fullWifiConf );
 }
 
 void __ERASE_WIFI_CONF() {
-    Serial.println("Erasing Wifi Conf");
+    console.println("(ii) Erasing Wifi Conf");
     SD.remove( WIFI_CONF_FILE );
     memset(fullWifiConf, 0x00, WIFI_FULL_CONF_LEN);
 }
@@ -287,15 +287,18 @@ const int httpHeaderLen = bearerLen + 64;
 char httpHeader[ httpHeaderLen+1 ];
 
 char* getHttpAuthorizationForAPI(char* apiName) {
+    if ( apiName == NULL ) { return NULL; }
     char bearerFileName[128+1]; memset(bearerFileName, 0x00, 128+1);
     sprintf(bearerFileName, "Z:%s.API", apiName);
 
     char bearerContent[ bearerLen+1 ];
     memset(bearerContent, 0x00, bearerLen+1);
     
-    int read = fs_readTextFile( fs_getDiskFileName( bearerFileName) , bearerContent, bearerLen);
+    int read = fs.readTextFile( fs.getDiskFileName(bearerFileName) , bearerContent, bearerLen);
     if ( read <= 0 ) {
-        Serial.println("No key for that API");
+        char msg[64+1]; memset(msg, 0x00, 64+1);
+        sprintf(msg, "No key found for API : %s", apiName );
+        console.warn(msg);
         return NULL;
     }
     // Serial.println( bearerContent );
