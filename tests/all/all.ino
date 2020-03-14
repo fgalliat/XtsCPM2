@@ -22,7 +22,9 @@
  Les variables globales utilisent 23664 octets (9%) de mémoire dynamique, ce qui laisse 238480 octets pour les variables locales. Le maximum est de 262144 octets.
 
  apres ajout de l'API GFX
- 
+ Le croquis utilise 76184 octets (7%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
+ Les variables globales utilisent 23664 octets (9%) de mémoire dynamique, ce qui laisse 238480 octets pour les variables locales. Le maximum est de 262144 octets.
+
 */
 
 // forward symbols
