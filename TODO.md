@@ -1,5 +1,9 @@
  - [x] find PuttyCOM VTEsc for CLS, LOCATE
  - [x] find PuttyCOM int scan keys for arrowKeys
+ - [ ] GFX API
+     - [ ] drawBmp(rotated)
+     - [ ] drawLine, Rect, ....
+     - [ ] drawPAK
  - [ ] WiFi
     - [ ] menu
        - [x] add loading / connecting indicators (@least w/ RGB led ?)
