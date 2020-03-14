@@ -8,6 +8,8 @@
  * 
  */
 
+#include "Arduino.h"
+
 #include "xts_dev_gfx.h"
 
 #include "xts_dev_fs.h"

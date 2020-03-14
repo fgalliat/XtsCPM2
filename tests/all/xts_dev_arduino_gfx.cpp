@@ -60,12 +60,12 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW
     int addr = offset;
     uint16_t memseg[ scanW ];
     int minW = min(w, scanW);
-    bool wLessThanScanW = w < wLessThanScanW;
+    bool wLessThanScanW = w < scanW;
     for(int yy=0; yy < h; yy++) {
         if ( wLessThanScanW ) { memset( memseg, 0x00, scanW ); }
-        memcpy( &memseg[0], &colors[addr], minW )
+        memcpy( &memseg[0], &colors[addr], minW );
         for(int xx=0; xx < w; xx++) {
-            tft.pushColor(x+xx, y+yy, &memseg[xx]);
+            // tft.pushColor(x+xx, y+yy, memseg[xx]);
         }
         addr += scanW;
     }
