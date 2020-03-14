@@ -58,3 +58,7 @@ The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
 - wire & use Ext. ports x2
 - /5v/GND/3.3v//TX/RX//SDA/SCL/GND/ bus x2
 - add XtsCPM software layer
+
+**wiring diagram :**
+
+![Wiring diagram](./pictures/pinout/yatdb_v1_pinout.png) 
