@@ -4,6 +4,10 @@ by Xtase - fgalliat @Feb 2020
 
 
 
+**/!\\ Work in progress** (no completed package delivering for now)
+
+
+
 - Current stage :
 
 ![YatDb v1](./pictures/board_screen.jpg)
@@ -18,6 +22,39 @@ Teensy 3.6 based development board, with ESP12 for WiFi, DFPlayer for MP3 playba
 
 
 
-The main MCU is Teensy 3.6 with 180MHz core, 1MB flash, 256KB of RAM.
+![3D model](./pictures/components.png)
 
-The board will run a XtsSupervisor + XtsCPM.
+
+
+| Side 1                                      | Side 2                                       |
+| ------------------------------------------- | -------------------------------------------- |
+| ![Board Side](./pictures/board_3d_side.png) | ![Board Side](./pictures/board_3d_side2.png) |
+
+
+
+The **main MCU is Teensy 3.6** with 180MHz single core, 1MB flash, 256KB of RAM.
+
+It has easily wire able **5 UARTs**, **one SPI**, **one SDCard** slot, **2+1 I2C bus**.
+
+
+
+The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
+
+
+
+**for now, it can :**
+
+- handle analog Joystick (2x 8 positions) + 4 btns
+- display Console on TFT & Serial (vt100 like)
+- play tone [files] on Buzzer
+- playback MP3 on Speaker
+- WiFi : connect to an AP, getID/SSID, call a remote REST service (~wget/curl)
+- deals w/ RGBLed
+- support SdCard FS
+- call SuperVisor menu (to set console behavior, WiFi confs, audio (un)mute & test)
+
+**still TODO :** 
+
+- wire & use Ext. ports x2
+- /5v/GND/3.3v//TX/RX//SDA/SCL/GND/ bus x2
+- add XtsCPM software layer
