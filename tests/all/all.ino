@@ -36,6 +36,9 @@ Joystick joystick;
 #include "xts_dev_rgbled.h"
 RGBLed led;
 
+// just for colors -- TEMP ????
+#include "Adafruit_ILI9486_Teensy.h"
+
 #include "xts_dev_gfx.h"
 VideoCard screen;
 
@@ -69,6 +72,20 @@ void setup() {
     // use console...
     // Serial.begin(115200);
     console.setup();
+
+
+// ======================
+int w = 64;
+int h = 64;
+// int tlen = (480-20)*(320-20); // mem overflow
+int tlen = w * h;
+uint16_t raster[ tlen ];
+for(int i=0; i < tlen; i++) { raster[i] = i % 3 == 0 ? PINK : ( i % 3 == 1 ? YELLOW : RED ); }
+
+screen.fillRect( 10, 10, w, h, raster );
+while(true) delay(10000);
+// ======================
+
 
     bool allOk = true;
     bool sdOk = fileSystem.setup();

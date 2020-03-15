@@ -51,24 +51,43 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t color) {
     tft.fillRect( x, y, w, h, mapColor(color) );
 }
 
-// if scanW is < 0 -> scanW = w
-void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW, int offset) {
-    if ( scanW < 0 ) { scanW = w; }
+// BEWRAE : hardware dependent
+extern void writedata16(uint16_t c);
 
-    // TODO : finish that code
+// if scanW is < 0 -> scanW = w
+// BEWARE : hardware dependent
+void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW, int offset) {
+    if ( scanW <= 0 ) { scanW = w; }
+
+    // faster replacement for :
+    // tft.drawRGBBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w, int16_t h)
+
     // (!!) that code is not certified
     int addr = offset;
-    uint16_t memseg[ scanW ];
     int minW = min(w, scanW);
     bool wLessThanScanW = w < scanW;
+
+    // BEWARE : w/ memcpy() & memset() those works in u8 not u16
+
+    tft.setAddrWindow(x, y, x + w - 1, y + h-1);
+    SPI.beginTransaction(SPISET);
+
     for(int yy=0; yy < h; yy++) {
-        if ( wLessThanScanW ) { memset( memseg, 0x00, scanW ); }
-        memcpy( &memseg[0], &colors[addr], minW );
+        
         for(int xx=0; xx < w; xx++) {
-            // tft.pushColor(x+xx, y+yy, memseg[xx]);
+            if ( wLessThanScanW && xx >= scanW) {
+                // TODO : use BLACK after debug ..
+                writedata16( GREEN );    
+            } else {
+                writedata16( colors[addr] );
+                addr++;
+            }
+            // tft.pushColor( memseg[xx] );
+            // tft.drawPixel(x+xx, y+yy, colors[addr] );
         }
-        addr += scanW;
     }
+
+    SPI.endTransaction();
 }
 
 void VideoCard::drawCircle(int x, int y, int radius, uint16_t color) {
