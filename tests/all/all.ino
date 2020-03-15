@@ -25,6 +25,10 @@
  Le croquis utilise 76184 octets (7%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
  Les variables globales utilisent 23664 octets (9%) de mémoire dynamique, ce qui laisse 238480 octets pour les variables locales. Le maximum est de 262144 octets.
 
+ apres ajout de l'API GFX:Sprites
+ Le croquis utilise 78108 octets (7%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
+ Les variables globales utilisent 62404 octets (23%) de mémoire dynamique, ce qui laisse 199740 octets pour les variables locales. Le maximum est de 262144 octets.
+
 */
 
 // forward symbols
@@ -96,8 +100,38 @@ screen.drawPakFile("Z/0/ISHAR.PAK", 20, 20, 0);
 
 screen.drawBitmapFile("Z/0/GIRL.BMP", 40, 40);
 
+/*
+GFX.PAS
+
+ drawBmp('!sprite1.bmp'); {* loadSomeSprites *}
+ defineSprite(0, 0, 1, 19, 19); { upperL }
+ defineSprite(1, 40, 1, 19, 19); { upperR }
+ defineSprite(2, 40,20, 19, 19); { lowerR }
+
+ defineSprite(5, 20, 1, 19, 19); { title bck }
+
+ defineSprite(6, 62, 1, 31, 28); { file }
+ defineSprite(7, 95, 1, 31, 28); { folder }
+
+drawSprite( 0, x, y ); ...
+
+*/
+
+
 screen.fillCircle( 100, 100, 30, BLUE );
 screen.drawCircle( 100, 100, 30, GREEN );
+
+
+console.gotoXY(10, 9); console.print("a");
+screen.loadBMPSpriteBoard("Z/0/sprite1.bmp");
+console.gotoXY(10, 10); console.print("A");
+screen.defineSprite(0, 0, 1, 19, 19);
+console.gotoXY(10, 11); console.print("B");
+screen.drawSprite(0, 100, 100);
+console.gotoXY(10, 12); console.print("C");
+screen.drawSprite(0, 100+19, 100);
+screen.drawSprite(0, 100+19+19, 100);
+
 
 screen.fillRect( 10, 10, w, h, raster );
 while(true) delay(10000);

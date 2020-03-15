@@ -40,6 +40,9 @@ uint16_t VideoCard::mapColor(uint16_t color) {
     return color;
 }
 
+uint16_t VideoCard::color565(uint8_t r, uint8_t g, uint8_t b) {
+    return tft.color565(r,g,b);
+}
 
 int VideoCard::getScreenWidth() { return SCR_WIDTH; }
 int VideoCard::getScreenHeight() { return SCR_HEIGHT; }

@@ -46,8 +46,15 @@ class VideoCard {
 
         // =====================
 
-        bool loadPCTSpriteBoard(int spriteBoardNum, char* filename);
-        bool loadBMPSpriteBoard(int spriteBoardNum, char* filename);
+        // bool loadPCTSpriteBoard(int spriteBoardNum, char* filename);
+        // bool loadBMPSpriteBoard(int spriteBoardNum, char* filename);
 
-        bool drawSprite(int spriteBoardNum, int xDest, int yDest, int xSrc, int ySrc, int wSrc, int hSrc, bool transparent=false, uint16_t transparentColor=0);
+        // bool drawSprite(int spriteBoardNum, int xDest, int yDest, int xSrc, int ySrc, int wSrc, int hSrc, bool transparent=false, uint16_t transparentColor=0);
+
+        bool loadBMPSpriteBoard(char* filename);
+        bool defineSprite(int spriteNum, int x, int y, int w, int h);
+        bool drawSprite(int spriteNum, int x, int y);
+
+        uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
+
 };
