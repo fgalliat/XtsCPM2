@@ -226,7 +226,7 @@ bool wifiConnectMenu() {
     char* ssids = wifi.listAp();
     if ( ssids == NULL ) {
         led.clr_red();
-        console.warn("No WiFi SSID Found !");
+        console.warn((char*)"No WiFi SSID Found !");
         return true;
     }
     int nbSsids = str_count(ssids, '\n');

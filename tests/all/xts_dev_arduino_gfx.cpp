@@ -62,10 +62,10 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW
     // faster replacement for :
     // tft.drawRGBBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w, int16_t h)
 
-    // (!!) that code is not certified
+    // (!!) that code is not fully certified
     int addr = offset;
-    int minW = min(w, scanW);
-    bool wLessThanScanW = w < scanW;
+    // int minW = min(w, scanW);
+    bool scanWLessThanW = scanW < w;
 
     // BEWARE : w/ memcpy() & memset() those works in u8 not u16
 
@@ -75,7 +75,7 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW
     for(int yy=0; yy < h; yy++) {
         
         for(int xx=0; xx < w; xx++) {
-            if ( wLessThanScanW && xx >= scanW) {
+            if ( scanWLessThanW && xx >= scanW) {
                 // TODO : use BLACK after debug ..
                 writedata16( GREEN );    
             } else {
