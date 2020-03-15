@@ -26,6 +26,10 @@ bool VideoCard::setup() {
     return true;
 }
 
+void VideoCard::setRotated(bool r) {
+    tft.setRotation( r ? 2 : 1 );
+}
+
 #define SCR_WIDTH 480
 #define SCR_HEIGHT 320
 #define CLS_COLOR BLACK

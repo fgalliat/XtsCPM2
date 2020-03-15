@@ -92,12 +92,14 @@ for(int i=0; i < 10; i++) {
     screen.fillRect( x, y, w, h, raster );
 }
 
+screen.drawPakFile("Z/0/ISHAR.PAK", 20, 20, 0);
+
+screen.drawBitmapFile("Z/0/GIRL.BMP", 40, 40);
+
 screen.fillCircle( 100, 100, 30, BLUE );
 screen.drawCircle( 100, 100, 30, GREEN );
 
-screen.drawPakFile("Z/0/ISHAR.PAK", 20, 20, 0);
-
-// screen.fillRect( 10, 10, w, h, raster );
+screen.fillRect( 10, 10, w, h, raster );
 while(true) delay(10000);
 // ======================
 

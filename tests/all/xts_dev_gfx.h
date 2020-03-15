@@ -18,6 +18,8 @@ class VideoCard {
         int getScreenWidth();
         int getScreenHeight();
 
+        void setRotated(bool r);
+
         void cls();
         void fillScreen(uint16_t color);
 
