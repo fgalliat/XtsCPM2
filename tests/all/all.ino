@@ -29,6 +29,11 @@
  Le croquis utilise 78108 octets (7%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
  Les variables globales utilisent 62404 octets (23%) de mémoire dynamique, ce qui laisse 199740 octets pour les variables locales. Le maximum est de 262144 octets.
 
+ apres full GFX dans menu/videoCheck
+ Le croquis utilise 81324 octets (7%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
+ Les variables globales utilisent 62440 octets (23%) de mémoire dynamique, ce qui laisse 199704 octets pour les variables locales. Le maximum est de 262144 octets.
+
+
 */
 
 // forward symbols
@@ -39,9 +44,6 @@ Joystick joystick;
 
 #include "xts_dev_rgbled.h"
 RGBLed led;
-
-// // just for colors -- TEMP ????
-// #include "Adafruit_ILI9486_Teensy.h"
 
 #include "xts_dev_gfx.h"
 VideoCard screen;
@@ -80,63 +82,6 @@ void setup() {
     bool allOk = true;
     bool sdOk = fileSystem.setup();
     allOk &= sdOk;
-
-// ======================
-int w = 64;
-int h = 64;
-// int tlen = (480-20)*(320-20); // mem overflow
-int tlen = w * h;
-uint16_t raster[ tlen ];
-for(int i=0; i < tlen; i++) { raster[i] = i % 3 == 0 ? screen.mapColor(15) : ( i % 3 == 1 ? screen.mapColor(5) : screen.mapColor(3) ); }
-
-for(int i=0; i < 10; i++) {
-    int x = random( 480 - w );
-    int y = random( 320 - h );
-
-    screen.fillRect( x, y, w, h, raster );
-}
-
-screen.drawPakFile( (char*) "Z/0/ISHAR.PAK", 20, 20, 0);
-
-screen.drawBitmapFile( (char*) "Z/0/GIRL.BMP", 40, 40);
-
-/*
-GFX.PAS
-
- drawBmp('!sprite1.bmp'); {* loadSomeSprites *}
- defineSprite(0, 0, 1, 19, 19); { upperL }
- defineSprite(1, 40, 1, 19, 19); { upperR }
- defineSprite(2, 40,20, 19, 19); { lowerR }
-
- defineSprite(5, 20, 1, 19, 19); { title bck }
-
- defineSprite(6, 62, 1, 31, 28); { file }
- defineSprite(7, 95, 1, 31, 28); { folder }
-
-drawSprite( 0, x, y ); ...
-
-*/
-
-
-screen.fillCircle( 100, 100, 30, 4 ); // 4 BLUE
-screen.drawCircle( 100, 100, 30, 5 ); // 5 YELLOW
-
-
-screen.loadBMPSpriteBoard( (char*) "Z/0/sprite1.bmp");
-screen.defineSprite(0, 0, 1, 19, 19); // upperL
-screen.defineSprite(1, 40, 1, 19, 19); //{ upperR }
-screen.defineSprite(2, 40,20, 19, 19); //{ lowerR }
-
-screen.drawSprite(0, 100, 100);
-screen.drawSprite(1, 100+19+3, 100);
-screen.drawSprite(2, 100+19+3+19+3, 100);
-
-screen.fillRect( 10, 10, w, h, raster );
-while(true) delay(10000);
-// ======================
-
-
-
 
     bool sndOk = snd.setup();
     allOk &= sndOk;
