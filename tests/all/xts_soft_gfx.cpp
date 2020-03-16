@@ -203,7 +203,7 @@ bool VideoCard::drawPakFile(char* filename, int x, int y, int numInPak) {
     #define SPRITE_AREA_HEIGHT 120
     #define SPRITE_AREA_SIZE (SPRITE_AREA_WIDTH*SPRITE_AREA_HEIGHT)
     
-    /*extern*/ int spriteInstanceCounter=0;
+    int spriteInstanceCounter=0;
 
     class Sprite {
        private:
@@ -235,21 +235,13 @@ bool VideoCard::drawPakFile(char* filename, int x, int y, int numInPak) {
     };
 
     #define NB_SPRITES 15
-    //extern Sprite sprites[NB_SPRITES];
-#endif
 
-
-
-#if SPRITES_SUPPORT
-
-  extern VideoCard screen;
-
-  uint16_t color565(uint8_t r,uint8_t g,uint8_t b) { return (uint16_t)( (( r *31/255 )<<11) | (( g *63/255 )<<5) | ( b *31/255 ) );}
+   extern VideoCard screen;
+   // uint16_t color565(uint8_t r,uint8_t g,uint8_t b) { return (uint16_t)( (( r *31/255 )<<11) | (( g *63/255 )<<5) | ( b *31/255 ) );}
 
    uint16_t spriteArea[ SPRITE_AREA_SIZE ];
    Sprite sprites[NB_SPRITES];
 
-  //  int spriteInstanceCounter = 0; 
    int lastAddr = 0;
 
    void Sprite::drawClip(int x, int y) {
@@ -264,29 +256,27 @@ bool VideoCard::drawPakFile(char* filename, int x, int y, int numInPak) {
          //  tft.drawRGBBitmap(x, i+y, row, w, 1);
          screen.fillRect(x, i+y, w, 1, row);
       }
-      // tft.writeRect(50, 50, 160, 120, spriteArea);
    }
    
     void cleanSprites() {
-      //  Serial.println("aa");
        //memset(spriteArea, 0, SPRITE_AREA_SIZE);
        for(int i=0; i < SPRITE_AREA_SIZE; i++) { spriteArea[i] = 0; }
+
        spriteInstanceCounter = 0; 
        lastAddr = 0;
        for(int i=0; i < NB_SPRITES; i++) {
           sprites[i].invalid();
        }
-      //  Serial.println("bb");
     }
 
-    void _feedSprites(char* filename, int x, int y);
+    bool _feedSprites(char* filename, int x, int y);
 
 
-    void grabbSprites(char* imageName, int offsetX, int offsetY) {
+    bool grabbSprites(char* imageName, int offsetX, int offsetY) {
        //char* fileName = Fs.getAssetsFileEntry( imageName );
        char* fileName = imageName;
        cleanSprites();
-       _feedSprites(fileName, offsetX, offsetY);
+       return _feedSprites(fileName, offsetX, offsetY);
     }
 
     void grabbSpritesOfSize(char* imageName, int offsetX, int offsetY, int width, int height) {
@@ -315,10 +305,10 @@ bool VideoCard::drawPakFile(char* filename, int x, int y, int numInPak) {
     #define BUFFPIXEL 80
 
    // will takes only 160x120 px of bmp file
-   void _feedSprites(char* filename, int x, int y) {
+   bool _feedSprites(char* filename, int x, int y) {
       if ( filename == NULL || strlen(filename) <= 0 || strlen(filename) >= 32 ) {
-         console.warn("(WW) Wrong BMP filename !");
-         return;
+         console.warn( (char*) "Wrong BMP filename !");
+         return false;
       }
  
       File bmpFile;
@@ -334,25 +324,20 @@ bool VideoCard::drawPakFile(char* filename, int x, int y, int numInPak) {
       uint8_t r, g, b;
       uint32_t pos = 0;//, startTime = millis();
 
-// Serial.println("-AA-");
 
       uint16_t awColors[320]; // hold colors for one row at a time...
       // uint16_t awColors[160]; // hold colors for one row at a time...
-for(int i=0; i < 320; i++) { awColors[i] = (uint16_t)0; }
+      for(int i=0; i < 320; i++) { awColors[i] = (uint16_t)0; }
 
-
-
-// Serial.println("-BB-");
       // if ((x >= tft.width()) || (y >= tft.height()))
       //    return;
 
       // Open requested file on SD card
       if (!(bmpFile = SD.open(filename)))
       {
-         console.warn("BMP File not found");
-         return;
+         console.warn( (char*) "BMP File not found");
+         return false;
       }
-// Serial.println("-CC-");
       // Parse BMP header
       if (read16(bmpFile) == 0x4D42) { // BMP signature
          (void)read32(bmpFile);
@@ -379,8 +364,8 @@ for(int i=0; i < 320; i++) { awColors[i] = (uint16_t)0; }
             }
 
             if ((x >= bmpWidth) || (y >= bmpHeight)) {
-               console.warn("Sprite OutOfBounds");
-               return;
+               console.warn( (char*) "Sprite OutOfBounds");
+               return false;
             }
 
             // Crop area to be loaded
@@ -391,12 +376,6 @@ for(int i=0; i < 320; i++) { awColors[i] = (uint16_t)0; }
                w = bmpWidth - x;
             if ((y + h - 1) >= bmpHeight)
                h = bmpHeight - y;
-
-// Serial.println("-DD-");
-// Serial.print("-D:");
-// Serial.print(w);
-// Serial.print("x");
-// Serial.println(h);
 
             for (row = 0; row < h; row++) { // For each scanline...
 
@@ -430,49 +409,41 @@ for(int i=0; i < 320; i++) { awColors[i] = (uint16_t)0; }
                   awColors[col] = screen.color565(r, g, b);
                } // end pixel
 
-               // tft.writeRect(0, row, w, 1, awColors);
-               // *2 Cf uint16_t
+              // *2 Cf uint16_t
               //  memcpy( &spriteArea[ (row*SPRITE_AREA_WIDTH)+col ], &awColors[x], w*2 );
-// HERE IS A BUG -- DEADLOCK
+              // HERE IS A BUG -- DEADLOCK
               for(int i=0; i < w; i++) {
                 // fails if goes up to 120 
-                if ( row >= SPRITE_AREA_HEIGHT-1  ) { continue; }
-                // Serial.print(col);
-                // Serial.print('x');
-                // Serial.print(row);
-                // Serial.print('>');
-                // Serial.print(w);
-                // Serial.print('x');
-                // Serial.println(h);
-               spriteArea[ ((row*SPRITE_AREA_WIDTH)+col)+i ] = awColors[x+i];
+                if ( row >= SPRITE_AREA_HEIGHT-1  ) { break; }
+                spriteArea[ ((row*SPRITE_AREA_WIDTH)+col)+i ] = awColors[x+i];
               }
 
             } // end scanline
             // long timeElapsed = millis() - startTime;
             } // end goodBmp
-// Serial.println("-EE-");
          }
       }
-// Serial.println("-Ex-");
       bmpFile.close();
-// Serial.println("-Ey-");
       if (!goodBmp) {
-         console.warn("BMP format not recognized.");
+         console.warn( (char*) "BMP format not recognized.");
+         return false;
       }
-// Serial.println("-FF-");
+      return true;
    }
    #endif
 
 // Sprites public routines
 bool VideoCard::loadBMPSpriteBoard(char* filename) {
-  grabbSprites(filename, 0, 0);
-  return true;
+  bool ok = grabbSprites(filename, 0, 0);
+  return ok;
 }
 bool VideoCard::defineSprite(int spriteNum, int x, int y, int w, int h) {
+  if ( spriteNum < 0 || spriteNum >= NB_SPRITES ) { return false; }
   sprites[spriteNum].setBounds(x, y, w, h);
   return true;
 }
 bool VideoCard::drawSprite(int spriteNum, int x, int y) {
+  if ( spriteNum < 0 || spriteNum >= NB_SPRITES ) { return false; }
   sprites[spriteNum].drawClip(x, y);
   return true;
 }

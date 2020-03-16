@@ -96,9 +96,9 @@ for(int i=0; i < 10; i++) {
     screen.fillRect( x, y, w, h, raster );
 }
 
-screen.drawPakFile("Z/0/ISHAR.PAK", 20, 20, 0);
+screen.drawPakFile( (char*) "Z/0/ISHAR.PAK", 20, 20, 0);
 
-screen.drawBitmapFile("Z/0/GIRL.BMP", 40, 40);
+screen.drawBitmapFile( (char*) "Z/0/GIRL.BMP", 40, 40);
 
 /*
 GFX.PAS
@@ -122,16 +122,14 @@ screen.fillCircle( 100, 100, 30, BLUE );
 screen.drawCircle( 100, 100, 30, GREEN );
 
 
-console.gotoXY(10, 9); console.print("a");
-screen.loadBMPSpriteBoard("Z/0/sprite1.bmp");
-console.gotoXY(10, 10); console.print("A");
-screen.defineSprite(0, 0, 1, 19, 19);
-console.gotoXY(10, 11); console.print("B");
-screen.drawSprite(0, 100, 100);
-console.gotoXY(10, 12); console.print("C");
-screen.drawSprite(0, 100+19, 100);
-screen.drawSprite(0, 100+19+19, 100);
+screen.loadBMPSpriteBoard( (char*) "Z/0/sprite1.bmp");
+screen.defineSprite(0, 0, 1, 19, 19); // upperL
+screen.defineSprite(1, 40, 1, 19, 19); //{ upperR }
+screen.defineSprite(2, 40,20, 19, 19); //{ lowerR }
 
+screen.drawSprite(0, 100, 100);
+screen.drawSprite(1, 100+19+3, 100);
+screen.drawSprite(2, 100+19+3+19+3, 100);
 
 screen.fillRect( 10, 10, w, h, raster );
 while(true) delay(10000);
