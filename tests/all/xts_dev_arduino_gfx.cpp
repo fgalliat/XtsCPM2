@@ -58,10 +58,10 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t color) {
     tft.fillRect( x, y, w, h, mapColor(color) );
 }
 
-// BEWRAE : hardware dependent
+// BEWARE : hardware dependent
 extern void writedata16(uint16_t c);
 
-// if scanW is < 0 -> scanW = w
+// if scanW is < 0 :> scanW = w
 // BEWARE : hardware dependent
 void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW, int offset) {
     if ( scanW <= 0 ) { scanW = w; }
@@ -71,7 +71,6 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW
 
     // (!!) that code is not fully certified
     int addr = offset;
-    // int minW = min(w, scanW);
     bool scanWLessThanW = scanW < w;
 
     // BEWARE : w/ memcpy() & memset() those works in u8 not u16
@@ -89,8 +88,6 @@ void VideoCard::fillRect(int x, int y, int w, int h, uint16_t* colors, int scanW
                 writedata16( colors[addr] );
                 addr++;
             }
-            // tft.pushColor( memseg[xx] );
-            // tft.drawPixel(x+xx, y+yy, colors[addr] );
         }
     }
 

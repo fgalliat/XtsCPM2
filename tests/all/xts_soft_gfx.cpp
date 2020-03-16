@@ -130,6 +130,7 @@ bool VideoCard::drawBitmapFile(char* filename, int x, int y, bool rotated) {
 
 bool VideoCard::drawPctFile(char* pctFile, int x, int y) {
     // TODO
+    console.warn( (char*)"drawPCT NYI" );
     return false;
 }
 
