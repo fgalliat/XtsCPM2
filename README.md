@@ -51,6 +51,7 @@ The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
 - WiFi : connect to an AP, getID/SSID, call a remote REST service (~wget/curl)
 - deals w/ RGBLed
 - support SdCard FS
+- support GFX drawings, BMP, PAK & Sprites
 - call SuperVisor menu (to set console behavior, WiFi confs, audio (un)mute & test)
 
 **still TODO :** 
