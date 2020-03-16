@@ -1,11 +1,12 @@
  - [x] find PuttyCOM VTEsc for CLS, LOCATE
  - [x] find PuttyCOM int scan keys for arrowKeys
  - [ ] GFX API
-     - [ ] drawBmp(rotated)
-     - [ ] drawLine, Rect, ....
-     - [ ] drawPAK
+     - [x] drawBmp(rotated) / loadBmpSprites
+     - [x] drawLine, Rect, ....
+     - [x] drawPAK
+     - [ ] drawPct / load PctSprites
  - [ ] WiFi
-    - [ ] menu
+    - [x] menu
        - [x] add loading / connecting indicators (@least w/ RGB led ?)
        - [x] add SSID choice
        - [ ] ? add SSID free value cap. ?
@@ -41,7 +42,6 @@
       - [x] add TextBox
       - [x] make menu
       - [ ] add Serial ArrowKeys Support too
- - continue WifiFs w/ menu support
  - [x] OutputConsole.setMode(...)
  - [ ] DFPlayer
 
