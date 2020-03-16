@@ -35,9 +35,22 @@ void VideoCard::setRotated(bool r) {
 #define CLS_COLOR BLACK
 
 uint16_t VideoCard::mapColor(uint16_t color) {
-    // TODO : ....
+    if ( color == 0 ) { return BLACK; }
 
-    return color;
+    if ( color >= 16 ) { return color; }
+    
+    if ( color == 1 ) { return WHITE; }
+    if ( color == 2 ) { return RED; }
+    if ( color == 3 ) { return GREEN; }
+    if ( color == 4 ) { return BLUE; }
+    if ( color == 5 ) { return YELLOW; }
+    if ( color == 6 ) { return PURPLE; }
+    if ( color == 7 ) { return CYAN; }
+    if ( color == 8 ) { return ORANGE; }
+    if ( color == 9 ) { return MAGENTA; }
+
+    return PINK;
+    // return color;
 }
 
 uint16_t VideoCard::color565(uint8_t r, uint8_t g, uint8_t b) {

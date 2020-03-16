@@ -40,8 +40,8 @@ Joystick joystick;
 #include "xts_dev_rgbled.h"
 RGBLed led;
 
-// just for colors -- TEMP ????
-#include "Adafruit_ILI9486_Teensy.h"
+// // just for colors -- TEMP ????
+// #include "Adafruit_ILI9486_Teensy.h"
 
 #include "xts_dev_gfx.h"
 VideoCard screen;
@@ -87,7 +87,7 @@ int h = 64;
 // int tlen = (480-20)*(320-20); // mem overflow
 int tlen = w * h;
 uint16_t raster[ tlen ];
-for(int i=0; i < tlen; i++) { raster[i] = i % 3 == 0 ? PINK : ( i % 3 == 1 ? YELLOW : RED ); }
+for(int i=0; i < tlen; i++) { raster[i] = i % 3 == 0 ? screen.mapColor(15) : ( i % 3 == 1 ? screen.mapColor(5) : screen.mapColor(3) ); }
 
 for(int i=0; i < 10; i++) {
     int x = random( 480 - w );
@@ -118,8 +118,8 @@ drawSprite( 0, x, y ); ...
 */
 
 
-screen.fillCircle( 100, 100, 30, BLUE );
-screen.drawCircle( 100, 100, 30, GREEN );
+screen.fillCircle( 100, 100, 30, 4 ); // 4 BLUE
+screen.drawCircle( 100, 100, 30, 5 ); // 5 YELLOW
 
 
 screen.loadBMPSpriteBoard( (char*) "Z/0/sprite1.bmp");

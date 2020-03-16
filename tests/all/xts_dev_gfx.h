@@ -9,11 +9,13 @@
 class VideoCard {
 
     private:
-        uint16_t mapColor(uint16_t color);
+        // uint16_t mapColor(uint16_t color);
 
     public:
         VideoCard();
         bool setup();
+
+        uint16_t mapColor(uint16_t color);
 
         int getScreenWidth();
         int getScreenHeight();
