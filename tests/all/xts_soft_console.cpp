@@ -324,3 +324,43 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
 
     return -1;
 }
+
+// =========== Input routines ===========
+int IOConsole::kbhit() {
+    int res = 0;
+    if ( this->hasSerial() ) {
+        if ( this->isSerialDummy() ) {
+            res = con_dum()->available();
+        } else {
+            res = con_ser()->available();
+        }
+    }
+    return res;
+}
+
+// blocking key read
+uint8_t IOConsole::getch() {
+    uint8_t res = 0;
+    if ( this->hasSerial() ) {
+        int avail;
+        if ( this->isSerialDummy() ) {
+            while( (avail = con_dum()->available()) <= 0 ) {
+                ;
+            }
+            res = con_dum()->read();
+        } else {
+            while( (avail = con_dum()->available()) <= 0 ) {
+                ;
+            }
+            res = con_ser()->read();
+        }
+    }
+    return res;
+}
+
+// blocking key read - with echo
+uint8_t IOConsole::getche() {
+    uint8_t res = getch();
+    write( res );
+    return res;
+}

@@ -280,12 +280,13 @@ bool conSerialRaw = false;
 bool consoleMenu() {
     char* title = (char*)"[ Console Menu ]";
 
-    int nbItems = 5;
+    int nbItems = 6;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
         (char*)activSerial,
         (char*)deactivScreen,
         (char*)"Serial mode ->",
+        (char*)"Serial Input",
         (char*)"",
         (char*)"Exit",
     };
@@ -326,8 +327,12 @@ bool consoleMenu() {
         } else if ( choice == 2 ) {
             // serial mode menu
         } else if ( choice == 3 ) {
-            // ...
+            console.println("Console input Test > (q to quit) ");
+            uint8_t ch;
+            while( ( ch = console.getche() ) != 'q' ) { ; }
         } else if ( choice == 4 ) {
+            // ...
+        } else if ( choice == 5 ) {
             return false;
         } else if ( choice == -1 ) {
             return true;

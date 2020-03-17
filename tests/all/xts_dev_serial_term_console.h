@@ -26,7 +26,7 @@ bool con_ser_ready() {
   return false;
 }
 
-Print* con_ser() {
+Stream* con_ser() {
   return &SER_DESC;
 }
 

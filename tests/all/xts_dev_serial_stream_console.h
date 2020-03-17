@@ -26,7 +26,7 @@ bool con_dum_ready() {
   return false;
 }
 
-Print* con_dum() {
+Stream* con_dum() {
   return &DUM_DESC;
 }
 
