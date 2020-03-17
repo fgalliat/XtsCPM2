@@ -1,5 +1,5 @@
  - [x] find PuttyCOM VTEsc for CLS, LOCATE
- - [x] find PuttyCOM int scan keys for arrowKeys
+ - [x] find PuttyCOM int scan keys for arrowKeys ( 27 + 91 + { 65, 66, 67, 68 (up, down, right,left) } )
  - [ ] GFX API
      - [x] drawBmp(rotated) / loadBmpSprites
      - [x] drawLine, Rect, ....
