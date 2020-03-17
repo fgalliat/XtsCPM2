@@ -16,4 +16,4 @@ sdcard			sdcard support ONLY test
 
 ili9486			ILI9486 Screen drawing samples
 
-**all**					joystick + OutConsole + Fs + Buzzer + DFPlayer + RGBLed + WiFi + GFX (wip)
+**all**					joystick + OutConsole + Fs + Buzzer + DFPlayer + RGBLed + WiFi + GFX + InConsole (wip)

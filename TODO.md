@@ -30,8 +30,8 @@
          - [x] void drawChar(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bg, uint8_t size);
          - [x] where color could be colors[ attr[ (y\*w)+x ] ] & bg = bg_colors[ attr[ (y*w)+x ] ]
          - [x] instead of using 'if'....
-   - [ ] Inputs
-     - [x] [.] Serial in -> still todo : arrow Keys => Joystick control
+   - [ ] Inputs (wip)
+     - [x] [.] Serial in -> **(wip)** / still todo : arrow Keys => Joystick control
      - [x] Analog Stick + btns
      - [ ] Ms ChatPad via UART
 
