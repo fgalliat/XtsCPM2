@@ -349,7 +349,7 @@ uint8_t IOConsole::getch() {
             }
             res = con_dum()->read();
         } else {
-            while( (avail = con_dum()->available()) <= 0 ) {
+            while( (avail = con_ser()->available()) <= 0 ) {
                 ;
             }
             res = con_ser()->read();
