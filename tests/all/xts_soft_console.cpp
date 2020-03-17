@@ -317,6 +317,26 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
                 if ( selectedItem > nbItems-1 ) { selectedItem = 0; }
                 gotoXY( x1+2, yOfItems+selectedItem ); write( '>' );
             }
+        } 
+        // else 
+        {
+            // Serial Keys handling (PS. arrows are handled inside Joystick)
+            if ( hasSerial() && !isSerialDummy() ) {
+                if ( kbhit() > 0 ) {
+                    char ch = con_ser()->peek();
+                    if ( ch == 13 ) {
+                        con_ser()->read();
+                        // release cursor
+                        gotoXY( x1, y2+1 );
+                        return selectedItem;
+                    } else if ( ch == 27 ) {
+                        con_ser()->read();
+                        // release cursor
+                        gotoXY( x1, y2+1 );
+                        return -1;
+                    } 
+                }
+            }
         }
 
         delay(50);
