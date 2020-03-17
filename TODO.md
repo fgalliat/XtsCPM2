@@ -30,8 +30,10 @@
          - [x] void drawChar(uint16_t x, uint16_t y, char c, uint16_t color, uint16_t bg, uint8_t size);
          - [x] where color could be colors[ attr[ (y\*w)+x ] ] & bg = bg_colors[ attr[ (y*w)+x ] ]
          - [x] instead of using 'if'....
-   - [ ] Inputs (wip)
-     - [x] [.] Serial in -> **(wip)** / still todo : arrow Keys => Joystick control
+   - [ ] Inputs
+     - [x] Serial in -> **(wip)**
+       - [x] SerialArrowKeys -> OK -> emulates Joystick control
+       - [x] for menu : will handle Enter / Esc inside menu routine (not in Joystick)
      - [x] Analog Stick + btns
      - [ ] Ms ChatPad via UART
 
@@ -41,7 +43,7 @@
     - [x] add OutputConsole
       - [x] add TextBox
       - [x] make menu
-      - [ ] add Serial ArrowKeys Support too
+      - [x] add Serial ArrowKeys Support too
  - [x] OutputConsole.setMode(...)
  - [ ] DFPlayer
 
