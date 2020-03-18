@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "cpm_globals.h"
 
 /**
  * TODO : 
@@ -36,7 +36,7 @@
 #define sDELAY 50
 #define DELAY 100
 
-#include "abstraction_arduino.h"
+#include "cpm_abstraction_arduino.h"
 
 // PUN: device configuration
 #ifdef USE_PUN
@@ -50,14 +50,14 @@
   int lst_open = FALSE;
 #endif
 
-#include "ram.h"
-#include "console.h"
-#include "cpu.h"
-#include "disk.h"
-#include "host.h"
-#include "cpm.h"
+#include "cpm_ram.h"
+#include "cpm_console.h"
+#include "cpm_cpu.h"
+#include "cpm_disk.h"
+#include "cpm_host.h"
+#include "cpm_cpm.h"
 #ifdef CCP_INTERNAL
-#include "ccp.h"
+#include "cpm_ccp.h"
 #endif
 
 void setup(void) {
