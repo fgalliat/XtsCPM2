@@ -16,4 +16,6 @@ sdcard			sdcard support ONLY test
 
 ili9486			ILI9486 Screen drawing samples
 
-**all**					joystick + OutConsole + Fs + Buzzer + DFPlayer + RGBLed + WiFi + GFX + InConsole (wip)
+**all**					joystick + IOConsole + Fs + Buzzer/DFPlayer + RGBLed + WiFi + GFX (wip)
+
+**cpm**				cpm only (via Serial) => clean code of XtsCPM project (wip)
