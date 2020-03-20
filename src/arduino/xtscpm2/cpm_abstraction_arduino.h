@@ -420,66 +420,49 @@ extern bool keybLocked;
 extern bool Serial_useable;
 
 int _kbhit(void) {
-	#ifdef HAS_KEYBOARD
-	  int kavail = keybLocked ? 0 : yatl.getKeyboard()->available();
-	  if ( kavail > 0 ) {
-			return kavail;
-	  }
+	#if XTASE_YATDB_LAYOUT
+		return console.kbhit();
+	#else
+		return(Serial.available());
 	#endif
-
-	if ( !Serial_useable ) { return 0; }
-
-	return(Serial.available());
 }
 
 uint8 _getch(void) {
-	#ifdef HAS_KEYBOARD
-		if ( !Serial_useable ) {
-			// -= TODO BEWARE : keybLocked =-
-			while ( yatl.getKeyboard()->available() == 0 ) {
-				; // delay -or- not ??
-			}
-			return yatl.getKeyboard()->read();
-		}
-
-		while (!Serial.available()) {
-			if ( !keybLocked && yatl.getKeyboard()->available() > 0 ) {
-				return yatl.getKeyboard()->read();
-			}
-		}
+	#if XTASE_YATDB_LAYOUT
+		return console.getch();
 	#else
-		while (!Serial.available());
+		while (!Serial.available()) {;}
+		return(Serial.read());
 	#endif
-	return(Serial.read());
 }
 
 uint8 _getche(void) {
-	uint8 ch = _getch();
-	if ( Serial_useable ) { 
-		Serial.write(ch); // local echo 
-	}
-	
-#ifdef HAS_BUILTIN_LCD
-  if ( currentlyUseScreen() ) { yatl.getScreen()->write(ch); }
-#endif
-	return(ch);
+	#if XTASE_YATDB_LAYOUT
+		return console.getche();
+	#else
+		uint8 ch = _getch();
+		if ( Serial_useable ) { 
+			Serial.write(ch); // local echo 
+		}
+		return(ch);
+	#endif
 }
 
 void _putch(uint8 ch) {
-#ifdef HAS_BUILTIN_LCD
-  if ( currentlyUseScreen() ) { yatl.getScreen()->write(ch); }
-	else
+#if XTASE_YATDB_LAYOUT
+  console.write(ch);
+#else
+  Serial.write(ch);
 #endif
-	Serial.write(ch);
 }
 
 void _clrscr(void) {
-#ifdef HAS_BUILTIN_LCD
-  if ( currentlyUseScreen() ) { yatl.getScreen()->cls(); }
-	else
-#endif
+#if XTASE_YATDB_LAYOUT
+  	console.cls();
+#else
 	// cls + cursor Home in VT100
 	Serial.println("\e[H\e[J");
+#endif
 }
 
 #endif

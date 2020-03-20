@@ -63,6 +63,13 @@ bool Fs::eraseFile(char* fileName) {
     return true;
 }
 
+bool Fs::exists(char* fileName) {
+    if ( fileName == NULL ) {
+        return false;
+    }
+    return SD.exists( fileName );
+}
+
 int Fs::readTextFile(char* fileName, char* dest, int maxLen) {
     if ( fileName == NULL || dest == NULL || maxLen < 0 ) {
         return -1;

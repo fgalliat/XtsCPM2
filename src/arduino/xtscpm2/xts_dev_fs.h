@@ -18,6 +18,8 @@ class Fs {
 
         bool  eraseFile(char* fileName);
 
+        bool  exists(char* fileName);
+
         // (!!) doesn't eraese dest buffer
         int readBinFile(char* fileName, uint8_t* dest, int maxLen);
 

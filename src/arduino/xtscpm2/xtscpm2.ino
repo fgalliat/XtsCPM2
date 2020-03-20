@@ -4,13 +4,20 @@
  * TODO : 
  * cpm.h -> re-handle specific BdosCalls
  * abstraction_arduino.h -> refactor DRIVE_LED calls (done)
- *                       -> refactor _kbhit, getch, getche
+ *                       -> refactor _kbhit, getch, getche (done)
+ * call xts_handler !!!
+ * 
+ * TODO : Have to keep Serial Input @ Least -> make a spe flag for that ??
  * 
  * Xtase - fgalliat @ Mar2020
  * 
  * after 1st version of cleaned code :
  * Le croquis utilise 78064 octets (7%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
  * Les variables globales utilisent 72484 octets (27%) de mémoire dynamique, ce qui laisse 189660 octets pour les variables locales. Le maximum est de 262144 octets.
+ * 
+ * after 2nd version w/ console calls
+ * Le croquis utilise 112844 octets (10%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
+ * Les variables globales utilisent 80068 octets (30%) de mémoire dynamique, ce qui laisse 182076 octets pour les variables locales. Le maximum est de 262144 octets.
  * 
  */
 
@@ -48,12 +55,13 @@ WiFi wifi;
 
 
   // ======== TEMP SD access resources =========
-  #include <SPI.h>
-  #include "SdFat.h"
-  #include "sdios.h"
+  // #include <SPI.h>
+  // #include "sdios.h"
 
+  // just for File class def (PUN, LST, abstraction_arduino.h)
+  #include "SdFat.h"
   #define FS_CLASS SdFat
-  FS_CLASS SD;
+  extern FS_CLASS SD;
   // ===========================================
   // // RGBLed -> r
   // #define LED 21
@@ -94,13 +102,14 @@ WiFi wifi;
 
 #if XTASE_YATDB_LAYOUT
 void once() {
-  console.println("OK, waiting for start...");
-  console.println("Pausing ...");
-  while(true) { delay(1000); }
+  // console.println("OK, waiting for start...");
+  // console.println("Pausing ...");
+  // while(true) { delay(1000); }
+  console.println("OK, start CPM emulation...");
 }
 
 void xts_setup() {
-joystick.setup();
+    joystick.setup();
     led.setup();
     buzzer.setup();
 
@@ -150,7 +159,8 @@ joystick.setup();
         led.rgb( 209, 228, 194 ); // pastel green
         
         // remove Serial VTconsole
-        console.setMode( CONSOLE_MODE_TFT );
+        // console.setMode( CONSOLE_MODE_TFT );
+        // TODO : Have to keep Serial Input @ Leats
 
         console.cls();
         console.splashScreen_SD();
@@ -188,18 +198,18 @@ void setup(void) {
   #endif
 
 
-  // ==== TEMP SD init code =====
-  _puts("Initializing SD card.\r\n");
-  #if XTASE_YATDB_LAYOUT
-    bool sdOk = SD.begin(BUILTIN_SDCARD);
-    if ( !sdOk ) {
-      // _puts("Unable to initialize SD card [0x03].\r\nCPU halted.\r\n");
-      Serial.println("Could not init the SD card, emulator will never run ...");
-      Serial.println("Halting ...");
-      while( true ) { delay(10000); }
-    }
-  #endif
-  // ============================
+  // // ==== TEMP SD init code =====
+  // _puts("Initializing SD card.\r\n");
+  // #if XTASE_YATDB_LAYOUT
+  //   bool sdOk = SD.begin(BUILTIN_SDCARD);
+  //   if ( !sdOk ) {
+  //     // _puts("Unable to initialize SD card [0x03].\r\nCPU halted.\r\n");
+  //     Serial.println("Could not init the SD card, emulator will never run ...");
+  //     Serial.println("Halting ...");
+  //     while( true ) { delay(10000); }
+  //   }
+  // #endif
+  // // ============================
 
   // SerialPort is useable or not .....
   Serial_useable = !(!Serial);
@@ -230,7 +240,7 @@ void setup(void) {
   #endif
 
     // if (VersionCCP >= 0x10 || SD.exists(CCPname)) {
-    if (VersionCCP >= 0x10 || SD.exists(ccpFileName)) {
+    if (VersionCCP >= 0x10 || fileSystem.exists(ccpFileName)) {
       while (true) {
         _puts(CCPHEAD);
         _PatchCPM();
