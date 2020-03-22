@@ -20,7 +20,6 @@ extern Joystick joystick;
 
 int ttyWidth=0,ttyHeight=0;
 
-// private members
 bool IOConsole::hasSerial() { return ((mode & CONSOLE_MODE_SERIAL_DUMMY) == CONSOLE_MODE_SERIAL_DUMMY) || 
                             ((mode & CONSOLE_MODE_SERIAL_VT100) == CONSOLE_MODE_SERIAL_VT100); }
 
@@ -28,14 +27,22 @@ bool IOConsole::isSerialDummy() { return ((mode & CONSOLE_MODE_SERIAL_DUMMY) == 
 
 bool IOConsole::hasScreen() { return ((mode & CONSOLE_MODE_TFT) == CONSOLE_MODE_TFT); }
 
+bool IOConsole::hasSerialInput() { return ((modeInput & CONSOLE_MODE_SERIAL_DUMMY) == CONSOLE_MODE_SERIAL_DUMMY) || 
+                            ((modeInput & CONSOLE_MODE_SERIAL_VT100) == CONSOLE_MODE_SERIAL_VT100); }
+
+bool IOConsole::isSerialInputDummy() { return ((modeInput & CONSOLE_MODE_SERIAL_DUMMY) == CONSOLE_MODE_SERIAL_DUMMY); }
+
+
+
 
 // public members
-IOConsole::IOConsole(uint8_t mode) : Print() {
-    setMode( mode );
+IOConsole::IOConsole(uint8_t mode, uint8_t modeInput) : Print() {
+    setMode( mode, modeInput );
 }
 
-void IOConsole::setMode(uint8_t mode) {
+void IOConsole::setMode(uint8_t mode, uint8_t modeInput) {
     this->mode = mode;
+    this->modeInput = modeInput;
 
     if ( mode == 0x00 ) {
         return;
@@ -61,7 +68,7 @@ void IOConsole::setMode(uint8_t mode) {
 }
 
 void IOConsole::setup() {
-    if ( this->hasSerial() ) {
+    if ( this->hasSerial() || this->hasSerialInput() ) {
         if ( this->isSerialDummy() ) {
             con_dum_init();
         } else {
@@ -135,6 +142,13 @@ void IOConsole::attr_none() {
 // inheritance
 size_t IOConsole::write(uint8_t character) {
     size_t res = 0;
+
+    // just speed mode if only screen
+    if ( this->mode == CONSOLE_MODE_TFT ) {
+        con_tft_writeOneChar(character);
+        return 1;
+    }
+
     if ( this->hasSerial() ) {
         if ( this->isSerialDummy() ) {
             res = con_dum()->write(character);
@@ -348,8 +362,8 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
 // =========== Input routines ===========
 int IOConsole::kbhit() {
     int res = 0;
-    if ( this->hasSerial() ) {
-        if ( this->isSerialDummy() ) {
+    if ( this->hasSerialInput() ) {
+        if ( this->isSerialInputDummy() ) {
             res = con_dum()->available();
         } else {
             res = con_ser()->available();
@@ -361,9 +375,9 @@ int IOConsole::kbhit() {
 // blocking key read
 uint8_t IOConsole::getch() {
     uint8_t res = 0;
-    if ( this->hasSerial() ) {
+    if ( this->hasSerialInput() ) {
         int avail;
-        if ( this->isSerialDummy() ) {
+        if ( this->isSerialInputDummy() ) {
             while( (avail = con_dum()->available()) <= 0 ) {
                 ;
             }

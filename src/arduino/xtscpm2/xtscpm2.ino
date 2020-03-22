@@ -7,7 +7,7 @@
  *                       -> refactor _kbhit, getch, getche (done)
  * call xts_handler !!!
  * 
- * TODO : Have to keep Serial Input @ Least -> make a spe flag for that ??
+ * 
  * 
  * Xtase - fgalliat @ Mar2020
  * 
@@ -36,7 +36,7 @@ RGBLed led;
 VideoCard screen;
 
 #include "xts_soft_console.h"
-IOConsole console( CONSOLE_MODE_SERIAL_VT100 | CONSOLE_MODE_TFT );
+IOConsole console( CONSOLE_MODE_SERIAL_VT100 | CONSOLE_MODE_TFT, CONSOLE_MODE_SERIAL_VT100 );
 
 #include "xts_dev_fs.h"
 Fs fileSystem;
@@ -115,8 +115,6 @@ void xts_setup() {
 
     screen.setup();
 
-    // use console...
-    // Serial.begin(115200);
     console.setup();
 
     bool allOk = true;
@@ -158,9 +156,9 @@ void xts_setup() {
     if ( allOk ) {
         led.rgb( 209, 228, 194 ); // pastel green
         
-        // remove Serial VTconsole
-        // console.setMode( CONSOLE_MODE_TFT );
-        // TODO : Have to keep Serial Input @ Leats
+        // remove Serial VTconsole out
+        // Keep Serial Input @ Least
+        console.setMode( CONSOLE_MODE_TFT, CONSOLE_MODE_SERIAL_VT100 );
 
         console.cls();
         console.splashScreen_SD();

@@ -306,22 +306,22 @@ bool consoleMenu() {
         if ( choice == 0 ) {
             if ( console.hasSerial() ) {
                 // remove serial
-                console.setMode( CONSOLE_MODE_TFT );
+                console.setMode( CONSOLE_MODE_TFT, CONSOLE_MODE_SERIAL_VT100 );
                 items[choice] = (char*)activSerial;
             } else {
                 // add serial
-                console.setMode( CONSOLE_MODE_TFT | (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100) );
+                console.setMode( CONSOLE_MODE_TFT | (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100), CONSOLE_MODE_SERIAL_VT100 );
                 items[choice] = (char*)deactivSerial;
             }
         } else if ( choice == 1 ) {
             // TODO : add confirm dialog
             if ( console.hasScreen() ) {
                 // remove screen
-                console.setMode( (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100) );
+                console.setMode( (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100), CONSOLE_MODE_SERIAL_VT100 );
                 items[choice] = (char*)activScreen;
             } else {
                 // add screen
-                console.setMode( CONSOLE_MODE_TFT | (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100) );
+                console.setMode( CONSOLE_MODE_TFT | (conSerialRaw ? CONSOLE_MODE_SERIAL_DUMMY : CONSOLE_MODE_SERIAL_VT100), CONSOLE_MODE_SERIAL_VT100 );
                 items[choice] = (char*)deactivScreen;
             }
         } else if ( choice == 2 ) {

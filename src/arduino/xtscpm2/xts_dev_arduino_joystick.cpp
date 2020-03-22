@@ -27,8 +27,8 @@ const char sKEY_LEFT = (char)68;
 #define PORT Serial
 
 bool serialPoll() {
-    if ( !console.hasSerial() ) { return false; }
-    if ( console.isSerialDummy() ) { return false; }
+    if ( !console.hasSerialInput() ) { return false; }
+    if ( console.isSerialInputDummy() ) { return false; }
 
     int avail = PORT.available();
 
