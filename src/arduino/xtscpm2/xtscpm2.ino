@@ -19,10 +19,14 @@
  * Le croquis utilise 112844 octets (10%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
  * Les variables globales utilisent 80068 octets (30%) de mémoire dynamique, ce qui laisse 182076 octets pour les variables locales. Le maximum est de 262144 octets.
  * 
+ * after adding xts_handler again
+ * Le croquis utilise 132524 octets (12%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
+ * Les variables globales utilisent 128280 octets (48%) de mémoire dynamique, ce qui laisse 133864 octets pour les variables locales. Le maximum est de 262144 octets.
  */
 
 #if XTASE_YATDB_LAYOUT
 
+#define USE_XTS_HDL 1
 // forward symbols
 void xts_handler();
 
@@ -67,6 +71,17 @@ WiFi wifi;
   // #define LED 21
   // #define LEDinv false
   bool Serial_useable = true;
+
+
+  void xts_handler() {
+    joystick.poll();
+
+    if ( joystick.hasChangedState() ) {
+        if ( joystick.isBtnMenu() ) {
+            menu();
+        }
+    }
+}
 #endif
 
 // Serial port speed
@@ -280,10 +295,12 @@ void loop(void) {
     delay(DELAY);
     led.clr_blue();
     delay(DELAY);
+    xts_handler(); // -> 
     led.clr_green();
     delay(DELAY);
     led.clr_blue();
     delay(DELAY);
+    xts_handler(); // ->
   #else
     if ( LED > 0 ) {
       digitalWrite(LED, HIGH^LEDinv);

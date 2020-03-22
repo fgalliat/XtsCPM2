@@ -1440,7 +1440,7 @@ static inline void Z80run(void) {
 	while (!Status) {	/* loop until Status != 0 */
 
 #ifdef USE_XTS_HDL
-        xts_hdl();
+        xts_handler();
 #endif
 
 #ifdef DEBUG
