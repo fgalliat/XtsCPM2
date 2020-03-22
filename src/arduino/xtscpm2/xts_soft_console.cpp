@@ -143,6 +143,12 @@ void IOConsole::attr_none() {
 size_t IOConsole::write(uint8_t character) {
     size_t res = 0;
 
+    if ( character == 26 ) {
+        // Ctrl Z old style cls
+        cls();
+        return 1;
+    }
+
     // just speed mode if only screen
     if ( this->mode == CONSOLE_MODE_TFT ) {
         con_tft_writeOneChar(character);
@@ -360,6 +366,17 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
 }
 
 // =========== Input routines ===========
+
+const long maxTimeInput = 500L;
+long lastTimeInput = 0L;
+
+void __softInterrupt() {
+    if ( millis() - lastTimeInput >= maxTimeInput ) { 
+        xts_handler();
+        lastTimeInput = millis();
+    }
+}
+
 int IOConsole::kbhit() {
     int res = 0;
     if ( this->hasSerialInput() ) {
@@ -369,6 +386,7 @@ int IOConsole::kbhit() {
             res = con_ser()->available();
         }
     }
+    __softInterrupt();
     return res;
 }
 
@@ -379,12 +397,12 @@ uint8_t IOConsole::getch() {
         int avail;
         if ( this->isSerialInputDummy() ) {
             while( (avail = con_dum()->available()) <= 0 ) {
-                ;
+                __softInterrupt();
             }
             res = con_dum()->read();
         } else {
             while( (avail = con_ser()->available()) <= 0 ) {
-                ;
+                __softInterrupt();
             }
             res = con_ser()->read();
         }
