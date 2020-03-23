@@ -153,6 +153,17 @@ void con_tft_writeOneChar(char ch) {
   if ( ch == 0x0A ) { // \n
     return;
   }
+  if ( ch == '\b' ) {
+    // is generally used as '\b'+' '+'\b' so no need to render it
+    ttyCursorX--;
+    if ( ttyCursorX < 0 ) {
+        ttyCursorY--;
+        if ( ttyCursorY < 0 ) {
+            ttyCursorY = 0;
+        }
+    }
+    return;
+  }
   uint16_t col = tty_colors[ (int)currTtyAttr ];
   uint16_t bg  = tty_bg_colors[ (int)currTtyAttr ];
   int x = ttyCursorX * 6;

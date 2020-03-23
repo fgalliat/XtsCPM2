@@ -18,6 +18,9 @@ extern void xts_handler();
 #include "xts_dev_joystick.h"
 extern Joystick joystick;
 
+#include "xts_dev_buzzer.h"
+extern Buzzer buzzer;
+
 int ttyWidth=0,ttyHeight=0;
 
 bool IOConsole::hasSerial() { return ((mode & CONSOLE_MODE_SERIAL_DUMMY) == CONSOLE_MODE_SERIAL_DUMMY) || 
@@ -139,13 +142,14 @@ void IOConsole::attr_none() {
     }
 }
 
+// forward symbol
+size_t handleVTExtchar(IOConsole* console, uint8_t character);
+
 // inheritance
 size_t IOConsole::write(uint8_t character) {
     size_t res = 0;
 
-    if ( character == 26 ) {
-        // Ctrl Z old style cls
-        cls();
+    if ( handleVTExtchar(this, character) == 0 ) {
         return 1;
     }
 
@@ -416,3 +420,119 @@ uint8_t IOConsole::getche() {
     write( res );
     return res;
 }
+
+void bell() {
+    buzzer.beep(440, 300);
+}
+
+const int vt100seqLen = 16;
+char vt100seq[vt100seqLen+1];
+bool inVt100Seq = false;
+bool inCursorVtSeq = false;
+bool inRegularVtSeq = false;
+
+// returns 0 if handled else 1
+size_t handleVTExtchar( IOConsole* console, uint8_t character) {
+
+    if ( inVt100Seq ) {
+
+        if ( inCursorVtSeq ) { // ^=(..)
+            if ( vt100seq[2] == 0x00 ) {
+                vt100seq[2] = character;
+                return 0;
+            } else if ( vt100seq[3] == 0x00 ) {
+                vt100seq[3] = character;
+                // process caret pos
+
+                uint8_t y = vt100seq[2] - 31;
+                uint8_t x = vt100seq[3] - 31; // -1 again ???
+
+                console->gotoXY(x, y);
+
+                inCursorVtSeq = false;
+                inVt100Seq = false;
+                return 0;
+            } 
+        } else if ( inRegularVtSeq ) {
+            if ( character == 'K' ) {
+                // ^[K
+                // _eraseTillEOL(); // TODO !!!!
+                inRegularVtSeq = false;
+                inVt100Seq = false;
+                return 0;
+            } else if ( character == 'H' ) {
+                if ( strlen( vt100seq ) > 2 ) {
+                    // ^[<row>;<col>H -> set cursor position
+                } else {
+                    // ^[H
+                    // return to Home
+                    console->gotoXY(1, 1);
+                }
+
+                inRegularVtSeq = false;
+                inVt100Seq = false;
+                return 0;
+            } else if ( character == '2' ) {
+                vt100seq[2] = character;
+                return 0;
+            } else if ( character == 'J' ) {
+                vt100seq[3] = character;
+                if ( vt100seq[2] == '2' ) {
+                    console->cls();
+                }
+                inRegularVtSeq = false;
+                inVt100Seq = false;
+                return 0;
+            } else if ( (character >= '0' && character <= '9') || character == ';') {
+                vt100seq[ strlen( vt100seq )+1 ] = character;
+            }
+        }
+
+
+        if ( character == 'C' ) {
+            con_tft_attr_none();
+            inVt100Seq = false;
+            return 0;
+        } else if ( character == 'B' ) {
+            con_tft_attr_accent();
+            inVt100Seq = false;
+            return 0;
+        } else if ( character == '[' ) {
+            // regular esc
+            inRegularVtSeq = true;
+            vt100seq[1] = character;
+            return 0;
+        } else if ( character == '=' ) {
+            // cursor pos
+            inCursorVtSeq = true;
+            vt100seq[1] = character;
+            return 0;
+        } else if ( character == '$' ) {
+            // vt music - until '!' or music buff overflow
+        }
+
+        inVt100Seq = false; // TODO : remove
+        return 1;
+    }
+
+
+    // is generally used as '\b'+' '+'\b' so no need to render it
+    if ( character == '\b' ) { 
+        return 1; // let it handle by screen or SerialTerm 
+    } else if ( character == 0x07 ) { 
+        bell();
+        return 0;
+    } else if ( character == 26 ) {
+        // Ctrl Z old style cls
+        console->cls();
+        return 0;
+    } else if ( character == 27 ) {
+        memset( vt100seq, 0x00, vt100seqLen+1 );
+        inVt100Seq = true;
+        vt100seq[0] = character;
+        return 0;
+    }
+
+    return 1;
+}
+
