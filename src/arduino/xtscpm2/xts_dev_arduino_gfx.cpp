@@ -60,19 +60,42 @@ uint16_t VideoCard::color565(uint8_t r, uint8_t g, uint8_t b) {
 int VideoCard::getScreenWidth() { return SCR_WIDTH; }
 int VideoCard::getScreenHeight() { return SCR_HEIGHT; }
 
-void VideoCard::cls() { tft.fillScreen( CLS_COLOR ); }
-
-void VideoCard::fillScreen(uint16_t color) { tft.fillScreen( mapColor( color ) ); }
 
 void VideoCard::drawRect(int x, int y, int w, int h, uint16_t color) {
     tft.drawRect( x, y, w, h, mapColor(color) );
 }
-void VideoCard::fillRect(int x, int y, int w, int h, uint16_t color) {
-    tft.fillRect( x, y, w, h, mapColor(color) );
+
+void VideoCard::cls() { 
+    // tft.fillScreen( CLS_COLOR ); 
+    this->fillScreen( CLS_COLOR );
 }
+void VideoCard::fillScreen(uint16_t color) { 
+    // tft.fillScreen( mapColor( color ) ); 
+    this->fillRect(0,0,getScreenWidth(), getScreenHeight(), mapColor(color));
+}
+
 
 // BEWARE : hardware dependent
 extern void writedata16(uint16_t c);
+
+// BEWARE : hardware dependent
+void VideoCard::fillRect(int x, int y, int w, int h, uint16_t color) {
+    // tft.fillRect( x, y, w, h, mapColor(color) );
+    color = mapColor(color);
+
+    tft.setAddrWindow(x, y, x + w - 1, y + h-1);
+    SPI.beginTransaction(SPISET);
+
+    for(int yy=0; yy < h; yy++) {
+        for(int xx=0; xx < w; xx++) {
+            writedata16( color );    
+        }
+    }
+
+    SPI.endTransaction();
+}
+
+
 
 // if scanW is < 0 :> scanW = w
 // BEWARE : hardware dependent
