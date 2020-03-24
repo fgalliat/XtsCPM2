@@ -435,7 +435,11 @@ void bell() {
 }
 
 const int vt100seqLen = 16;
-char vt100seq[vt100seqLen+1];
+char vt100seq[vt100seqLen + 1];
+
+const int vtMusicLen = 64;
+char vtMusicSeq[ vtMusicLen + 1 ];
+
 bool inVt100Seq = false;
 bool inCursorVtSeq = false;
 bool inAttrVtSeq = false;
@@ -546,6 +550,7 @@ size_t handleVTExtchar( IOConsole* console, uint8_t character) {
             return 0;
         } else if ( character == '$' ) {
             // vt music - until '!' or music buff overflow
+            memset( vtMusicSeq, 0x00, vtMusicLen+1 );
         }
 
         inVt100Seq = false; // TODO : remove
