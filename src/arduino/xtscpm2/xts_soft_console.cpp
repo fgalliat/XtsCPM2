@@ -446,10 +446,10 @@ bool inAttrVtSeq = false;
 bool inRegularVtSeq = false;
 
 // assumes that vt100seq is 0x00 filled
-bool addToVt100Seq(uint8_t character) {
+bool addToVt100Seq(char character) {
     int tlen = strlen( vt100seq ); 
     if ( tlen >= vt100seqLen ) { return false; }
-    vt100seq[ tlen+1 ] = character;
+    vt100seq[ tlen ] = character;
     return true;
 }
 
@@ -488,12 +488,12 @@ size_t handleVTExtchar( IOConsole* console, uint8_t character) {
                     char* expr = &vt100seq[2];
                     int sepa = indexOf( expr, ';' );
                     if ( sepa > -1 ) {
-                        char rowS = str_split(expr, ';', 0);
-                        char colS = str_split(expr, ';', 1);
-                        int row = atoi( rowS );
-                        int col = atoi( colS );
-                        free( row ); 
-                        free( col );
+                        char* rowS = str_split(expr, ';', 0);
+                        char* colS = str_split(expr, ';', 1);
+                        int row = atoi( (const char*)rowS );
+                        int col = atoi( (const char*)colS );
+                        free( rowS ); 
+                        free( colS );
                         console->gotoXY( col, row );
                     } else {
                         // Oups ....
@@ -516,6 +516,10 @@ size_t handleVTExtchar( IOConsole* console, uint8_t character) {
             } else if ( (character >= '0' && character <= '9') || character == ';') {
                 addToVt100Seq(character);
                 return 0;
+            } else {
+Serial.print("UMregular ");
+Serial.write( character);
+Serial.println();
             }
         } else if ( inAttrVtSeq ) {
             // ex. ^B1 // ^C1
