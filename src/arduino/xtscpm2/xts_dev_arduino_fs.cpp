@@ -30,7 +30,9 @@ Fs::Fs() {
 }
 
 bool Fs::setup() {
-    return SD.begin(BUILTIN_SDCARD);
+    // return SD.begin(BUILTIN_SDCARD);
+    return SD.begin( SdioConfig(FIFO_SDIO) );
+    // return SD.begin();
 }
 
 char* Fs::getDiskFileName(char* diskFileName) {

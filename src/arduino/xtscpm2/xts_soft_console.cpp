@@ -393,11 +393,12 @@ void __softInterrupt() {
 int IOConsole::kbhit() {
     int res = 0;
     if ( this->hasSerialInput() ) {
-        if ( this->isSerialInputDummy() ) {
-            res = con_dum()->available();
-        } else {
-            res = con_ser()->available();
-        }
+        // if ( this->isSerialInputDummy() ) {
+        //     res = con_dum()->available();
+        // } else {
+        //     res = con_ser()->available();
+        // }
+        res = con_ser()->available();
     }
     __softInterrupt();
     return res;

@@ -6,6 +6,7 @@
  */
 
 #define FS_CLASS SdFat
+// #define FS_CLASS SdFatSdio
 
 class Fs {
     public:

@@ -1,26 +1,6 @@
 #ifndef ABSTRACT_H
 #define ABSTRACT_H
 
-// #ifdef YATL_PLATFORM
-//   #include "xts_yatl_api.h"
-// 	extern Yatl yatl;
-// #endif
-
-#if HAS_BUILTIN_LCD
-  bool currentlyUseScreen() {
-	  #ifdef USE_BUILTIN_LCD
-	    bool curStdOutIsScreen = true;
-	    return curStdOutIsScreen;
-	  #else
-	    return false;
-	  #endif
-  }
-#else
-  bool currentlyUseScreen() {
-	  return false;
-  }
-#endif
-
 void _driveLedOn() {
 	#if XTASE_YATDB_LAYOUT
 	led.drive_led(true);
@@ -62,8 +42,21 @@ bool _RamLoad(char *filename, uint16 address) {
 	bool result = false;
 
 	if (f = SD.open(filename, FILE_READ)) {
-		while (f.available())
-			_RamWrite(address++, f.read());
+		// while (f.available())
+		// 	_RamWrite(address++, f.read());
+
+		long t = f.size();
+		const int segLen = 512;
+		uint8_t seg[segLen];
+		for(long i=0; i < t; i+= segLen) {
+			memset( seg, 0x00, segLen );
+			int m = min( segLen, f.available() );
+			f.readBytes( seg, m );
+			for( int j=0; j < m; j++ ) {
+				_RamWrite(address++, seg[j]);	
+			}
+		}
+
 		f.close();
 		result = true;
 	}
@@ -334,7 +327,7 @@ uint8 _findnext(uint8 isdir) {
 
 	_driveLedOn();
 	while (f = root.openNextFile()) {
-    f.getName((char*)&dirname[0], 13);
+    	f.getName((char*)&dirname[0], 13);
 		isfile = !f.isDirectory();
 		f.close();
 		if (!isfile)

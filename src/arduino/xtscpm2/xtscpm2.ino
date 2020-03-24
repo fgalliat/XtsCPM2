@@ -59,12 +59,8 @@ WiFi wifi;
 
 
   // ======== TEMP SD access resources =========
-  // #include <SPI.h>
-  // #include "sdios.h"
-
   // just for File class def (PUN, LST, abstraction_arduino.h)
   #include "SdFat.h"
-  #define FS_CLASS SdFat
   extern FS_CLASS SD;
   // ===========================================
   // // RGBLed -> r
