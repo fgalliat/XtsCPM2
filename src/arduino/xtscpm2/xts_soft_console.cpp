@@ -445,12 +445,21 @@ bool inVt100Seq = false;
 bool inCursorVtSeq = false;
 bool inAttrVtSeq = false;
 bool inRegularVtSeq = false;
+bool inMusicVtSeq = false;
 
 // assumes that vt100seq is 0x00 filled
 bool addToVt100Seq(char character) {
     int tlen = strlen( vt100seq ); 
     if ( tlen >= vt100seqLen ) { return false; }
     vt100seq[ tlen ] = character;
+    return true;
+}
+
+// assumes that vtMusicSeq is 0x00 filled
+bool addToVtMusicSeq(char character) {
+    int tlen = strlen( vtMusicSeq ); 
+    if ( tlen >= vtMusicLen ) { return false; }
+    vtMusicSeq[ tlen ] = character;
     return true;
 }
 
@@ -530,8 +539,28 @@ Serial.println();
             inAttrVtSeq = false;
             inVt100Seq = false;
             return 0;
+        } else if ( inMusicVtSeq ) {
+            if ( (character >= '0' && character <= '9') ||
+                 (character >= 'a' && character <= 'z') ||
+                 (character >= 'A' && character <= 'Z') ||
+                 ( character == '.' ) || ( character == '#' )
+                ) {
+                addToVtMusicSeq(character);
+                return 0;
+            } else if ( character == '!' ) {
+                if ( indexOf( vtMusicSeq, '.' ) > -1 ) {
+                    // ex. "MARIO.T53"
+                    buzzer.playTuneFile( vtMusicSeq, true );
+                } else {
+                    // ex. "A#CBB"
+                    buzzer.playTuneString( vtMusicSeq );
+                }
+                inMusicVtSeq = false;
+                inVt100Seq = false;
+                return 0;
+            }
         }
-
+ 
 
         if ( character == 'C' ) {
             vt100seq[1] = character;
@@ -556,6 +585,9 @@ Serial.println();
         } else if ( character == '$' ) {
             // vt music - until '!' or music buff overflow
             memset( vtMusicSeq, 0x00, vtMusicLen+1 );
+            inMusicVtSeq = true;
+            vt100seq[1] = character;
+            return 0;
         }
 
         inVt100Seq = false; // TODO : remove
