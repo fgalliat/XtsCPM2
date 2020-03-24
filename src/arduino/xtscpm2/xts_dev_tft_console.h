@@ -101,6 +101,12 @@ void con_tft_cls() {
   con_tft_cursor(1,1);
 }
 
+void con_tft_eraseTillEOL() {
+  for(int i=ttyCursorX; i < TFT_CAP_WIDTH; i++) {
+    con_tft_writeOneChar(' ');
+  }
+}
+
 
 void con_tft_attr_accent() {
     tft.setTextColor(CLR_TXT_ACC);

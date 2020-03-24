@@ -33,6 +33,7 @@ class IOConsole : public Print {
         void setup();
 
         void cls();
+        void eraseTillEOL();
 
         int getWidth();
         int getHeight();

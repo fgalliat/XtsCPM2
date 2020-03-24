@@ -7,6 +7,8 @@
 
 #include <Arduino.h>
 
+#include "xts_string.h"
+
 #include "xts_soft_console.h"
 #include "xts_res_console.h"
 
@@ -95,6 +97,13 @@ void IOConsole::cls() {
     if ( this->hasScreen() ) {
         con_tft_cls();
     }
+}
+
+void IOConsole::eraseTillEOL() {
+    // TODO : I think that there is a speChar or esp for SerialTerm
+    if ( this->hasScreen() ) {
+        con_tft_eraseTillEOL();
+    }  
 }
 
 // 1-based
@@ -429,7 +438,16 @@ const int vt100seqLen = 16;
 char vt100seq[vt100seqLen+1];
 bool inVt100Seq = false;
 bool inCursorVtSeq = false;
+bool inAttrVtSeq = false;
 bool inRegularVtSeq = false;
+
+// assumes that vt100seq is 0x00 filled
+bool addToVt100Seq(uint8_t character) {
+    int tlen = strlen( vt100seq ); 
+    if ( tlen >= vt100seqLen ) { return false; }
+    vt100seq[ tlen+1 ] = character;
+    return true;
+}
 
 // returns 0 if handled else 1
 size_t handleVTExtchar( IOConsole* console, uint8_t character) {
@@ -456,13 +474,26 @@ size_t handleVTExtchar( IOConsole* console, uint8_t character) {
         } else if ( inRegularVtSeq ) {
             if ( character == 'K' ) {
                 // ^[K
-                // _eraseTillEOL(); // TODO !!!!
+                console->eraseTillEOL();
                 inRegularVtSeq = false;
                 inVt100Seq = false;
                 return 0;
             } else if ( character == 'H' ) {
                 if ( strlen( vt100seq ) > 2 ) {
                     // ^[<row>;<col>H -> set cursor position
+                    char* expr = &vt100seq[2];
+                    int sepa = indexOf( expr, ';' );
+                    if ( sepa > -1 ) {
+                        char rowS = str_split(expr, ';', 0);
+                        char colS = str_split(expr, ';', 1);
+                        int row = atoi( rowS );
+                        int col = atoi( colS );
+                        free( row ); 
+                        free( col );
+                        console->gotoXY( col, row );
+                    } else {
+                        // Oups ....
+                    }
                 } else {
                     // ^[H
                     // return to Home
@@ -472,30 +503,36 @@ size_t handleVTExtchar( IOConsole* console, uint8_t character) {
                 inRegularVtSeq = false;
                 inVt100Seq = false;
                 return 0;
-            } else if ( character == '2' ) {
-                vt100seq[2] = character;
-                return 0;
             } else if ( character == 'J' ) {
-                vt100seq[3] = character;
-                if ( vt100seq[2] == '2' ) {
-                    console->cls();
-                }
+                addToVt100Seq(character); // can be ^J or ^2J
+                console->cls();
                 inRegularVtSeq = false;
                 inVt100Seq = false;
                 return 0;
             } else if ( (character >= '0' && character <= '9') || character == ';') {
-                vt100seq[ strlen( vt100seq )+1 ] = character;
+                addToVt100Seq(character);
+                return 0;
             }
+        } else if ( inAttrVtSeq ) {
+            // ex. ^B1 // ^C1
+            if ( (character >= '0' && character <= '9')) {
+                addToVt100Seq(character);
+            }
+            inAttrVtSeq = false;
+            inVt100Seq = false;
+            return 0;
         }
 
 
         if ( character == 'C' ) {
+            vt100seq[1] = character;
             con_tft_attr_none();
-            inVt100Seq = false;
+            inAttrVtSeq = true;
             return 0;
         } else if ( character == 'B' ) {
+            vt100seq[1] = character;
             con_tft_attr_accent();
-            inVt100Seq = false;
+            inAttrVtSeq = true;
             return 0;
         } else if ( character == '[' ) {
             // regular esc
