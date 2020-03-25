@@ -30,6 +30,9 @@ void VideoCard::setRotated(bool r) {
     tft.setRotation( r ? 2 : 1 );
 }
 
+#define GLYPH_WIDTH 6
+#define GLYPH_HEIGHT 8
+
 #define SCR_WIDTH 480
 #define SCR_HEIGHT 320
 #define CLS_COLOR BLACK
@@ -145,3 +148,14 @@ void VideoCard::drawLine(int x, int y, int x2, int y2, uint16_t color) {
 void VideoCard::drawPixel(int x, int y, uint16_t color) {
     tft.drawPixel(x, y, mapColor( color ) );
 }
+
+#include "xts_dev_arduino_gfx_glyph.h"
+void VideoCard::drawGlyph(char ch, int x, int y, uint16_t color, uint16_t bgColor) {
+    if ( ch == ' ' || ch == '\b' || ch == '\r' || ch == '\n' || ch == 0x00 ) {
+        fillRect(x,y,GLYPH_WIDTH, GLYPH_HEIGHT, bgColor);
+    } else {
+        // tft.drawChar(x, y, ch, color, bgColor, 1);
+        __drawChar(x, y, ch, color, bgColor, 1);
+    }
+}
+

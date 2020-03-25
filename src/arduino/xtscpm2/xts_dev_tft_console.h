@@ -136,8 +136,8 @@ void _scrollTop(int howMany=1) {
   memmove( &ttyMEMSEG[0], &ttyMEMSEG[ mAddr ], mLen );
   memmove( &ttyAttrMEMSEG[0], &ttyAttrMEMSEG[ mAddr ], mLen );
   // blank mem
-  memset( &ttyMEMSEG[mAddr], 0x00, mlen );
-  memset( &ttyAttrMEMSEG[mAddr], 0x00, mlen );
+  memset( &ttyMEMSEG[mLen], 0x00, mlen );
+  memset( &ttyAttrMEMSEG[mLen], 0x00, mlen );
 
   //tft.fillRect(0, 0, 480, (TFT_CAP_HEIGHT-howMany)*8, CLR_TXT_BCK);
   screen.cls();
@@ -197,11 +197,12 @@ void _redrawWholeFrame() {
   int x = 0, y = 0;
   for(int i=0; i < mlen; i++) {
     ch = ttyMEMSEG[i];
-    if ( !( ch == 0x00 || ch == 0x0A || ch == 0x0D )) { 
+    if ( !( ch == 0x00 || ch == 0x0A || ch == 0x0D || ch == '\b' )) { 
       attr = (int)ttyAttrMEMSEG[i];
       fg = tty_colors[ attr ];
       bg = tty_bg_colors[ attr ];
-      tft.drawChar(x, y, ch, fg, bg, 1);
+      //tft.drawChar(x, y, ch, fg, bg, 1);
+      screen.drawGlyph(ch, x, y, fg, bg);
     } 
 
     x += 6; if ( x >= 480 ) { x = 0; y += 8; }

@@ -38,7 +38,7 @@ class VideoCard {
 
         void drawPixel(int x, int y, uint16_t color);
 
-        // TODO : add drawGlyph(char, fg, bg, transparent, .....)
+        void drawGlyph(char ch, int x, int y, uint16_t color, uint16_t bgColor);
 
         // =====================
 
