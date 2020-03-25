@@ -10,7 +10,7 @@ const
   C_WHT = 1;
   CUB_SIZ = 50;
   { SPEED = 0.03; }
-  SPEED = 2.0; { in deg now }
+  SPEED = 4.0; { in deg now }
 
   PI = 3.141593;
 
