@@ -15,6 +15,9 @@
 #include "xts_dev_rgbled.h"
 extern RGBLed led;
 
+#include "xts_soft_console.h"
+extern IOConsole console;
+
 // ===== Hardware section =====
 #include <SPI.h>
 #include "SdFat.h"
@@ -161,3 +164,64 @@ int Fs::readBinFile(char* fileName, uint8_t* dest, int maxLen) {
     led.drive_led(false);
     return cpt;
 }
+
+bool Fs::downloadFromSerial() {
+    led.clr_blue();
+    while( Serial.available() ) { Serial.read(); delay(2); }
+    console.warn((char*)"Download in progress");
+    Serial.println("+OK");
+    while( !Serial.available() ) { delay(2); }
+    // for now : file has to be like "/C/0/XTSDEMO.PAS"
+    int tlen = 0;
+    char txt[128+1]; 
+    char name[64+1]; memset(name, 0x00, 64); tlen = Serial.readBytesUntil(0x0A, name, 64);
+    if ( tlen <= 0 ) {
+        sprintf(txt, "Downloading %s (error)", name);
+        console.error(txt);
+        led.clr_red();
+        Serial.println("Download not ready");
+        Serial.println(name);
+        Serial.println("-OK");
+        return false;
+    }
+
+    // Cf CPM may padd the original file
+    File f = SD.open(name, O_CREAT | O_WRITE);
+    if ( !f ) {
+        Serial.println("-OK");
+        led.clr_red();
+        return false;    
+    }
+    f.remove();
+    f.close();
+    // Cf CPM may padd the original file
+
+    f = SD.open(name, O_CREAT | O_WRITE);
+    if ( !f ) {
+        Serial.println("-OK");
+        led.clr_red();
+        return false;    
+    }
+
+    Serial.println("+OK");
+    while( !Serial.available() ) { delay(2); }
+    char sizeStr[12+1]; memset(sizeStr, 0x00, 12); tlen = Serial.readBytesUntil(0x0A, sizeStr, 12);
+    long size = atol(sizeStr);
+    sprintf(txt, "Downloading %s (%ld bytes)", name, size);
+    console.warn(txt);
+    char packet[128+1];
+    Serial.println("+OK");
+    for(int readed=0; readed < size;) {
+        while( !Serial.available() ) { delay(2); }
+        int packetLen = Serial.readBytes( packet, 128 );
+        f.write(packet, packetLen);
+        f.flush();
+        readed += packetLen;
+    }
+    f.close();
+    console.warn("-EOF-");
+    //this->yatl->beep();
+    led.clr_green();
+    return true;
+}
+

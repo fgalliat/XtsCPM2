@@ -27,4 +27,6 @@ class Fs {
         int readTextFile(char* fileName, char* dest, int maxLen);
         // stops on 0x00 (because of TEXTFile)
         int writeTextFile(char* fileName, char* source, int maxLen);
+
+        bool downloadFromSerial();
 };
