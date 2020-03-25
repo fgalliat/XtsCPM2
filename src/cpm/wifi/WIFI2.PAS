@@ -17,7 +17,11 @@ end;
 var
   memX: string[255];
 begin
-  memX := 'Coucou';
+  {memX := 'Coucou';}
+  { for 50 chars }
+  fillchar(memX,51,'-');
+  memX[0]:=chr(50);
+
   writeln( memX );
   {sendToRam( memX );}
   Bdos(229, addr(memX) );
