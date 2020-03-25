@@ -13,8 +13,26 @@
       return len;
   } 
 
+  int setPascalStringToRam(int32 addr, char* src) {
+      const int maxPascalStringLen = 255;
+      int tlen = min( maxPascalStringLen, strlen(src) );
+
+      uint8_t *F = (uint8_t*)_RamSysAddr(addr);
+      uint8_t len = F[0]; // seems to be init len (not strlen)
+
+      len = min(len, tlen);
+      memcpy(&F[1], src , len );
+
+      return len;
+  } 
+
+
   int getStringFromRam(int32 addr, char* dest, int maxLen) {
       return getPascalStringFromRam(addr, dest, maxLen);
+  }
+
+  int setStringToRam(int32 addr, char* src) {
+      return setPascalStringToRam(addr, src);
   }
 
 
@@ -225,6 +243,15 @@ int32 bdosDraw(int32 value) {
   }
 
   // ==============] Deep Hardware Control [==========
+  // 0 should not be possible, used as
+  // undefined value
+  #define MEMXCHANGE_NOTINIT 0
+  int32 memXchangeAddr = MEMXCHANGE_NOTINIT;
+
+  int32 setSystemExchangeAddr(int32 addr) {
+    memXchangeAddr = addr;
+    return 1;
+  }
 
   int32 subSystemBdosCall(int32 value) {
       // Serial.println("bridge Bdos call");
@@ -298,13 +325,25 @@ int32 bdosDraw(int32 value) {
         return 0;
       }
       else if ( hiB == 65 ) {
-        // // Get IP
-        // char* ip = yat4l_wifi_getIP();
-        // if ( ip == NULL ) { sendStringInKeybBuff( "\n" ); return 0; }
-        // bool ok = sendStringInKeybBuff( ip );
-        // ok = sendStringInKeybBuff( "\n" );
-        // return ok ? 1 : 0;
-        return 0;
+        // Get IP
+
+        if ( memXchangeAddr == MEMXCHANGE_NOTINIT ) {
+          console.warn( (char*)"MEMXCHANGE not Init" );
+          return 0;
+        }
+
+        char* ip = wifi.getIp();
+        if ( ip == NULL ) {
+          console.warn( (char*)"Could not get Ip" );
+          return 0;
+        }
+
+        // to ensure 0x00 right padding
+        char mem[256]; memset(mem, 0x00, 256);
+        sprintf( mem, "%s", ip );
+        setStringToRam( memXchangeAddr, mem ); 
+
+        return 1;
       }
       else if ( hiB == 66 ) {
         // // Get SSID
@@ -357,6 +396,8 @@ int32 XtsBdosCall(uint8 regNum, int32 value) {
     } else if ( regNum == 228 ) {
         return subSystemBdosCall(value);
     } else if ( regNum == 229 ) {
+        // no more a test mode !!
+        return setSystemExchangeAddr(value);
         //   yat4l_dbug( "BdosCall 229 NYI => Test Mode" );
         //BdosTest229(value);
     }
