@@ -224,7 +224,131 @@ int32 bdosDraw(int32 value) {
     return 0;
   }
 
+  // ==============] Deep Hardware Control [==========
 
+  int32 subSystemBdosCall(int32 value) {
+      // Serial.println("bridge Bdos call");
+      uint8_t hiB = HIGH_REGISTER(value);
+      if ( hiB == 0 ) {
+        // uint8_t volts = (uint8_t)( yatl.getPWRManager()->getVoltage() * 256.0f / 5.0f );
+        uint8_t volts = (uint8_t)0xFF; // 5v
+        return volts;
+      } else if ( hiB == 1 ) {
+        reboot();
+      } else if ( hiB == 2 ) {
+        halt();
+      } else if ( hiB == 3 ) {
+        uint8_t loB = LOW_REGISTER(value);
+        uint8_t r = 0x00;
+        uint8_t g = 0x00;
+        uint8_t b = 0x00;
+        if ( (loB & 4) == 4 ) { r = 0xFF; }
+        if ( (loB & 2) == 2 ) { g = 0xFF; }
+        if ( (loB & 1) == 1 ) { b = 0xFF; }
+        
+        led.rgb( r, g, b );
+
+      } else if ( hiB == 4 ) {
+        // TODO : a remettre
+        // return yat4l_fs_downloadFromSerial() ? 1 : 0;
+        console.warn( (char*)"downloadFromSerial() SOON" );
+        return 0;
+      } else if ( hiB == 5 ) {
+        // return yatl.getFS()->downloadFromSubMcu() ? 1 : 0;
+        console.warn( (char*)"downloadFromWifi() NYI" );
+        return 0;
+      } else if ( hiB == 6 ) {
+        // real delay(x/10) because as we don't emulate
+        // CPU cycles ... Pascal.delay() is instable in time 
+        uint8_t loB = LOW_REGISTER(value);
+
+        int timeToSleep = loB * 10;
+        delay( timeToSleep );
+
+        return 0;
+      } // Wifi Device calls -> 64+
+      else if ( hiB == 64 ) {
+        // Start the telnet server in APmode
+        // See later for better
+
+        console.warn( (char*)"Telnet Server NYI" );
+
+        // // just to ensure WiFi will run...
+        // // Serial.println("Wasting IP");
+        // yat4l_wifi_getIP();
+        // // Serial.println("Closing WiFi");
+        // yat4l_wifi_close();
+
+        // // Serial.println("Opening WiFi APmode");
+        // int ok = yat4l_wifi_beginAP();
+        // if ( ok <= 0 ) {
+        //   _puts("(!!) Wifi has not started !\n");
+        //   return 0;
+        // } else {
+        //   _puts("(ii) Wifi has started :");
+        //   _puts( (const char*) yat4l_wifi_getIP() );
+        //   _puts(" !\n");
+        // }
+        // ok = yat4l_wifi_startTelnetd();
+        // if ( ok <= 0 ) {
+        //   _puts("(!!) Telnetd has not started !\n");
+        //   return 0;
+        // } else {
+        //   _puts("(ii) Telnetd has started :23 !\n");
+        // }
+
+        // return 1;
+        return 0;
+      }
+      else if ( hiB == 65 ) {
+        // // Get IP
+        // char* ip = yat4l_wifi_getIP();
+        // if ( ip == NULL ) { sendStringInKeybBuff( "\n" ); return 0; }
+        // bool ok = sendStringInKeybBuff( ip );
+        // ok = sendStringInKeybBuff( "\n" );
+        // return ok ? 1 : 0;
+        return 0;
+      }
+      else if ( hiB == 66 ) {
+        // // Get SSID
+        // char* ssid = yat4l_wifi_getSSID();
+        // if ( ssid == NULL ) { sendStringInKeybBuff( "\n" ); return 0; }
+        // bool ok = sendStringInKeybBuff( ssid );
+        // ok = sendStringInKeybBuff( "\n" );
+        // return ok ? 1 : 0;
+        return 0;
+      }
+      else if ( hiB == 67 ) {
+        // // Connect to configured SSID:PSK (via conf-index)
+        // uint8_t loB = LOW_REGISTER(value);
+        // yat4l_wifi_setWifiMode( WIFI_MODE_STA );
+        // bool ok = yat4l_wifi_connectToAP( loB );
+        // return ok ? 1 : 0;
+        return 0;
+      } 
+      else if ( hiB == 68 ) {
+        // // Get all configurated SSIDs
+        // sendStringInKeybBuff( __WIFI_GET_KNWON_SSIDS() ); // '\n' separated
+        // sendStringInKeybBuff( "-EOF-\n" );
+        // return 1;
+        return 0;
+      }
+      else if ( hiB == 69 ) {
+        // // Get all available SSIDs
+        // sendStringInKeybBuff( yat4l_wifi_scanAPs() ); // '\n' separated
+        // sendStringInKeybBuff( "-EOF-\n" );
+        // return 1;
+        return 0;
+      }
+      else if ( hiB == 70 ) {
+        // Open a Soft AP w/ predef. settings
+        // return yat4l_wifi_openAnAP((char*) "Yat4L_net", "yatl1234") ? 1 : 0;
+        console.warn( (char*)"Open SoftAP NYI" );
+        return 0;
+      }
+
+      return 0;
+  }
 
 int32 XtsBdosCall(uint8 regNum, int32 value) {
     if ( regNum == 225 ) { 
@@ -234,7 +358,7 @@ int32 XtsBdosCall(uint8 regNum, int32 value) {
     } else if ( regNum == 227 ) {
         return mp3BdosCall(value);
     } else if ( regNum == 228 ) {
-        //return subSystemBdosCall(value);
+        return subSystemBdosCall(value);
     } else if ( regNum == 229 ) {
         //   yat4l_dbug( "BdosCall 229 NYI => Test Mode" );
         //BdosTest229(value);

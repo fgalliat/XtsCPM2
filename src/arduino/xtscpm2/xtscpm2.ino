@@ -30,6 +30,16 @@
 // forward symbols
 void xts_handler();
 
+// ========> to move away =======>
+// Teensy 3.6 specific !!
+#define RESTART_ADDR 0xE000ED0C
+#define READ_RESTART() (*(volatile uint32_t *)RESTART_ADDR)
+#define WRITE_RESTART(val) ((*(volatile uint32_t *)RESTART_ADDR) = (val))
+void __softReset() {
+    WRITE_RESTART(0x5FA0004);
+}
+// ========> to move away =======>
+
 #include "xts_dev_joystick.h"
 Joystick joystick;
 
@@ -54,6 +64,17 @@ SoundCard snd;
 #define WIFI_AT_START 1
 #include "xts_dev_wifi.h"
 WiFi wifi;
+
+void reboot() {
+  __softReset();
+}
+
+void halt() {
+  console.warn((char*)"Halting");
+  while(true) {
+    delay(10000);
+  }
+}
 
 #include "xts_soft_menu.h"
 
