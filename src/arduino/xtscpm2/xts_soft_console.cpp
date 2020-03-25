@@ -380,14 +380,8 @@ int IOConsole::menu(char* title, char* items[], int nbItems, int x1, int y1, int
 
 // =========== Input routines ===========
 
-const long maxTimeInput = 500L;
-long lastTimeInput = 0L;
-
 void __softInterrupt() {
-    if ( millis() - lastTimeInput >= maxTimeInput ) { 
-        xts_handler();
-        lastTimeInput = millis();
-    }
+    xts_handler();
 }
 
 int IOConsole::kbhit() {

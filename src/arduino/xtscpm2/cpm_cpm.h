@@ -735,7 +735,7 @@ void _Bdos(void) {
 		break;
 #endif
 
-#if YATL_PLATFORM || YAEL_PLATFORM || YAT4L_PLATFORM
+#if XTASE_YATDB_LAYOUT
 	case 225:
 	case 226:
 	case 227:
@@ -744,17 +744,6 @@ void _Bdos(void) {
 	  	HL = XtsBdosCall(ch, DE);
 		break;
 #endif
-#else
- // desktop
- #ifdef YATL_PLATFORM
-	case 225:
-	case 226:
-	case 227:
-	case 228:
-	case 229:
-	  	HL = XtsBdosCall(ch, DE);
-		break;
- #endif
 #endif
 		/*
 		C = 230 (E6h) : Set 8 bit masking

@@ -5,7 +5,7 @@
  * cpm.h -> re-handle specific BdosCalls
  * abstraction_arduino.h -> refactor DRIVE_LED calls (done)
  *                       -> refactor _kbhit, getch, getche (done)
- * call xts_handler !!!
+ * call xts_handler !!! (done)
  * 
  * 
  * 
@@ -57,6 +57,7 @@ WiFi wifi;
 
 #include "xts_soft_menu.h"
 
+#include "xts_dev_arduino_bdos.h"
 
   // ======== TEMP SD access resources =========
   // just for File class def (PUN, LST, abstraction_arduino.h)
@@ -68,9 +69,23 @@ WiFi wifi;
   // #define LEDinv false
   bool Serial_useable = true;
 
-
+  const long maxTimePoll = 200L;
+  const long maxTimeInput = 700L;
+  long lastTimePoll = 0L;
+  long lastTimeInput = 0L;
   void xts_handler() {
+    long now = millis();
+    if ( now - lastTimePoll <= maxTimePoll ) { 
+        return;
+    }
+    lastTimePoll = millis();
     joystick.poll();
+
+    if ( now - lastTimeInput <= maxTimeInput ) { 
+        return;
+    }
+    lastTimeInput = millis();
+    
 
     if ( joystick.hasChangedState() ) {
         if ( joystick.isBtnMenu() ) {
