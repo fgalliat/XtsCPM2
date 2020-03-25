@@ -11,6 +11,9 @@
 // for pin definitions, please refer to the header file
 Adafruit_ILI9486_Teensy tft;
 
+#include "xts_dev_gfx.h"
+extern VideoCard screen;
+
 #define TFT_CAP_WIDTH 80
 #define TFT_CAP_HEIGHT 40
 
@@ -89,7 +92,8 @@ void con_tft_cursor(int row, int col) {
 
 void con_tft_cls() {
   // do cls
-  tft.fillScreen(BLACK);
+  // tft.fillScreen(BLACK);
+  screen.cls();
 
   // erase console mem
   int mlen = TFT_CAP_WIDTH * TFT_CAP_HEIGHT;
@@ -135,7 +139,8 @@ void _scrollTop(int howMany=1) {
   memset( &ttyMEMSEG[mAddr], 0x00, mlen );
   memset( &ttyAttrMEMSEG[mAddr], 0x00, mlen );
 
-  tft.fillRect(0, 0, 480, (TFT_CAP_HEIGHT-howMany)*8, CLR_TXT_BCK);
+  //tft.fillRect(0, 0, 480, (TFT_CAP_HEIGHT-howMany)*8, CLR_TXT_BCK);
+  screen.cls();
   _redrawWholeFrame();
 
   con_tft_cursor( TFT_CAP_HEIGHT, 1 );
