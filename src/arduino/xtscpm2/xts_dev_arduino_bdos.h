@@ -249,10 +249,7 @@ int32 bdosDraw(int32 value) {
         led.rgb( r, g, b );
 
       } else if ( hiB == 4 ) {
-        // TODO : a remettre
-        // return yat4l_fs_downloadFromSerial() ? 1 : 0;
-        console.warn( (char*)"downloadFromSerial() SOON" );
-        return 0;
+        return fileSystem.downloadFromSerial() ? 1 : 0;
       } else if ( hiB == 5 ) {
         // return yatl.getFS()->downloadFromSubMcu() ? 1 : 0;
         console.warn( (char*)"downloadFromWifi() NYI" );
