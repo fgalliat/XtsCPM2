@@ -38,7 +38,7 @@ It has easily wire able **5 UARTs**, **one SPI**, **one SDCard** slot, **2+1 I2C
 
 
 
-The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
+The board currently run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
 
 
 
@@ -53,12 +53,14 @@ The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
 - support SdCard FS
 - support GFX drawings, BMP, PAK & Sprites
 - call SuperVisor menu (to set console behavior, WiFi confs, audio (un)mute & test)
+- **run XtsCPM v2 software layer** (w/ vZ80 Emulation (no cycles emulation))
 
 **still TODO :** 
 
 - wire & use Ext. ports x2
 - /5v/GND/3.3v//TX/RX//SDA/SCL/GND/ bus x2
-- add XtsCPM software layer
+
+  
 
 **wiring diagram :**
 
