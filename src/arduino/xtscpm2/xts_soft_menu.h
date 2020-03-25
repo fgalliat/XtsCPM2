@@ -42,13 +42,17 @@ void menu() {
 
     char* title = (char*)"[ Main Menu ]";
 
-    int nbItems = 6;
+    int nbItems = 8;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
         (char*)"Console ->",
         (char*)"WiFi    ->",
         (char*)"Audio   ->",
         (char*)"Video Check",
+
+        (char*)"[ Reboot ]",
+        (char*)"[ Halt ]",
+
         (char*)"",
         (char*)"Exit",
     };
@@ -65,6 +69,10 @@ void menu() {
             audioMenu();
         } else if ( choice == 3 ) {
             videoTest();
+        } else if ( choice == 4 ) {
+            reboot();
+        } else if ( choice == 5 ) {
+            halt();
         } else if ( choice == -1 ) {
             break;
         } 
@@ -360,25 +368,6 @@ bool videoTest() {
     screen.drawPakFile( (char*) "Z/0/ISHAR.PAK", 20, 20, 0);
 
     screen.drawBitmapFile( (char*) "Z/0/GIRL.BMP", 40, 40);
-
-    /*
-    GFX.PAS
-
-    drawBmp('!sprite1.bmp'); {* loadSomeSprites *}
-    defineSprite(0, 0, 1, 19, 19); { upperL }
-    defineSprite(1, 40, 1, 19, 19); { upperR }
-    defineSprite(2, 40,20, 19, 19); { lowerR }
-
-    defineSprite(5, 20, 1, 19, 19); { title bck }
-
-    defineSprite(6, 62, 1, 31, 28); { file }
-    defineSprite(7, 95, 1, 31, 28); { folder }
-
-    drawSprite( 0, x, y ); ...
-
-    */
-
-
     screen.fillCircle( 100, 100, 30, 4 ); // 4 BLUE
     screen.drawCircle( 100, 100, 30, 5 ); // 5 YELLOW
 

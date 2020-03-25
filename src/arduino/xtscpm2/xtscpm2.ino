@@ -22,6 +22,11 @@
  * after adding xts_handler again
  * Le croquis utilise 132524 octets (12%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
  * Les variables globales utilisent 128280 octets (48%) de mémoire dynamique, ce qui laisse 133864 octets pour les variables locales. Le maximum est de 262144 octets.
+ * 
+ * after adding BdosCalls back
+ * Le croquis utilise 137284 octets (13%) de l'espace de stockage de programmes. Le maximum est de 1048576 octets.
+ * Les variables globales utilisent 128372 octets (48%) de mémoire dynamique, ce qui laisse 133772 octets pour les variables locales. Le maximum est de 262144 octets.
+ * 
  */
 
 #if XTASE_YATDB_LAYOUT
@@ -65,11 +70,18 @@ SoundCard snd;
 #include "xts_dev_wifi.h"
 WiFi wifi;
 
+void _kill() {
+  snd.stop();
+  led.rgb(0,0,0);
+}
+
 void reboot() {
+  _kill();
   __softReset();
 }
 
 void halt() {
+  _kill();
   console.warn((char*)"Halting");
   while(true) {
     delay(10000);
