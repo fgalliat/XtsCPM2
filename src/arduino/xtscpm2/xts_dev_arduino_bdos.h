@@ -185,11 +185,60 @@ int32 bdosDraw(int32 value) {
     return 0; 
 } 
 
+// ==============] mp3 Hardware Control [==========
+  uint8_t mp3BdosCall(int32 value) {
+      uint8_t a0 = HIGH_REGISTER(value);
+      uint8_t a1 = LOW_REGISTER(value);
+
+      if ( a0 >= (1 << 6) ) {
+         // 11000000 -> 11 play+loop -> 64(10)
+         // still 16000 addressable songs
+         bool loopMode = a0 >= (1 << 7);
+
+         if ( a0 >= 128 ) { a0 -= 128; }
+
+         a0 -= 64;
+         int trkNum = (a0<<8) + a1;
+
+         if ( loopMode ) console.warn("mp3 LOOP NYI");
+
+         if ( loopMode ) { ; }
+         else { snd.play(trkNum); }
+      } else if (a0 == 0x00) {
+          snd.stop();
+      } else if (a0 == 0x01) {
+          snd.pause();
+      } else if (a0 == 0x02) {
+          snd.next();
+      } else if (a0 == 0x03) {
+          snd.prev();
+      } else if (a0 == 0x04) {
+          snd.volume( a1 );
+      } else if (a0 == 0x05) {
+          // for now : just for demo
+          snd.play( 65 );
+      } else if (a0 == 0x06) {
+          return snd.isPlaying() ? 1 : 0;
+      }
+
+    return 0;
+  }
 
 
 
 int32 XtsBdosCall(uint8 regNum, int32 value) {
-    if ( regNum == 225 ) { return bdosDraw(value); }
+    if ( regNum == 225 ) { 
+        return bdosDraw(value); 
+    } else if ( regNum == 226 ) {
+        return xbdos_console(value);
+    } else if ( regNum == 227 ) {
+        return mp3BdosCall(value);
+    } else if ( regNum == 228 ) {
+        //return subSystemBdosCall(value);
+    } else if ( regNum == 229 ) {
+        //   yat4l_dbug( "BdosCall 229 NYI => Test Mode" );
+        //BdosTest229(value);
+    }
     console.print("Call Bdos #");
     console.print(regNum);
     console.print("->");
