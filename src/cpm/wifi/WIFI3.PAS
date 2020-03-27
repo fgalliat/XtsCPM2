@@ -17,18 +17,38 @@ begin
   seg[0]:=chr(len);
 end;
 
-procedure getIp;
+procedure getIp; {use memX}
 begin
   Bdos(228, (65 shl 8) + 0 );
+end;
+procedure getSSID; {use memX}
+begin
+  Bdos(228, (66 shl 8) + 0 );
+end;
+procedure getKnownAP; {use memX} { chr(10) sepa }
+begin
+  Bdos(228, (68 shl 8) + 0 );
+end;
+function connectAp(conf: integer) : integer;
+begin
+  connectAp := Bdos(228, (67 shl 8) + conf );
 end;
 
 var
   memX: string[255];
+  confNum: integer;
+  ok: integer;
 begin
   fixMemXSize(20, memX);
   writeln( memX );
   sendToRam( memX );
 
-  getIp;
-  writeln( memX );
+  write('IP   : '); getIp; writeln( memX );
+  write('SSID : '); getSSID; writeln( memX );
+  write('APs  : '); getKnownAP; writeln( memX );
+  
+  write('ConnectTo  : '); readln(confNum);
+  if ( confNum < 0) then exit;
+  ok := connectAp( confNum );
+  writeln('connected : ', ok);
 end.
