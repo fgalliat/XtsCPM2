@@ -13,11 +13,15 @@
       return len;
   } 
 
-  int setPascalStringToRam(int32 addr, char* src) {
+  int setPascalStringToRam(int32 addr, char* src, bool overwriteLen=false) {
       const int maxPascalStringLen = 255;
       int tlen = min( maxPascalStringLen, strlen(src) );
 
       uint8_t *F = (uint8_t*)_RamSysAddr(addr);
+
+      if (overwriteLen) {
+        F[0] = (uint8_t)tlen;
+      }
       uint8_t len = F[0]; // seems to be init len (not strlen)
 
       len = min(len, tlen);
@@ -31,8 +35,8 @@
       return getPascalStringFromRam(addr, dest, maxLen);
   }
 
-  int setStringToRam(int32 addr, char* src) {
-      return setPascalStringToRam(addr, src);
+  int setStringToRam(int32 addr, char* src, bool overwriteLen=false) {
+      return setPascalStringToRam(addr, src, overwriteLen);
   }
 
 
@@ -338,43 +342,64 @@ int32 bdosDraw(int32 value) {
           return 0;
         }
 
-        // to ensure 0x00 right padding
-        char mem[256]; memset(mem, 0x00, 256);
-        sprintf( mem, "%s", ip );
-        setStringToRam( memXchangeAddr, mem ); 
+        setStringToRam( memXchangeAddr, ip, true ); 
 
         return 1;
       }
       else if ( hiB == 66 ) {
-        // // Get SSID
-        // char* ssid = yat4l_wifi_getSSID();
-        // if ( ssid == NULL ) { sendStringInKeybBuff( "\n" ); return 0; }
-        // bool ok = sendStringInKeybBuff( ssid );
-        // ok = sendStringInKeybBuff( "\n" );
-        // return ok ? 1 : 0;
-        return 0;
+        // Get SSID
+
+        if ( memXchangeAddr == MEMXCHANGE_NOTINIT ) {
+          console.warn( (char*)"MEMXCHANGE not Init" );
+          return 0;
+        }
+
+        char* ssid = wifi.getSSID();
+        if ( ssid == NULL ) {
+          console.warn( (char*)"Could not get SSID" );
+          return 0;
+        }
+
+        setStringToRam( memXchangeAddr, ssid, true ); 
+        return 1;
       }
       else if ( hiB == 67 ) {
-        // // Connect to configured SSID:PSK (via conf-index)
-        // uint8_t loB = LOW_REGISTER(value);
-        // yat4l_wifi_setWifiMode( WIFI_MODE_STA );
-        // bool ok = yat4l_wifi_connectToAP( loB );
-        // return ok ? 1 : 0;
-        return 0;
+        // Connect to configured SSID:PSK (via conf-index)
+        uint8_t loB = LOW_REGISTER(value);
+        bool ok = wifi.connectToAp( loB );
+        return ok ? 1 : 0;
       } 
       else if ( hiB == 68 ) {
-        // // Get all configurated SSIDs
-        // sendStringInKeybBuff( __WIFI_GET_KNWON_SSIDS() ); // '\n' separated
-        // sendStringInKeybBuff( "-EOF-\n" );
-        // return 1;
-        return 0;
+        // Get all configurated SSIDs
+        if ( memXchangeAddr == MEMXCHANGE_NOTINIT ) {
+          console.warn( (char*)"MEMXCHANGE not Init" );
+          return 0;
+        }
+
+        char* aps = wifi.listAp();
+        if ( aps == NULL ) {
+          console.warn( (char*)"Could not get APs" );
+          return 0;
+        }
+
+        setStringToRam( memXchangeAddr, aps, true ); 
+        return 1;
       }
       else if ( hiB == 69 ) {
-        // // Get all available SSIDs
-        // sendStringInKeybBuff( yat4l_wifi_scanAPs() ); // '\n' separated
-        // sendStringInKeybBuff( "-EOF-\n" );
-        // return 1;
-        return 0;
+        // Get all available SSIDs
+        if ( memXchangeAddr == MEMXCHANGE_NOTINIT ) {
+          console.warn( (char*)"MEMXCHANGE not Init" );
+          return 0;
+        }
+        // for now as same as known SSIDs
+        char* aps = wifi.listAp();
+        if ( aps == NULL ) {
+          console.warn( (char*)"Could not get APs" );
+          return 0;
+        }
+
+        setStringToRam( memXchangeAddr, aps, true ); 
+        return 1;
       }
       else if ( hiB == 70 ) {
         // Open a Soft AP w/ predef. settings
