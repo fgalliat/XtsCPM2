@@ -34,19 +34,31 @@ begin
   connectAp := Bdos(228, (67 shl 8) + conf );
 end;
 
+{===========}
+function strCopy(var src: aStr) : aStr;
+begin
+  strCopy := copy( src, 1, length(src) );
+end;
+{===========}
+
 var
   memX: string[255];
   confNum: integer;
   ok: integer;
+
+  ip: string[ 17 ];
 begin
   fixMemXSize(20, memX);
-  writeln( memX );
   sendToRam( memX );
 
-  write('IP   : '); getIp; writeln( memX );
+  write('IP   : '); getIp; writeln( memX ); 
+  ip := strCopy( memX );
   write('SSID : '); getSSID; writeln( memX );
   write('APs  : '); getKnownAP; writeln( memX );
-  
+
+  { getIpStr(..) can't share memX in routine }  
+  write('IP was : '); writeln( ip );
+
   write('ConnectTo  : '); readln(confNum);
   if ( confNum < 0) then exit;
   ok := connectAp( confNum );
