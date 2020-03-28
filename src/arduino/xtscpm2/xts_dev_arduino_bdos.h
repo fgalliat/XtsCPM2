@@ -410,6 +410,41 @@ int32 bdosDraw(int32 value) {
       else if ( hiB == 71 ) {
         return wifi.isAtHome() ? 1 : 0;
       }
+      else if ( hiB == 72 ) {
+        // wget "server;port;bearerName;url"
+        if ( memXchangeAddr == MEMXCHANGE_NOTINIT ) {
+          console.warn( (char*)"MEMXCHANGE not Init" );
+          return 0;
+        }
+        char query[256]; memset(query, 0x00, 256);
+        getStringFromRam( memXchangeAddr, query, 255 );
+        
+        const char sepa = ';';
+        int count = str_count(query, sepa);
+
+        if ( !(count == 2 || count == 3) ) {
+          console.warn( (char*)"WGET invalid query" );
+          return 0;
+        }
+
+        char* server  = str_split(query, sepa, 0);
+        char* portStr = str_split(query, sepa, 1);
+        char* apiKey  = NULL;
+        char* url     = NULL;
+        if ( count == 2 ) {
+          url = str_split(query, sepa, 2);
+        } else {
+          apiKey = str_split(query, sepa, 2);
+          url = str_split(query, sepa, 3);
+        }
+
+        int port = atoi( portStr );
+
+        // TODO : the wget request
+        // TODO : write the result in @memXchangeAddr
+
+        return 0;
+      }
 
       return 0;
   }
