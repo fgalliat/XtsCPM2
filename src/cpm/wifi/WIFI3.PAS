@@ -33,6 +33,10 @@ function connectAp(conf: integer) : integer;
 begin
   connectAp := Bdos(228, (67 shl 8) + conf );
 end;
+function isAtHome : integer;
+begin
+  isAtHome := Bdos(228, (71 shl 8) + 0 );
+end;
 
 {===========}
 function strCopy(var src: aStr) : aStr;
@@ -46,7 +50,8 @@ var
   confNum: integer;
   ok: integer;
 
-  ip: string[ 17 ];
+  ip: string[17];
+  wgetReq: string[255];
 begin
   fixMemXSize(20, memX);
   sendToRam( memX );
@@ -59,8 +64,20 @@ begin
   { getIpStr(..) can't share memX in routine }  
   write('IP was : '); writeln( ip );
 
+  { 8000 if @Home / 8090 else }
+  {           123456789 }
+  wgetReq := '$home;8090;sensors;/sensors/sensor/1';
+  wgetReq := '$home;8090;sensors;/rss/titles/1/arduino';
+  if ( isAtHome = 1 ) then
+    wgetReq[9] := '0';
+  writeln( wgetReq );
+
   write('ConnectTo  : '); readln(confNum);
   if ( confNum < 0) then exit;
   ok := connectAp( confNum );
   writeln('connected : ', ok);
+
+  
+
+
 end.

@@ -407,6 +407,9 @@ int32 bdosDraw(int32 value) {
         console.warn( (char*)"Open SoftAP NYI" );
         return 0;
       }
+      else if ( hiB == 71 ) {
+        return wifi.isAtHome() ? 1 : 0;
+      }
 
       return 0;
   }
