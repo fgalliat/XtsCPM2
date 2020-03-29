@@ -37,6 +37,10 @@ function isAtHome : integer;
 begin
   isAtHome := Bdos(228, (71 shl 8) + 0 );
 end;
+function wget : integer;
+begin
+  wget := Bdos(228, (72 shl 8) + 0 );
+end;
 
 {===========}
 function strCopy(var src: aStr) : aStr;
@@ -52,6 +56,7 @@ var
 
   ip: string[17];
   wgetReq: string[255];
+  httpRC: integer;
 begin
   fixMemXSize(20, memX);
   sendToRam( memX );
@@ -64,6 +69,14 @@ begin
   { getIpStr(..) can't share memX in routine }  
   write('IP was : '); writeln( ip );
 
+
+  write('ConnectTo  : '); readln(confNum);
+  if ( confNum < 0) then exit;
+  ok := connectAp( confNum );
+  writeln('connected : ', ok);
+
+  write('IP   : '); getIp; writeln( memX ); 
+
   { 8000 if @Home / 8090 else }
   {           123456789 }
   wgetReq := '$home;8090;sensors;/sensors/sensor/1';
@@ -72,12 +85,12 @@ begin
     wgetReq[9] := '0';
   writeln( wgetReq );
 
-  write('ConnectTo  : '); readln(confNum);
-  if ( confNum < 0) then exit;
-  ok := connectAp( confNum );
-  writeln('connected : ', ok);
+  { Have to be sure that addr is not modified ... }
+  memX := strCopy( wgetReq );  
+  { memX := wgetReq; ???? }
 
-  
+  httpRC := wget();
+  writeln( memX );
 
 
 end.
