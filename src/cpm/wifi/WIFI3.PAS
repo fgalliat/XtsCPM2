@@ -89,7 +89,8 @@ begin
   memX := strCopy( wgetReq );  
   { memX := wgetReq; ???? }
 
-  httpRC := wget();
+  httpRC := wget;
+  writeln( 'wget : ', httpRC );
   writeln( memX );
 
 

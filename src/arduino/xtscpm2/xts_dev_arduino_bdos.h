@@ -452,6 +452,7 @@ int32 bdosDraw(int32 value) {
           free(apiKey);
         }
         free(url);
+        setStringToRam(memXchangeAddr, dest, true);
 
         // return 1 if httpRC == 200
         return httpRc == 200 ? 1 : 0;
