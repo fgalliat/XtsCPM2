@@ -442,8 +442,19 @@ int32 bdosDraw(int32 value) {
 
         // TODO : the wget request
         // TODO : write the result in @memXchangeAddr
+        const int maxRespLen = 255;
+        char dest[maxRespLen+1]; memset(dest, 0x00, maxRespLen+1);
+        int httpRc = wifi.wget( server, port, url, dest, maxRespLen, apiKey );
 
-        return 0;
+        free(server);
+        free(portStr);
+        if ( apiKey != NULL ) {
+          free(apiKey);
+        }
+        free(url);
+
+        // return 1 if httpRC == 200
+        return httpRc == 200 ? 1 : 0;
       }
 
       return 0;

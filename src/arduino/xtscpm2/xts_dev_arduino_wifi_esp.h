@@ -646,10 +646,9 @@ char* __WIFI_GET_PSK(char* ssid);
 
     const int MAX_IPD_BLOC_LEN = 2048;
 
-    // return type is not yet certified, may use a packetHandler ....
     // ex. wifi_wget("www.google.com", 80, "/search?q=esp8266" 
     // ex. wifi_wget("$home", 8089, "/login?username=toto&pass=titi" 
-    // TODO : return HTTP reposnse code
+    // returns HTTP reponse code
     int wifi_wget(char* host, int port, char* query, char* dest, int maxLength, char* headers) {
       int httpResponseCode = -1;
 
