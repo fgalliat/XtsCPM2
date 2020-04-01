@@ -24,11 +24,12 @@ Begin
   player.att  := 12;
   player.def  := 12;
 
+  InitItem( curItem, 'Sword of Moon', 6, 1);
+  player.inventory[1] := curItem;
   player.inventory[1].active := true;
-  player.inventory[1].name := 'Sword of Dragon';
-  player.inventory[1].att := 5;
-  player.inventory[1].def := 0;
-
+  InitItem( curItem, 'Sword of Sun', 7, 0);
+  player.inventory[2] := curItem;
+  player.inventory[2].active := true;
   DispPerso( player );
 
   { backup file - write }
@@ -46,6 +47,7 @@ Begin
   writeln('end of read--------');
   DispPerso( player );
 
+  write('Press Enter.'); readln;
   MainMenu(player);
 
   { end of console app }

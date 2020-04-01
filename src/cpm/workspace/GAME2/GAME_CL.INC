@@ -38,3 +38,11 @@ begin
     perso.inventory[i].active := false;
   end;
 end;
+
+procedure InitItem(var itm: Item; name: mStr; att,def: byte);
+begin
+  itm.name := name;
+  itm.active := false;
+  itm.att := att;
+  itm.def := def;
+end;
