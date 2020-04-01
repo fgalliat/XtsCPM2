@@ -16,7 +16,9 @@ Var
   curItem : Item;
   i : Integer;
   attMod, defMod : Byte; { @ before battle }
-  itemAvail : Array[1..4] of Item;
+  {itemAvail : Array[1..4] of Item; }
+  itemAvail : itmAry;
+  ok : boolean; { fctResult MUST be read in TP3 }
 
 Begin
 
@@ -24,7 +26,7 @@ Begin
   InitItem( itemAvail[2], 'Sword of Sun' , 7, 0);
   InitItem( itemAvail[3], 'Def rune', 0, 2);
   InitItem( itemAvail[4], 'Att rune', 6, 0);
-  SaveItems( itemAvail, 4 );
+  SaveItems( itemAvail );
 
   if ( not ReadPerso(player) ) then
   begin
@@ -53,7 +55,7 @@ Begin
 
   { backup file - read }
   writeln('begin of read');
-  ReadPerso( player );
+  ok := ReadPerso( player );
   writeln('end of read--------');
   DispPerso( player );
 

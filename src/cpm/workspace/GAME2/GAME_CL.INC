@@ -2,6 +2,7 @@
 
 const
   BACKPAK_SIZE = 5;
+  ALLITEM_SIZE = 12;
 
 Type 
   Item = Record
@@ -27,7 +28,8 @@ Type
   end;
 
 
-type mStr = string[255];
+type mStr   = string[255];
+type itmAry = Array[1..ALLITEM_SIZE] of Item;
 
 procedure InitPerso(var perso: Character; name: mStr);
  var i:integer;
@@ -42,7 +44,8 @@ end;
 procedure InitItem(var itm: Item; name: mStr; att,def: byte);
 begin
   itm.name := name;
-  itm.active := false;
+  { itm.active := false; }
+  itm.active := true;
   itm.att := att;
   itm.def := def;
 end;

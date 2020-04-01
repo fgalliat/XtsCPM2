@@ -3,6 +3,7 @@
 procedure MainMenu(var perso : Character);
   var
     choice : integer;
+    ok : boolean;
 begin
   choice := -1;
   repeat
@@ -21,7 +22,7 @@ begin
     end
    else if ( choice = 2 ) then
     begin
-      ReadPerso(perso);
+      ok := ReadPerso(perso);
     end
    else if ( choice = 3 ) then
     begin
