@@ -38,9 +38,22 @@ begin
 end;
 
 procedure monsterStrike(var monster: Monster; var perso: Character; attMod, defMod : Byte);
+var damage: byte;
 begin
   { TODO : better }
-  perso.hp := perso.hp - RANDOM( monster.att );
+  writeln( ') Monster strikes' );
+  damage := RANDOM( monster.att );
+  { else as a Byte : make 255-damage }
+  if ( damage > defMod ) then damage := damage - defMod
+  else damage := 0;
+
+  if ( damage = 0 ) then
+   begin
+     writeln( ' ) He missed you.' );
+   end
+  else
+     writeln( ' ) He hurts you by ', damage, 'HP' );
+  perso.hp := perso.hp - damage;
 end;
 
 procedure playerStrike(var perso: Character; var monster: Monster; attMod, defMod : Byte);
