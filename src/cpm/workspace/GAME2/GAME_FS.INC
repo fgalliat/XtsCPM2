@@ -3,6 +3,7 @@
 {type mStr = string[255];}
 
 const fileName = 'player.dat';
+const fileNameITM = 'items.dat';
 
 procedure SavePerso(perso: Character);
 Var
@@ -27,4 +28,26 @@ begin
   end; }
   read(pBackup, perso);
   close(pBackup);
+end;
+{
+procedure SaveItem(itm: Item; erase: boolean);
+Var
+  pItems : file of Item;
+begin
+  Assign(pItems, fileNameITM);
+  if (erase) then Rewrite(pItems);
+  Write( pItems, itm );
+  Close(pItems);
+end;
+}
+procedure SaveItems(itms: Array of Item; nbItm: integer);
+Var
+  pItems : file of Item;
+  i : integer;
+begin
+  Assign(pItems, fileNameITM);
+  Rewrite(pItems);
+  for i := 1 to nbItm do
+    Write( pItems, itms[i] );
+  Close(pItems);
 end;

@@ -16,19 +16,25 @@ Var
   curItem : Item;
   i : Integer;
   attMod, defMod : Byte; { @ before battle }
+  itemAvail : Array[1..4] of Item;
 
 Begin
+
+  InitItem( itemAvail[1], 'Sword of Moon', 6, 1);
+  InitItem( itemAvail[2], 'Sword of Sun' , 7, 0);
+  InitItem( itemAvail[3], 'Def rune', 0, 2);
+  InitItem( itemAvail[4], 'Att rune', 6, 0);
+  SaveItems( itemAvail, 4 );
+
   InitPerso( player, 'Bishop' );
   player.hp   := 12;
   player.gp   := 100;
   player.att  := 12;
   player.def  := 12;
 
-  InitItem( curItem, 'Sword of Moon', 6, 1);
-  player.inventory[1] := curItem;
+  player.inventory[1] := itemAvail[1];
   player.inventory[1].active := true;
-  InitItem( curItem, 'Sword of Sun', 7, 0);
-  player.inventory[2] := curItem;
+  player.inventory[2] := itemAvail[3];
   player.inventory[2].active := true;
   DispPerso( player );
 
