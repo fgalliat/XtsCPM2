@@ -5,24 +5,7 @@ program TestRecord;
 
 { Xtase TestRecord v1 @Mar 2020 }
 
-const
-  BACKPAK_SIZE = 5;
-
-Type 
-  Item = Record
-    name     : string[16];
-    active   : Boolean; { 'cause pre-allocated }
-    att, def : Byte;
-  end;
-
-  Character = Record
-    name     : string[16];
-    hp, gp   : Integer;
-    lvl      : Byte;
-    att, def : Byte;
-
-    inventory: Array[1..BACKPAK_SIZE] of Item;
-  end;
+{$I GAME_CL.INC} { classes }
 
 {$I GAME_UI.INC}
 {$I GAME_FS.INC}

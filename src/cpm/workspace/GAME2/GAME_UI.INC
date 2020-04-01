@@ -1,17 +1,5 @@
 { Game UI include @Mar 2020 Xtase-fgalliat }
 
-type mStr = string[255];
-
-procedure InitPerso(var perso: Character; name: mStr);
- var i:integer;
-begin
-  perso.name := name;
-  for i := 1 to BACKPAK_SIZE do
-  begin
-    perso.inventory[i].active := false;
-  end;
-end;
-
 procedure DispPerso(perso: Character);
  var
    attMod, defMod : byte;
