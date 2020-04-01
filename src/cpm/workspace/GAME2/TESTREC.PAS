@@ -26,6 +26,7 @@ Type
 
 {$I GAME_UI.INC}
 {$I GAME_FS.INC}
+{$I GAME_MM.INC}
 
 Var
   player  : Character;
@@ -62,6 +63,8 @@ Begin
   writeln('end of read--------');
   DispPerso( player );
 
+  MainMenu(player);
+
   { end of console app }
-  readln;
+  write('Bye.'); readln;
 End.
