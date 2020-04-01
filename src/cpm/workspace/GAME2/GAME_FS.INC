@@ -46,3 +46,35 @@ begin
     Write( pItems, itms[i] );
   Close(pItems);
 end;
+
+function ReadItems(var itms: itmAry) : boolean;
+ var
+   pItems : file of Item;
+   exists: boolean;
+   curItm: Item;
+   i : integer;
+begin
+  for i := 1 to ALLITEM_SIZE do
+    itms[i].active := false;
+
+  Assign(pItems,fileName);
+  {$I-} { no fail on error }
+  reset(pItems);
+  {$I+} { fail back on error }
+  exists := (IOresult = 0);
+  if (not exists) or ( eof(pItems) ) then
+   begin
+    ReadItems := false;
+   end
+  else
+    begin
+      i := 1;
+      repeat
+        read(pItems, curItm);
+        itms[i] := curItm;
+        i := i + 1;
+      until ( eof(pItems) );
+      ReadItems := true;
+    end;
+  close(pItems);
+end;

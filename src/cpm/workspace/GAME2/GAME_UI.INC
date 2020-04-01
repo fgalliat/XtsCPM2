@@ -26,3 +26,20 @@ begin
   writeln('-eoi-');
   writeln('ATT: ', attMod, ' DEF: ', defMod);
 end;
+
+procedure DispItems(var itms: itmAry);
+ var
+   i : Integer;
+   curItem: Item;
+begin
+  writeln( '=============' );
+  for i := 1 to ALLITEM_SIZE do
+  begin
+    curItem := itms[i];
+    if curItem.active then
+     begin
+      writeln( ' Item#', i, ' ', curItem.name, ' ATT:', curItem.att, ' DEF:', curItem.def );
+     end;
+  end;
+  writeln('-eol-');
+end;
