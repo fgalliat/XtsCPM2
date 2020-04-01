@@ -4,6 +4,7 @@ procedure MainMenu(var perso : Character);
   var
     choice : integer;
     ok : boolean;
+    battleF: File;
 begin
   choice := -1;
   repeat
@@ -12,6 +13,7 @@ begin
    writeln('1. Save Player');
    writeln('2. Load Player');
    writeln('3. Disp Player');
+   writeln('4. Start Battle');
    writeln('');
    writeln('0. Exit Menu');
    write('Choice ? '); readln( choice );
@@ -28,6 +30,11 @@ begin
     begin
       DispPerso(perso);
       readln;
+    end
+   else if ( choice = 4 ) then
+    begin
+      Assign( battleF, 'BATTLE.COM' );
+      Execute( battleF );
     end;
   until ( choice = 0 );
 

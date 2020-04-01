@@ -1,7 +1,7 @@
 program TestRecord;
 
-{$I XTSCOMPAT.INC} {PC}
-{ $I XTSCOMPT.INC} {YATL}
+{ $I XTSCOMPAT.INC} {PC}
+{$I XTSCOMPT.INC} {YATL}
 
 { Xtase TestRecord v1 @Mar 2020 }
 
@@ -15,8 +15,6 @@ Var
   player  : Character;
   curItem : Item;
   i : Integer;
-  attMod, defMod : Byte; { @ before battle }
-  {itemAvail : Array[1..4] of Item; }
   itemAvail : itmAry;
   monsters : mnstAry;
   ok : boolean; { fctResult MUST be read in TP3 }
@@ -27,17 +25,17 @@ Begin
   begin
     InitItem( itemAvail[1], 'Sword of Moon', 6, 1);
     InitItem( itemAvail[2], 'Sword of Sun' , 7, 0);
-    InitItem( itemAvail[3], 'Def rune', 0, 2);
-    InitItem( itemAvail[4], 'Att rune', 6, 0);
+    InitItem( itemAvail[3], 'Def rune',      0, 2);
+    InitItem( itemAvail[4], 'Att rune',      6, 0);
     SaveItems( itemAvail );
   end;
   DispItems( itemAvail );
 
   if ( not ReadMonsters(monsters) ) then
   begin
-    InitMonster( monsters[1], 'Lizard',  1, 10, 6,    6);
-    InitMonster( monsters[2], 'Gobelin', 1, 10, 7,    3);
-    InitMonster( monsters[3], 'Orc',     1, 15, 9,    8);
+    InitMonster( monsters[1], 'Lizard',  1, 10,   6,  6);
+    InitMonster( monsters[2], 'Gobelin', 1, 10,   7,  3);
+    InitMonster( monsters[3], 'Orc',     1, 15,   9,  8);
     InitMonster( monsters[4], 'Dragon',  3, 50, 128, 64);
     SaveMonsters( monsters );
   end;
@@ -60,16 +58,16 @@ Begin
   end;
   DispPerso( player );
 
+  {
   player.name := 'Rolph mod';
   player.inventory[1].name := 'Soap ball';
   DispPerso( player );
 
-  { backup file - read }
   writeln('begin of read');
   ok := ReadPerso( player );
   writeln('end of read--------');
   DispPerso( player );
-
+  }
   write('Press Enter.'); readln;
   MainMenu(player);
 

@@ -1,7 +1,7 @@
 program BattleV1; { prgm must have #name than fcts }
 
-{$I XTSCOMPAT.INC} {PC}
-{ $I XTSCOMPT.INC} {YATL}
+{ $I XTSCOMPAT.INC} {PC}
+{$I XTSCOMPT.INC} {YATL}
 
 { Xtase BattleSystem v1 @Mar 2020 }
 
@@ -121,8 +121,6 @@ Var
   player  : Character;
   curItem : Item;
   i : Integer;
-  attMod, defMod : Byte; { @ before battle }
-  {itemAvail : Array[1..4] of Item; }
   itemAvail : itmAry;
   ok : boolean; { fctResult MUST be read in TP3 }
   monsters : mnstAry;
@@ -151,12 +149,14 @@ Begin
     exit;
   end;
 
-  { DispItems( itemAvail ); }
   DispPerso( player );
 
   i := meetMonster( player, monsters );
   ok := battle( player, monsters[i] );
-  DispPerso( player );
+  if ( not ok ) then
+    writeln('You are DEAD ...')
+  else
+    DispPerso( player );
 
   { end of console app }
   write('Bye.'); readln;
