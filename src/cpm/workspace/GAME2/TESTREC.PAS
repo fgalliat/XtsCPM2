@@ -1,15 +1,15 @@
 program TestRecord;
 
-{ $I XTSCOMPAT.INC} {PC}
-{$I XTSCOMPT.INC} {YATL}
+{$I XTSCOMPAT.INC} {PC}
+{ $I XTSCOMPT.INC} {YATL}
 
 { Xtase TestRecord v1 @Mar 2020 }
 
 {$I GAME_CL.INC} { classes }
 
-{$I GAME_UI.INC}
-{$I GAME_FS.INC}
-{$I GAME_MM.INC}
+{$I GAME_UI.INC} { UI routines }
+{$I GAME_FS.INC} { Storage routines }
+{$I GAME_MM.INC} { Main Menu routines }
 
 Var
   player  : Character;

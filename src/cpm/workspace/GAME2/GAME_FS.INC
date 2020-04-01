@@ -57,7 +57,7 @@ begin
   for i := 1 to ALLITEM_SIZE do
     itms[i].active := false;
 
-  Assign(pItems,fileName);
+  Assign(pItems,fileNameITM);
   {$I-} { no fail on error }
   reset(pItems);
   {$I+} { fail back on error }
@@ -70,6 +70,7 @@ begin
     begin
       i := 1;
       repeat
+        seek(pItems, i-1 );
         read(pItems, curItm);
         itms[i] := curItm;
         i := i + 1;
