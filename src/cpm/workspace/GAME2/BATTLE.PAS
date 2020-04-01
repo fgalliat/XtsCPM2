@@ -11,7 +11,31 @@ program BattleV1; { prgm must have #name than fcts }
 {$I GAME_FS.INC} { Storage routines }
 {$I GAME_MM.INC} { Main Menu routines }
 
-function battle(var perso: Character): boolean;
+
+function meetMonster(var perso: Character; var monsters: mnstAry): integer;
+ var
+   found, i : integer;
+   curMonster: Monster;
+   pLvl : integer;
+begin
+  { use perso to determin his level .. }
+  pLvl := perso.lvl;
+  found := 0;
+  repeat
+     i := RANDOM( ALLMONSTER_SIZE ) + 1;
+     curMonster := monsters[i];
+     if ( curMonster.active ) then
+     begin
+       if ( curMonster.lvl >= pLvl-3 ) and ( curMonster.lvl <= pLvl+3 ) then
+       begin
+         found := i;
+       end;
+     end;
+  until (found > 0);
+  meetMonster := found;
+end;
+
+function battle(var perso: Character; var monster: Monster): boolean;
  var
    attMod, defMod : byte;
    i : Integer;
@@ -31,6 +55,7 @@ begin
   end;
 
   writeln('ATT: ', attMod, ' DEF: ', defMod);
+  write('You will fight : '); DispMonster(monster);
 
   battle := true;
 end;
@@ -48,6 +73,7 @@ Var
   monsters : mnstAry;
 Begin
   ClrScr;
+  Randomize;
 
   if ( not ReadItems(itemAvail) ) then
   begin
@@ -70,10 +96,11 @@ Begin
     exit;
   end;
 
-  DispItems( itemAvail );
+  { DispItems( itemAvail ); }
   DispPerso( player );
 
-  ok := battle( player );
+  i := meetMonster( player, monsters );
+  ok := battle( player, monsters[i] );
   DispPerso( player );
 
   { end of console app }
