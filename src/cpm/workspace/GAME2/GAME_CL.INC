@@ -53,11 +53,12 @@ begin
   itm.def := def;
 end;
 
-procedure InitMonster(var monster: Monster; name: mStr; lvl,att,def: Byte);
+procedure InitMonster(var monster: Monster; name: mStr; lvl,hp,att,def: Byte);
  var i:integer;
 begin
   monster.name := name;
   monster.active := true;
+  monster.hp := hp;
   monster.att := att;
   monster.def := def;
   monster.lvl := lvl;

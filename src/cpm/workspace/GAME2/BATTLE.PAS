@@ -40,7 +40,6 @@ end;
 procedure monsterStrike(var monster: Monster; var perso: Character; attMod, defMod : Byte);
 var damage: byte;
 begin
-  { TODO : better }
   writeln( ') Monster strikes' );
   damage := RANDOM( monster.att );
   { else as a Byte : make 255-damage }
@@ -57,9 +56,22 @@ begin
 end;
 
 procedure playerStrike(var perso: Character; var monster: Monster; attMod, defMod : Byte);
+var damage: byte;
 begin
-  { TODO : better }
-  monster.hp := monster.hp - RANDOM( attMod );
+  writeln( ') Player strikes' );
+  damage := RANDOM( attMod );
+  { else as a Byte : make 255-damage }
+  if ( damage > monster.def ) then damage := damage - monster.def
+  else damage := 0;
+
+  if ( damage = 0 ) then
+   begin
+     writeln( ' ) You missed him.' );
+   end
+  else
+     writeln( ' ) You hurts him by ', damage, 'HP' );
+
+  monster.hp := monster.hp - damage;
 end;
 
 function battle(var perso: Character; var monster: Monster): boolean;

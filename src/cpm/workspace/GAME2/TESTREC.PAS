@@ -35,10 +35,10 @@ Begin
 
   if ( not ReadMonsters(monsters) ) then
   begin
-    InitMonster( monsters[1], 'Lizard',  1, 6,    6);
-    InitMonster( monsters[2], 'Gobelin', 1, 7,    3);
-    InitMonster( monsters[3], 'Orc',     1, 9,    8);
-    InitMonster( monsters[4], 'Dragon',  3, 128, 64);
+    InitMonster( monsters[1], 'Lizard',  1, 10, 6,    6);
+    InitMonster( monsters[2], 'Gobelin', 1, 10, 7,    3);
+    InitMonster( monsters[3], 'Orc',     1, 15, 9,    8);
+    InitMonster( monsters[4], 'Dragon',  3, 50, 128, 64);
     SaveMonsters( monsters );
   end;
   DispMonsters( monsters );
