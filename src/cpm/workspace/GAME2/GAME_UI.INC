@@ -1,5 +1,52 @@
 { Game UI include @Mar 2020 Xtase-fgalliat }
 
+procedure DispItem(itm: Item);
+begin
+  writeln( 'Item: ', itm.name, ' ATT:', itm.att, ' DEF:', itm.def );
+end;
+
+procedure DispItems(var itms: itmAry);
+ var
+   i : Integer;
+   curItem: Item;
+begin
+  writeln( '=============' );
+  for i := 1 to ALLITEM_SIZE do
+  begin
+    curItem := itms[i];
+    if curItem.active then
+     begin
+      write( ' ', i, ' ' );
+      DispItem( curItem );
+     end;
+  end;
+  writeln('-eol-');
+end;
+
+procedure DispMonster(monster: Monster);
+begin
+  writeln( 'Monster: ', monster.name, ' LVL:', monster.lvl, ' ATT:', monster.att, ' DEF:', monster.def );
+end;
+
+procedure DispMonsters(var itms: mnstAry);
+ var
+   i : Integer;
+   curItem: Monster;
+begin
+  writeln( '=============' );
+  for i := 1 to ALLMONSTER_SIZE do
+  begin
+    curItem := itms[i];
+    if curItem.active then
+     begin
+      write( ' ', i, ' ' );
+      DispMonster( curItem );
+     end;
+  end;
+  writeln('-eol-');
+end;
+
+
 procedure DispPerso(perso: Character);
  var
    attMod, defMod : byte;
@@ -25,21 +72,4 @@ begin
   end;
   writeln('-eoi-');
   writeln('ATT: ', attMod, ' DEF: ', defMod);
-end;
-
-procedure DispItems(var itms: itmAry);
- var
-   i : Integer;
-   curItem: Item;
-begin
-  writeln( '=============' );
-  for i := 1 to ALLITEM_SIZE do
-  begin
-    curItem := itms[i];
-    if curItem.active then
-     begin
-      writeln( ' Item#', i, ' ', curItem.name, ' ATT:', curItem.att, ' DEF:', curItem.def );
-     end;
-  end;
-  writeln('-eol-');
 end;

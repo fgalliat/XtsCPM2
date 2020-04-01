@@ -18,6 +18,7 @@ Var
   attMod, defMod : Byte; { @ before battle }
   {itemAvail : Array[1..4] of Item; }
   itemAvail : itmAry;
+  monsters : mnstAry;
   ok : boolean; { fctResult MUST be read in TP3 }
 
 Begin
@@ -31,6 +32,16 @@ Begin
     SaveItems( itemAvail );
   end;
   DispItems( itemAvail );
+
+  if ( not ReadMonsters(monsters) ) then
+  begin
+    InitMonster( monsters[1], 'Lizard',  1, 6,    6);
+    InitMonster( monsters[2], 'Gobelin', 1, 7,    3);
+    InitMonster( monsters[3], 'Orc',     1, 9,    8);
+    InitMonster( monsters[4], 'Dragon',  3, 128, 64);
+    SaveMonsters( monsters );
+  end;
+  DispMonsters( monsters );
 
   if ( not ReadPerso(player) ) then
   begin
@@ -47,7 +58,6 @@ Begin
     player.inventory[2].active := true;
     SavePerso(player);
   end;
-
   DispPerso( player );
 
   player.name := 'Rolph mod';

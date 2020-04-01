@@ -1,8 +1,10 @@
 { Game FS include @Mar 2020 Xtase-fgalliat }
 
-const fileName = 'player.dat';
-const fileNameITM = 'items.dat';
+const fileName = 'PLAYER.DAT';
+const fileNameITM = 'ITEMS.DAT';
+const fileNameMST = 'MONSTERS.DAT';
 
+{ ------- Player ------- }
 procedure SavePerso(perso: Character);
 Var
   pBackup : file of Character;
@@ -35,6 +37,7 @@ begin
   close(pBackup);
 end;
 
+{ ------- Items ------- }
 procedure SaveItems(var itms: itmAry);
 Var
   pItems : file of Item;
@@ -78,4 +81,50 @@ begin
       ReadItems := true;
     end;
   close(pItems);
+end;
+
+{ ------- Monster ------- }
+procedure SaveMonsters(var mnstr: mnstAry);
+Var
+  f : file of Monster;
+  i : integer;
+begin
+  Assign(f, fileNameMST);
+  Rewrite(f);
+  for i := 1 to ALLMONSTER_SIZE do
+    Write( f, mnstr[i] );
+  Close(f);
+end;
+
+function ReadMonsters(var mnstr: mnstAry) : boolean;
+ var
+   f : file of Monster;
+   exists: boolean;
+   curItm: Monster;
+   i : integer;
+begin
+  for i := 1 to ALLMONSTER_SIZE do
+    mnstr[i].active := false;
+
+  Assign(f,fileNameMST);
+  {$I-} { no fail on error }
+  reset(f);
+  {$I+} { fail back on error }
+  exists := (IOresult = 0);
+  if (not exists) or ( eof(f) ) then
+   begin
+    ReadMonsters := false;
+   end
+  else
+    begin
+      i := 1;
+      repeat
+        seek(f, i-1 );
+        read(f, curItm);
+        mnstr[i] := curItm;
+        i := i + 1;
+      until ( eof(f) );
+      ReadMonsters := true;
+    end;
+  close(f);
 end;

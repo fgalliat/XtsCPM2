@@ -3,6 +3,7 @@
 const
   BACKPAK_SIZE = 5;
   ALLITEM_SIZE = 12;
+  ALLMONSTER_SIZE = 12;
 
 Type 
   Item = Record
@@ -22,6 +23,7 @@ Type
 
   Monster = Record
     name     : string[16];
+    active   : Boolean;
     hp, gpMax: Integer;
     lvl      : Byte;
     att, def : Byte;
@@ -30,6 +32,7 @@ Type
 
 type mStr   = string[255];
 type itmAry = Array[1..ALLITEM_SIZE] of Item;
+type mnstAry = Array[1..ALLMONSTER_SIZE] of Monster;
 
 procedure InitPerso(var perso: Character; name: mStr);
  var i:integer;
@@ -48,4 +51,14 @@ begin
   itm.active := true;
   itm.att := att;
   itm.def := def;
+end;
+
+procedure InitMonster(var monster: Monster; name: mStr; lvl,att,def: Byte);
+ var i:integer;
+begin
+  monster.name := name;
+  monster.active := true;
+  monster.att := att;
+  monster.def := def;
+  monster.lvl := lvl;
 end;
