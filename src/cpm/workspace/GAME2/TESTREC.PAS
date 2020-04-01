@@ -26,11 +26,15 @@ Begin
   InitItem( itemAvail[4], 'Att rune', 6, 0);
   SaveItems( itemAvail, 4 );
 
-  InitPerso( player, 'Bishop' );
-  player.hp   := 12;
-  player.gp   := 100;
-  player.att  := 12;
-  player.def  := 12;
+  if ( not ReadPerso(player) ) then
+  begin
+    writeln('NO PLAYER IN FILE');
+    InitPerso( player, 'Bishop' );
+    player.hp   := 12;
+    player.gp   := 100;
+    player.att  := 12;
+    player.def  := 12;
+  end;
 
   player.inventory[1] := itemAvail[1];
   player.inventory[1].active := true;

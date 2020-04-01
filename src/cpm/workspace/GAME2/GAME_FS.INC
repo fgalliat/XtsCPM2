@@ -15,20 +15,28 @@ begin
   Close(pBackup);
 end;
 
-procedure ReadPerso(var perso: Character);
+function ReadPerso(var perso: Character) : boolean;
  var
    pBackup : file of Character;
+   exists: boolean;
 begin
   Assign(pBackup,fileName);
+  {$I-} { no fail on error }
   reset(pBackup);
-  { beware w/ while ... }
-  { while not eof(pBackup) do
-  begin
+  {$I+} { fail back on error }
+  exists := (IOresult = 0);
+  if (not exists) or ( eof(pBackup) ) then
+   begin
+    ReadPerso := false;
+   end
+  else
+    begin
       read(pBackup, perso);
-  end; }
-  read(pBackup, perso);
+      ReadPerso := true;
+    end;
   close(pBackup);
 end;
+
 {
 procedure SaveItem(itm: Item; erase: boolean);
 Var
