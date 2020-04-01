@@ -26,8 +26,10 @@ begin
      curMonster := monsters[i];
      if ( curMonster.active ) then
      begin
+       { find an active monster }
        if ( curMonster.lvl >= pLvl-3 ) and ( curMonster.lvl <= pLvl+3 ) then
        begin
+         { find a playerLvl friendly Monster }
          found := i;
        end;
      end;
@@ -35,11 +37,24 @@ begin
   meetMonster := found;
 end;
 
+procedure monsterStrike(var monster: Monster; var perso: Character; attMod, defMod : Byte);
+begin
+  { TODO : better }
+  perso.hp := perso.hp - RANDOM( monster.att );
+end;
+
+procedure playerStrike(var perso: Character; var monster: Monster; attMod, defMod : Byte);
+begin
+  { TODO : better }
+  monster.hp := monster.hp - RANDOM( attMod );
+end;
+
 function battle(var perso: Character; var monster: Monster): boolean;
  var
    attMod, defMod : byte;
    i : Integer;
    curItem: Item;
+   mnstStrk1st : boolean;
 begin
   { compute player mods. }
   attMod := perso.att;
@@ -56,8 +71,23 @@ begin
 
   writeln('ATT: ', attMod, ' DEF: ', defMod);
   write('You will fight : '); DispMonster(monster);
+  mnstStrk1st := false;
+  if ( monster.lvl > perso.lvl ) then
+    mnstStrk1st := true
+  else
+    if ( random(6) > 3 ) then
+      mnstStrk1st := true;
 
-  battle := true;
+  if ( mnstStrk1st ) then
+    monsterStrike(monster, perso, attMod, defMod);
+
+  repeat
+    playerStrike(perso, monster, attMod, defMod);
+    if ( monster.hp > 0 ) then
+      monsterStrike(monster, perso, attMod, defMod);
+  until (perso.hp <= 0) or (monster.hp <= 0);
+
+  battle := (perso.hp > 0);
 end;
 
 const BUILDER_MSG = 'run TESTREC.COM';
