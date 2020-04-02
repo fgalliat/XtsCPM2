@@ -1,10 +1,16 @@
 { Game MainMenu include @Mar 2020 Xtase-fgalliat }
 
+procedure runPRG(prgName: mStr);
+var f: File;
+begin
+  Assign( f, prgName );
+  Execute( f );
+end;
+
 procedure MainMenu(var perso : Character);
   var
     choice : integer;
     ok : boolean;
-    battleF: File;
 begin
   choice := -1;
   repeat
@@ -33,8 +39,7 @@ begin
     end
    else if ( choice = 4 ) then
     begin
-      Assign( battleF, 'BATTLE.COM' );
-      Execute( battleF );
+      runPRG( 'BATTLE.COM' );
     end;
   until ( choice = 0 );
 

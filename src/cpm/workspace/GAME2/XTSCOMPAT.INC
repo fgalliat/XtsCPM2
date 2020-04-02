@@ -12,3 +12,11 @@ function addr(var str:xStr): word;
 begin
  addr := 123;
 end;
+
+procedure Execute(var f : File);
+begin
+  writeln('ASK TO LAUNCH A .COM !!!');
+  write('Press Enter');
+  readln;
+end;
+

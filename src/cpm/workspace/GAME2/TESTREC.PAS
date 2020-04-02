@@ -1,7 +1,7 @@
 program TestRecord;
 
-{ $I XTSCOMPAT.INC} {PC}
-{$I XTSCOMPT.INC} {YATL}
+{$I XTSCOMPAT.INC} {PC}
+{ $I XTSCOMPT.INC} {YATL}
 
 { Xtase TestRecord v1 @Mar 2020 }
 
