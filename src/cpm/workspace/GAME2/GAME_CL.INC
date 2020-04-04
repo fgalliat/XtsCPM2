@@ -16,8 +16,9 @@ Type
     name     : string[16];
     hp, gp   : Integer;
     lvl      : Byte;
-    att, def : Byte;
-
+     exp      : Integer;
+     att, def : Byte;
+     hpMax, gpMax : Integer;
     inventory: Array[1..BACKPAK_SIZE] of Item;
   end;
 
@@ -27,6 +28,7 @@ Type
     hp, gpMax: Integer;
     lvl      : Byte;
     att, def : Byte;
+     expMax : integer;
   end;
 
 
