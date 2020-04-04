@@ -14,21 +14,22 @@ Type
 
   Character = Record
     name     : string[16];
-    hp, gp   : Integer;
+    hp, hpMax   : Integer;
     lvl      : Byte;
-     exp      : Integer;
-     att, def : Byte;
-     hpMax, gpMax : Integer;
+    exp      : Integer;
+    att, def : Byte;
+    gp, gpMax : Integer;
     inventory: Array[1..BACKPAK_SIZE] of Item;
   end;
 
   Monster = Record
     name     : string[16];
     active   : Boolean;
-    hp, gpMax: Integer;
+    hp, hpMax: Integer;
     lvl      : Byte;
     att, def : Byte;
-     expMax : integer;
+    expMax : integer;
+    gpMax:Integer;
   end;
 
 
