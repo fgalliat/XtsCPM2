@@ -3,6 +3,14 @@ uses Crt;
 
 type xStr = string[255];
 
+procedure runPrg(str: xStr);
+begin
+   str := concat( str, '.EXE' );
+   writeln( 'Exec : ', str, ' (NYI)' );
+   readln;
+end;
+
+
 function Bdos(reg:integer; value:word): integer;
 begin
  Bdos := 1;

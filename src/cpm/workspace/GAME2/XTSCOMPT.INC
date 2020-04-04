@@ -1,6 +1,18 @@
 { Xts Yatl Compatibility include }
-{ uses Crt; }
 
+type xStr = string[255];
+
+procedure runPrg(str: xStr);
+ var f : File;
+begin
+   str := concat( str, '.COM' );
+   Assign(f, str);
+   Execute( f );
+end;
+
+
+
+{ uses Crt; }
 {
 function Bdos(reg:integer; value:word): integer;
 begin

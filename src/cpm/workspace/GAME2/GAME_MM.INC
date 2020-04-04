@@ -1,12 +1,5 @@
 { Game MainMenu include @Mar 2020 Xtase-fgalliat }
 
-procedure runPRG(prgName: mStr);
-var f: File;
-begin
-  Assign( f, prgName );
-  Execute( f );
-end;
-
 procedure MainMenu(var perso : Character);
   var
     choice : integer;
@@ -14,7 +7,9 @@ procedure MainMenu(var perso : Character);
 begin
   choice := -1;
   repeat
-   ClrScr;
+   { ClrScr; }
+   GotoXY(1,1);
+
    writeln(' -- Main Menu --');
    writeln('1. Save Player');
    writeln('2. Load Player');
@@ -39,7 +34,7 @@ begin
     end
    else if ( choice = 4 ) then
     begin
-      runPRG( 'BATTLE.COM' );
+      runPRG( 'BATTLE' );
     end;
   until ( choice = 0 );
 

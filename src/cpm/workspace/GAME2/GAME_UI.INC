@@ -73,3 +73,45 @@ begin
   writeln('-eoi-');
   writeln('ATT: ', attMod, ' DEF: ', defMod);
 end;
+
+const SIDE_X = 54;
+
+procedure DispPersoSide(perso: Character);
+ var
+   attMod, defMod : byte;
+   i,y : Integer;
+   curItem: Item;
+begin
+  y := 1;
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( 'o----------------' );
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( '| Name : ', perso.name );
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( '| HP   : ', perso.hp );
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( '| GP   : ', perso.gp );
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( '|  ' );
+  attMod := perso.att;
+  defMod := perso.def;
+  for i := 1 to BACKPAK_SIZE do
+  begin
+    curItem := perso.inventory[i];
+    if curItem.active then
+     begin
+      { writeln( ' Item#', i, ' ', curItem.name, ' ATT:', curItem.att, ' DEF:', curItem.def ); }
+      attMod := attMod + curItem.att;
+      defMod := defMod + curItem.def;
+     end;
+  end;
+  { writeln('-eoi-'); }
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln('| ATT: ', attMod, ' DEF: ', defMod);
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( '| XP   : ', 10000 );
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( '| Level: ', 1 );
+  GotoXY( SIDE_X, y ); y := y +1;
+  writeln( 'o----------------' );
+end;
