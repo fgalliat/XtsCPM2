@@ -1,7 +1,5 @@
 program MenuV1; { prgm must have #name than fcts }
-
-{$I XTSCOMPAT.INC} {PC}
-{ $I XTSCOMPT.INC} {YATL}
+{$I XTSCOMPT.INC} {compat.}
 
 { Xtase MenuSystem v1 @Apr 2020 }
 

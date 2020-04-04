@@ -8,12 +8,14 @@ begin
   choice := -1;
   repeat
    { ClrScr; }
+   DispPersoSide(perso);
+
    GotoXY(1,1);
 
    writeln(' -- Main Menu --');
    writeln('1. Save Player');
    writeln('2. Load Player');
-   writeln('3. Disp Player');
+   writeln('3. Init Files');
    writeln('4. Start Battle');
    writeln('');
    writeln('0. Exit Menu');
@@ -29,8 +31,7 @@ begin
     end
    else if ( choice = 3 ) then
     begin
-      DispPerso(perso);
-      readln;
+      runPRG( 'TESTREC' );
     end
    else if ( choice = 4 ) then
     begin

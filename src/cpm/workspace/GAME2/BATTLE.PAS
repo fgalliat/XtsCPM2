@@ -1,7 +1,5 @@
 program BattleV1; { prgm must have #name than fcts }
-
-{ $I XTSCOMPAT.INC} {PC}
-{$I XTSCOMPT.INC} {YATL}
+{$I XTSCOMPT.INC} {compat.}
 
 { Xtase BattleSystem v1 @Mar 2020 }
 

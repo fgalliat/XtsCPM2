@@ -1,7 +1,5 @@
 program TestRecord;
-
-{$I XTSCOMPAT.INC} {PC}
-{ $I XTSCOMPT.INC} {YATL}
+{$I XTSCOMPT.INC} {compat.}
 
 { Xtase TestRecord v1 @Mar 2020 }
 
@@ -69,6 +67,7 @@ Begin
   DispPerso( player );
   }
   write('Press Enter.'); readln;
+  ClrScr;
   MainMenu(player);
 
   { end of console app }
