@@ -37,10 +37,14 @@ type mStr   = string[255];
 type itmAry = Array[1..ALLITEM_SIZE] of Item;
 type mnstAry = Array[1..ALLMONSTER_SIZE] of Monster;
 
-procedure InitPerso(var perso: Character; name: mStr);
+procedure InitPerso(var perso: Character; name: mStr, hp:Integer);
  var i:integer;
 begin
   perso.name := name;
+  perso.hp := hp;
+  perso.hpMax := hp;
+  perso.gpMax := 1000;
+  perso.gp    := 500;
   for i := 1 to BACKPAK_SIZE do
   begin
     perso.inventory[i].active := false;

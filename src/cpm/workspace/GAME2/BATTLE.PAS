@@ -79,6 +79,8 @@ function battle(var perso: Character; var monster: Monster): boolean;
    curItem: Item;
    mnstStrk1st : boolean;
 begin
+  { init }
+  monster.hp := moster.hpMax;
   { compute player mods. }
   attMod := perso.att;
   defMod := perso.def;
@@ -109,6 +111,14 @@ begin
     if ( monster.hp > 0 ) then
       monsterStrike(monster, perso, attMod, defMod);
   until (perso.hp <= 0) or (monster.hp <= 0);
+
+  if (perso.hp > 0) then
+  begin
+    perso.exp := perso.exp + monster.expMax;
+    { level Up ?? }
+    perso.gp := perso.gp + monster.gpMax;
+    if (perso.gp > perso.gpMax) then perso.gp := perso.gpMax;
+  end;
 
   battle := (perso.hp > 0);
 end;

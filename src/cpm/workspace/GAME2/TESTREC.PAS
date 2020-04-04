@@ -42,9 +42,7 @@ Begin
   if ( not ReadPerso(player) ) then
   begin
     writeln('NO PLAYER IN FILE');
-    InitPerso( player, 'Bishop' );
-    player.hp   := 12;
-    player.gp   := 100;
+    InitPerso( player, 'Bishop', 12 );
     player.att  := 12;
     player.def  := 12;
     
