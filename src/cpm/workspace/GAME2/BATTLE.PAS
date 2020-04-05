@@ -121,6 +121,7 @@ begin
   writeln('You will fight : '); 
   ClrEol;
   DispMonster(monster);
+  ClrEol;
   
   mnstStrk1st := false;
   if ( monster.lvl > perso.lvl ) then
@@ -135,7 +136,7 @@ begin
   repeat
     DispPersoSide(perso); GotoXY(1,11);
     ClrEol;
-    
+
     playerStrike(perso, monster, attMod, defMod);
     if ( monster.hp > 0 ) then
       monsterStrike(monster, perso, attMod, defMod);
