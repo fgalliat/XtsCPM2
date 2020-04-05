@@ -93,23 +93,29 @@ begin
       defMod := defMod + curItem.def;
      end;
   end;
-
   writeln('ATT: ', attMod, ' DEF: ', defMod);
-  write('You will fight : '); DispMonster(monster);
+
+  DispPersoSide(perso); GotoXY(1,9);
+  writeln('You will fight : '); 
+  DispMonster(monster);
+  
   mnstStrk1st := false;
   if ( monster.lvl > perso.lvl ) then
     mnstStrk1st := true
   else
-    if ( random(6) > 3 ) then
+    if ( random(6) > 4 ) then
       mnstStrk1st := true;
 
   if ( mnstStrk1st ) then
     monsterStrike(monster, perso, attMod, defMod);
 
   repeat
+    DispPersoSide(perso); GotoXY(1,11);
+    ClrEol;
     playerStrike(perso, monster, attMod, defMod);
     if ( monster.hp > 0 ) then
       monsterStrike(monster, perso, attMod, defMod);
+    readln;
   until (perso.hp <= 0) or (monster.hp <= 0);
 
   if (perso.hp > 0) then
@@ -161,6 +167,7 @@ Begin
 
   i := meetMonster( player, monsters );
   ok := battle( player, monsters[i] );
+  GotoXY(1, 1);
   if ( not ok ) then
     writeln('You are DEAD ...')
   else

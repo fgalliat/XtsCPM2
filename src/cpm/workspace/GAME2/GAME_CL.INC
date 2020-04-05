@@ -68,7 +68,10 @@ begin
   monster.name := name;
   monster.active := true;
   monster.hp := hp;
+  monster.hpMax := hp;
   monster.att := att;
   monster.def := def;
   monster.lvl := lvl;
+  monster.gpMax := 5;
+  monster.expMax := 5; 
 end;
