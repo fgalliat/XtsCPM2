@@ -126,6 +126,9 @@ begin
     if (perso.gp > perso.gpMax) then perso.gp := perso.gpMax;
   end;
 
+  if ( perso.hp < 0 ) then
+    perso.hp := 0;
+
   DispPersoSide(perso); GotoXY(1,11);
   ClrEol;
 
@@ -170,12 +173,14 @@ Begin
 
   i := meetMonster( player, monsters );
   ok := battle( player, monsters[i] );
-  
+
   GotoXY(1, 1); ClrEol;
   if ( not ok ) then
     writeln('You are DEAD ...')
   else
     DispPersoSide( player );
+
+  SavePerso( player );
 
   GotoXY(1,11); ClrEol;
 
