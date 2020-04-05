@@ -16,7 +16,7 @@ begin
   ClrScr;
   ok := ReadPerso(player);
   if ( not ok ) then
-    InitPerso(player, 'Rolph');
+    InitPerso(player, 'Rolph', 12);
 
   DispPersoSide(player);
   MainMenu(player);

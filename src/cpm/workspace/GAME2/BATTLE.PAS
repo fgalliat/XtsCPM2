@@ -80,7 +80,7 @@ function battle(var perso: Character; var monster: Monster): boolean;
    mnstStrk1st : boolean;
 begin
   { init }
-  monster.hp := moster.hpMax;
+  monster.hp := monster.hpMax;
   { compute player mods. }
   attMod := perso.att;
   defMod := perso.def;

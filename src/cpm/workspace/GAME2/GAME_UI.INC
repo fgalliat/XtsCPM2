@@ -88,7 +88,7 @@ begin
   GotoXY( SIDE_X, y ); y := y +1;
   writeln( '| Name : ', perso.name );
   GotoXY( SIDE_X, y ); y := y +1;
-  writeln( '| HP   : ', perso.hp );
+  writeln( '| HP   : ', perso.hp, '/', perso.hpMax );
   GotoXY( SIDE_X, y ); y := y +1;
   writeln( '| GP   : ', perso.gp );
   GotoXY( SIDE_X, y ); y := y +1;
@@ -109,9 +109,9 @@ begin
   GotoXY( SIDE_X, y ); y := y +1;
   writeln('| ATT: ', attMod, ' DEF: ', defMod);
   GotoXY( SIDE_X, y ); y := y +1;
-  writeln( '| XP   : ', 10000 );
+  writeln( '| XP   : ', perso.exp );
   GotoXY( SIDE_X, y ); y := y +1;
-  writeln( '| Level: ', 1 );
+  writeln( '| Level: ', perso.lvl );
   GotoXY( SIDE_X, y ); y := y +1;
   writeln( 'o----------------' );
 end;
