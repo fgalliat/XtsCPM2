@@ -38,6 +38,7 @@ end;
 procedure monsterStrike(var monster: Monster; var perso: Character; attMod, defMod : Byte);
 var damage: byte;
 begin
+  ClrEol;
   writeln( ') Monster strikes' );
   damage := RANDOM( monster.att );
   { else as a Byte : make 255-damage }
@@ -46,16 +47,21 @@ begin
 
   if ( damage = 0 ) then
    begin
+     ClrEol;
      writeln( ' ) He missed you.' );
    end
   else
+   begin
+     ClrEol;
      writeln( ' ) He hurts you by ', damage, 'HP' );
+   end;
   perso.hp := perso.hp - damage;
 end;
 
 procedure playerStrike(var perso: Character; var monster: Monster; attMod, defMod : Byte);
 var damage: byte;
 begin
+  ClrEol;
   writeln( ') Player strikes' );
   damage := RANDOM( attMod );
   { else as a Byte : make 255-damage }
@@ -64,10 +70,14 @@ begin
 
   if ( damage = 0 ) then
    begin
+     ClrEol;
      writeln( ' ) You missed him.' );
    end
   else
+   begin
+     ClrEol;
      writeln( ' ) You hurts him by ', damage, 'HP' );
+   end;
 
   monster.hp := monster.hp - damage;
 end;
@@ -93,6 +103,7 @@ begin
       defMod := defMod + curItem.def;
      end;
   end;
+  ClrEol;
   writeln('ATT: ', attMod, ' DEF: ', defMod);
 
   DispPersoSide(perso); GotoXY(1,9);
