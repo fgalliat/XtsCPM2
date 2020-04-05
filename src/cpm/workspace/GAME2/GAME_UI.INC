@@ -88,7 +88,7 @@ begin
   GotoXY( SIDE_X, y ); y := y +1;
   writeln( '| Name : ', perso.name );
   GotoXY( SIDE_X, y ); y := y +1;
-  writeln( '| HP   : ', perso.hp, '/', perso.hpMax );
+  writeln( '| HP   : ', perso.hp, '/', perso.hpMax, '  ' );
   GotoXY( SIDE_X, y ); y := y +1;
   writeln( '| GP   : ', perso.gp );
   GotoXY( SIDE_X, y ); y := y +1;

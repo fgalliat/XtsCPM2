@@ -41,6 +41,11 @@ begin
   ClrEol;
   writeln( ') Monster strikes' );
   damage := RANDOM( monster.att );
+
+  { critical hit }
+  if ( RANDOM(50) > 35 ) then
+    damage := damage * 2;
+
   { else as a Byte : make 255-damage }
   if ( damage > defMod ) then damage := damage - defMod
   else damage := 0;
@@ -64,6 +69,11 @@ begin
   ClrEol;
   writeln( ') Player strikes' );
   damage := RANDOM( attMod );
+
+  { critical hit }
+  if ( RANDOM(50) > 35 ) then
+    damage := damage * 2;
+
   { else as a Byte : make 255-damage }
   if ( damage > monster.def ) then damage := damage - monster.def
   else damage := 0;
@@ -125,9 +135,13 @@ begin
   repeat
     DispPersoSide(perso); GotoXY(1,11);
     ClrEol;
+    
     playerStrike(perso, monster, attMod, defMod);
     if ( monster.hp > 0 ) then
       monsterStrike(monster, perso, attMod, defMod);
+
+    DispPersoSide(perso); GotoXY(1,11);
+    ClrEol;
     readln;
   until (perso.hp <= 0) or (monster.hp <= 0);
 
