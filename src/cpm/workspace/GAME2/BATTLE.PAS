@@ -96,7 +96,9 @@ begin
   writeln('ATT: ', attMod, ' DEF: ', defMod);
 
   DispPersoSide(perso); GotoXY(1,9);
+  ClrEol;
   writeln('You will fight : '); 
+  ClrEol;
   DispMonster(monster);
   
   mnstStrk1st := false;
@@ -170,6 +172,11 @@ Begin
   end;
 
   DispPerso( player );
+  if ( player.hp <= 0 ) then
+  begin
+    writeln('You are DEAD ...');
+    exit;
+  end;  
 
   i := meetMonster( player, monsters );
   ok := battle( player, monsters[i] );
