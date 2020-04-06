@@ -1932,17 +1932,17 @@ void  Z80run() {
 			break;
 
 		case 0x3b:      /* DEC SP */
-			--SP;
+			SP.dec();
 			break;
 
 		case 0x3c:      /* INC A */
-			AF += 0x100;
+			AF.add( 0x100 );
 			temp = HIGH_REGISTER(AF);
 			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
 			break;
 
 		case 0x3d:      /* DEC A */
-			AF -= 0x100;
+			AF.dec(0x100);
 			temp = HIGH_REGISTER(AF);
 			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
 			break;
@@ -1952,30 +1952,30 @@ void  Z80run() {
 			break;
 
 		case 0x3f:      /* CCF */
-			AF = (AF & ~0x3b) | ((AF >> 8) & 0x28) | ((AF & 1) << 4) | (~AF & 1);
+			AF.set( (AF.get() & ~0x3b) | ((AF.get() >> 8) & 0x28) | ((AF.get() & 1) << 4) | (~AF.get() & 1) );
 			break;
 
 		case 0x40:      /* LD B,B */
 			break;
 
 		case 0x41:      /* LD B,C */
-			BC = (BC & 0xff) | ((BC & 0xff) << 8);
+			BC.set( (BC.get() & 0xff) | ((BC.get() & 0xff) << 8) );
 			break;
 
 		case 0x42:      /* LD B,D */
-			BC = (BC & 0xff) | (DE & ~0xff);
+			BC.set( (BC.get() & 0xff) | (DE.get() & ~0xff) );
 			break;
 
 		case 0x43:      /* LD B,E */
-			BC = (BC & 0xff) | ((DE & 0xff) << 8);
+			BC.set( (BC.get() & 0xff) | ((DE.get() & 0xff) << 8) );
 			break;
 
 		case 0x44:      /* LD B,H */
-			BC = (BC & 0xff) | (HL & ~0xff);
+			BC.set( (BC.get() & 0xff) | (HL.get() & ~0xff) );
 			break;
 
 		case 0x45:      /* LD B,L */
-			BC = (BC & 0xff) | ((HL & 0xff) << 8);
+			BC.set( (BC.get() & 0xff) | ((HL.get() & 0xff) << 8) );
 			break;
 
 		case 0x46:      /* LD B,(HL) */
@@ -1983,30 +1983,30 @@ void  Z80run() {
 			break;
 
 		case 0x47:      /* LD B,A */
-			BC = (BC & 0xff) | (AF & ~0xff);
+			BC.set( (BC.get() & 0xff) | (AF.get() & ~0xff) );
 			break;
 
 		case 0x48:      /* LD C,B */
-			BC = (BC & ~0xff) | ((BC >> 8) & 0xff);
+			BC.set( (BC.get() & ~0xff) | ((BC.get() >> 8) & 0xff) );
 			break;
 
 		case 0x49:      /* LD C,C */
 			break;
 
 		case 0x4a:      /* LD C,D */
-			BC = (BC & ~0xff) | ((DE >> 8) & 0xff);
+			BC.set( (BC.get() & ~0xff) | ((DE.get() >> 8) & 0xff) );
 			break;
 
 		case 0x4b:      /* LD C,E */
-			BC = (BC & ~0xff) | (DE & 0xff);
+			BC.set( (BC.get() & ~0xff) | (DE.get() & 0xff) );
 			break;
 
 		case 0x4c:      /* LD C,H */
-			BC = (BC & ~0xff) | ((HL >> 8) & 0xff);
+			BC.set( (BC.get() & ~0xff) | ((HL.get() >> 8) & 0xff) );
 			break;
 
 		case 0x4d:      /* LD C,L */
-			BC = (BC & ~0xff) | (HL & 0xff);
+			BC.set( (BC.get() & ~0xff) | (HL.get() & 0xff) );
 			break;
 
 		case 0x4e:      /* LD C,(HL) */
@@ -2014,7 +2014,7 @@ void  Z80run() {
 			break;
 
 		case 0x4f:      /* LD C,A */
-			BC = (BC & ~0xff) | ((AF >> 8) & 0xff);
+			BC.set( (BC.get() & ~0xff) | ((AF.get() >> 8) & 0xff) );
 			break;
 
 		case 0x50:      /* LD D,B */
