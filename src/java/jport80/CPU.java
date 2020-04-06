@@ -1,21 +1,42 @@
 public class CPU {
 
+	// forward symbols
+	char _RamRead(int addr) { return 0x00; }
+	void _RamWrite(int addr, char value) { ; }
+	void _Bios() { ; } 
+	void _Bdos() { ; } 
+	char HIGH_REGISTER( int v ) { return (char)( v / 256 ); }
+	char LOW_REGISTER( int v ) { return (char)( v % 256 ); }
+
+
+	class Register {
+		int value;
+		void set(int value) { this.value = value; }
+		void add(int value) { this.value += value; }
+		void sub(int value) { this.value -= value; }
+		void inc() { this.value++; }
+		void dec() { this.value--; }
+		int get() { return this.value; }
+		void copyTo(Register reg) { reg.set(this.get()); }
+	}
+
+
     // all int32
     int PCX; /* external view of PC                          */
-    int AF;  /* AF register                                  */
-    int BC;  /* BC register                                  */
-    int DE;  /* DE register                                  */
-    int HL;  /* HL register                                  */
-    int IX;  /* IX register                                  */
-    int IY;  /* IY register                                  */
-    int PC;  /* program counter                              */
-    int SP;  /* SP register                                  */
-    int AF1; /* alternate AF register                        */
-    int BC1; /* alternate BC register                        */
-    int DE1; /* alternate DE register                        */
-    int HL1; /* alternate HL register                        */
-    int IFF; /* Interrupt Flip Flop                          */
-    int IR;  /* Interrupt (upper) / Refresh (lower) register */
+    Register AF;  /* AF register                                  */
+    Register BC;  /* BC register                                  */
+    Register DE;  /* DE register                                  */
+    Register HL;  /* HL register                                  */
+    Register IX;  /* IX register                                  */
+    Register IY;  /* IY register                                  */
+    Register PC;  /* program counter                              */
+    Register SP;  /* SP register                                  */
+    Register AF1; /* alternate AF register                        */
+    Register BC1; /* alternate BC register                        */
+    Register DE1; /* alternate DE register                        */
+    Register HL1; /* alternate HL register                        */
+    Register IFF; /* Interrupt Flip Flop                          */
+    Register IR;  /* Interrupt (upper) / Refresh (lower) register */
     int Status = 0; /* Status of the CPU 0=running 1=end request 2=back to CCP */
     int Debug = 0;
     int Break = -1;
@@ -1144,26 +1165,31 @@ static final char cpTable[] = {
 // int32 Watch = -1;
 // #endif
 
+
+
+
 /* Memory management    */
 // static uint8 GET_BYTE(register uint32 Addr) {
-static char GET_BYTE(int Addr) {
+char GET_BYTE(int Addr) {
 	return _RamRead(Addr & ADDRMASK);
 }
 
 // static void PUT_BYTE(register uint32 Addr, register uint32 Value) {
-static void PUT_BYTE(int Addr, int Value) {
-	_RamWrite(Addr & ADDRMASK, Value);
+void PUT_BYTE(int Addr, int Value) {
+	// _RamWrite(Addr & ADDRMASK, Value);
+	_RamWrite(Addr & ADDRMASK, (char)(Value % 256) );
 }
 
 // static uint16 GET_WORD(register uint32 a) {
-static int GET_WORD(int a) {
+int GET_WORD(int a) {
 	return GET_BYTE(a) | (GET_BYTE(a + 1) << 8);
 }
 
 // static void PUT_WORD(register uint32 Addr, register uint32 Value) {
-static void PUT_WORD(int Addr, int Value) {
-	_RamWrite(Addr, Value);
-	_RamWrite(++Addr, Value >> 8);
+void PUT_WORD(int Addr, int Value) {
+	// _RamWrite(Addr, Value);
+	_RamWrite(Addr, (char)(Value % 256) );
+	_RamWrite(++Addr, (char)(Value >> 8) );
 }
 
 #define RAM_MM(a)   GET_BYTE(a--)
@@ -1476,7 +1502,8 @@ static inline void Z80reset(void) {
 // }
 // #endif
 
-static inline void Z80run(void) {
+//static inline void Z80run(void) {
+void  Z80run() {
 	// all : register uint32 xxx..;
 	int temp = 0;
 	int acu;
