@@ -2553,72 +2553,72 @@ System.exit(0);
 
 		case 0xb8:      /* CP B */
 			temp = HIGH_REGISTER(BC);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28));
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xb9:      /* CP C */
 			temp = LOW_REGISTER(BC);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xba:      /* CP D */
 			temp = HIGH_REGISTER(DE);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xbb:      /* CP E */
 			temp = LOW_REGISTER(DE);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xbc:      /* CP H */
 			temp = HIGH_REGISTER(HL);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xbd:      /* CP L */
 			temp = LOW_REGISTER(HL);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xbe:      /* CP (HL) */
 			temp = GET_BYTE(HL);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xbf:      /* CP A */
