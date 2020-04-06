@@ -2018,26 +2018,26 @@ void  Z80run() {
 			break;
 
 		case 0x50:      /* LD D,B */
-			DE = (DE & 0xff) | (BC & ~0xff);
+			DE.set( (DE.get() & 0xff) | (BC.get() & ~0xff) );
 			break;
 
 		case 0x51:      /* LD D,C */
-			DE = (DE & 0xff) | ((BC & 0xff) << 8);
+			DE.set( (DE.get() & 0xff) | ((BC.get() & 0xff) << 8) );
 			break;
 
 		case 0x52:      /* LD D,D */
 			break;
 
 		case 0x53:      /* LD D,E */
-			DE = (DE & 0xff) | ((DE & 0xff) << 8);
+			DE.set( (DE.get() & 0xff) | ((DE.get() & 0xff) << 8) );
 			break;
 
 		case 0x54:      /* LD D,H */
-			DE = (DE & 0xff) | (HL & ~0xff);
+			DE.set( (DE.get() & 0xff) | (HL.get() & ~0xff) );
 			break;
 
 		case 0x55:      /* LD D,L */
-			DE = (DE & 0xff) | ((HL & 0xff) << 8);
+			DE.set( (DE.get() & 0xff) | ((HL.get() & 0xff) << 8) );
 			break;
 
 		case 0x56:      /* LD D,(HL) */
@@ -2045,30 +2045,30 @@ void  Z80run() {
 			break;
 
 		case 0x57:      /* LD D,A */
-			DE = (DE & 0xff) | (AF & ~0xff);
+			DE.set( (DE.get() & 0xff) | (AF.get() & ~0xff) );
 			break;
 
 		case 0x58:      /* LD E,B */
-			DE = (DE & ~0xff) | ((BC >> 8) & 0xff);
+			DE.set( (DE.get() & ~0xff) | ((BC.get() >> 8) & 0xff) );
 			break;
 
 		case 0x59:      /* LD E,C */
-			DE = (DE & ~0xff) | (BC & 0xff);
+			DE.set( (DE.get() & ~0xff) | (BC.get() & 0xff) );
 			break;
 
 		case 0x5a:      /* LD E,D */
-			DE = (DE & ~0xff) | ((DE >> 8) & 0xff);
+			DE.set( (DE.get() & ~0xff) | ((DE.get() >> 8) & 0xff) );
 			break;
 
 		case 0x5b:      /* LD E,E */
 			break;
 
 		case 0x5c:      /* LD E,H */
-			DE = (DE & ~0xff) | ((HL >> 8) & 0xff);
+			DE.set( (DE.get() & ~0xff) | ((HL.get() >> 8) & 0xff) );
 			break;
 
 		case 0x5d:      /* LD E,L */
-			DE = (DE & ~0xff) | (HL & 0xff);
+			DE.set( (DE.get() & ~0xff) | (HL.get() & 0xff) );
 			break;
 
 		case 0x5e:      /* LD E,(HL) */
@@ -2076,30 +2076,30 @@ void  Z80run() {
 			break;
 
 		case 0x5f:      /* LD E,A */
-			DE = (DE & ~0xff) | ((AF >> 8) & 0xff);
+			DE.set( (DE.get() & ~0xff) | ((AF.get() >> 8) & 0xff) );
 			break;
 
 		case 0x60:      /* LD H,B */
-			HL = (HL & 0xff) | (BC & ~0xff);
+			HL.set( (HL.get() & 0xff) | (BC.get() & ~0xff) );
 			break;
 
 		case 0x61:      /* LD H,C */
-			HL = (HL & 0xff) | ((BC & 0xff) << 8);
+			HL.set( (HL.get() & 0xff) | ((BC.get() & 0xff) << 8) );
 			break;
 
 		case 0x62:      /* LD H,D */
-			HL = (HL & 0xff) | (DE & ~0xff);
+			HL.set( (HL.get() & 0xff) | (DE.get() & ~0xff) );
 			break;
 
 		case 0x63:      /* LD H,E */
-			HL = (HL & 0xff) | ((DE & 0xff) << 8);
+			HL.set( (HL.get() & 0xff) | ((DE.get() & 0xff) << 8) );
 			break;
 
 		case 0x64:      /* LD H,H */
 			break;
 
 		case 0x65:      /* LD H,L */
-			HL = (HL & 0xff) | ((HL & 0xff) << 8);
+			HL.set( (HL.get() & 0xff) | ((HL.get() & 0xff) << 8) );
 			break;
 
 		case 0x66:      /* LD H,(HL) */
