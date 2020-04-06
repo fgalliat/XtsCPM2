@@ -1870,24 +1870,24 @@ void  Z80run() {
 
 		case 0x30:      /* JR NC,dd */
 			if (TSTFLAG(C))
-				++PC;
+				PC.inc();
 			else
-				PC += (int8)GET_BYTE(PC) + 1;
+				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
 			break;
 
 		case 0x31:      /* LD SP,nnnn */
-			SP = GET_WORD(PC);
-			PC += 2;
+			SP.set( GET_WORD(PC) );
+			PC.add(2);
 			break;
 
 		case 0x32:      /* LD (nnnn),A */
 			temp = GET_WORD(PC);
 			PUT_BYTE(temp, HIGH_REGISTER(AF));
-			PC += 2;
+			PC.add(2);
 			break;
 
 		case 0x33:      /* INC SP */
-			++SP;
+			SP.inc();
 			break;
 
 		case 0x34:      /* INC (HL) */
@@ -1907,28 +1907,28 @@ void  Z80run() {
 			break;
 
 		case 0x37:      /* SCF */
-			AF = (AF & ~0x3b) | ((AF >> 8) & 0x28) | 1;
+			AF.set( (AF.get() & ~0x3b) | ((AF.get() >> 8) & 0x28) | 1 );
 			break;
 
 		case 0x38:      /* JR C,dd */
 			if (TSTFLAG(C))
-				PC += (int8)GET_BYTE(PC) + 1;
+				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
 			else
-				++PC;
+				PC.inc();
 			break;
 
 		case 0x39:      /* ADD HL,SP */
-			HL &= ADDRMASK;
-			SP &= ADDRMASK;
-			sum = HL + SP;
-			AF = (AF & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL ^ SP ^ sum) >> 8];
-			HL = sum;
+			HL.andEq(ADDRMASK);
+			SP.andEq(ADDRMASK);
+			sum = HL.get() + SP.get();
+			AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL.get() ^ SP.get() ^ sum) >> 8] );
+			HL.set(sum);
 			break;
 
 		case 0x3a:      /* LD A,(nnnn) */
 			temp = GET_WORD(PC);
 			SET_HIGH_REGISTER(AF, GET_BYTE(temp));
-			PC += 2;
+			PC.add(2);
 			break;
 
 		case 0x3b:      /* DEC SP */
