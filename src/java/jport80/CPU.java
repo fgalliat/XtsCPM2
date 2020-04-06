@@ -128,6 +128,10 @@ public class CPU {
 			PC += 2;
 		}
 	}
+
+	void JPC(int cond) {
+		JPC( cond != 0 );
+	}
     
     // #define CALLC(cond) {                           \
     //     if (cond) {                                 \
@@ -147,7 +151,11 @@ public class CPU {
         } else {
             PC += 2;
         }
-    }
+	}
+	
+	void CALLC(int cond) {
+		CALLC(cond != 0);
+	}
 
 
     /* the following tables precompute some common subexpressions
@@ -2655,12 +2663,12 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV) );
 			break;
 
 		case 0xc7:      /* RST 0 */
 			PUSH(PC);
-			PC = 0;
+			PC.reset();;
 			break;
 
 		case 0xc8:      /* RET Z */
@@ -2677,49 +2685,50 @@ System.exit(0);
 			break;
 
 		case 0xcb:      /* CB prefix */
-			adr = HL;
+			adr = HL.get();
 			switch ((op = GET_BYTE(PC)) & 7) {
 
 			case 0:
-				++PC;
+				PC.inc();
 				acu = HIGH_REGISTER(BC);
 				break;
 
 			case 1:
-				++PC;
+				PC.inc();
 				acu = LOW_REGISTER(BC);
 				break;
 
 			case 2:
-				++PC;
+				PC.inc();
 				acu = HIGH_REGISTER(DE);
 				break;
 
 			case 3:
-				++PC;
+				PC.inc();
 				acu = LOW_REGISTER(DE);
 				break;
 
 			case 4:
-				++PC;
+				PC.inc();
 				acu = HIGH_REGISTER(HL);
 				break;
 
 			case 5:
-				++PC;
+				PC.inc();
 				acu = LOW_REGISTER(HL);
 				break;
 
 			case 6:
-				++PC;
+				PC.inc();
 				acu = GET_BYTE(adr);
 				break;
 
 			case 7:
-				++PC;
+				PC.inc();
 				acu = HIGH_REGISTER(AF);
 				break;
 			}
+			
 			switch (op & 0xc0) {
 
 			case 0x00:  /* shift/rotate */
