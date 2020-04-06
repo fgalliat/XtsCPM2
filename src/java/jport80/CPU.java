@@ -1258,9 +1258,12 @@ x == (C - 1) & 0xff for IND
 
 // static inline void Z80reset(void) {
 void Z80reset() {
-	PC = 0;
-	IFF = 0;
-	IR = 0;
+	//PC = 0;
+	PC.reset();
+	//IFF = 0;
+	IFF.reset();
+	//IR = 0;
+	IR.reset();
 	Status = 0;
 	Debug = 0;
 	Break = -1;
@@ -1573,8 +1576,10 @@ void  Z80run() {
 			break;
 
 		case 0x01:      /* LD BC,nnnn */
-			BC = GET_WORD(PC);
-			PC += 2;
+			//BC = GET_WORD(PC);
+			BC.set( GET_WORD(PC) );
+			// PC += 2;
+			PC.add(2);
 			break;
 
 		case 0x02:      /* LD (BC),A */
@@ -1582,7 +1587,8 @@ void  Z80run() {
 			break;
 
 		case 0x03:      /* INC BC */
-			++BC;
+			//++BC;
+			BC.inc();
 			break;
 
 		case 0x04:      /* INC B */
