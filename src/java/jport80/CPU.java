@@ -2107,27 +2107,27 @@ void  Z80run() {
 			break;
 
 		case 0x67:      /* LD H,A */
-			HL = (HL & 0xff) | (AF & ~0xff);
+			HL.set( (HL.get() & 0xff) | (AF.get() & ~0xff) );
 			break;
 
 		case 0x68:      /* LD L,B */
-			HL = (HL & ~0xff) | ((BC >> 8) & 0xff);
+			HL.set( (HL.get() & ~0xff) | ((BC.get() >> 8) & 0xff) );
 			break;
 
 		case 0x69:      /* LD L,C */
-			HL = (HL & ~0xff) | (BC & 0xff);
+			HL.set( (HL.get() & ~0xff) | (BC.get() & 0xff) );
 			break;
 
 		case 0x6a:      /* LD L,D */
-			HL = (HL & ~0xff) | ((DE >> 8) & 0xff);
+			HL.set( (HL.get() & ~0xff) | ((DE.get() >> 8) & 0xff) );
 			break;
 
 		case 0x6b:      /* LD L,E */
-			HL = (HL & ~0xff) | (DE & 0xff);
+			HL.set( (HL.get() & ~0xff) | (DE.get() & 0xff) );
 			break;
 
 		case 0x6c:      /* LD L,H */
-			HL = (HL & ~0xff) | ((HL >> 8) & 0xff);
+			HL.set( (HL.get() & ~0xff) | ((HL.get() >> 8) & 0xff) );
 			break;
 
 		case 0x6d:      /* LD L,L */
@@ -2138,7 +2138,7 @@ void  Z80run() {
 			break;
 
 		case 0x6f:      /* LD L,A */
-			HL = (HL & ~0xff) | ((AF >> 8) & 0xff);
+			HL.set( (HL.get() & ~0xff) | ((AF.get() >> 8) & 0xff) );
 			break;
 
 		case 0x70:      /* LD (HL),B */
@@ -2173,7 +2173,7 @@ void  Z80run() {
 // #endif
 System.out.println(":: CPU HALTED ::");
 System.exit(0);
-			--PC;
+			PC.dec();
 			goto end_decode;
 			break;
 
