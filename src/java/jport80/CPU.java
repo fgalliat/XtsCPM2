@@ -8,6 +8,9 @@ public class CPU {
 	char HIGH_REGISTER( int v ) { return (char)( v / 256 ); }
 	char LOW_REGISTER( int v ) { return (char)( v % 256 ); }
 
+	char HIGH_REGISTER( Register v ) { return HIGH_REGISTER(v.get()); }
+	char LOW_REGISTER( Register v ) { return LOW_REGISTER(v.get()); }
+
 
 	class Register {
 		int value;
@@ -1170,15 +1173,23 @@ static final char cpTable[] = {
 
 /* Memory management    */
 // static uint8 GET_BYTE(register uint32 Addr) {
-char GET_BYTE(int Addr) {
-	return _RamRead(Addr & ADDRMASK);
-}
+	char GET_BYTE(int Addr) {
+		return _RamRead(Addr & ADDRMASK);
+	}
+
+	char GET_BYTE(Register r) {
+		return GET_BYTE(r.get());
+	}
 
 // static void PUT_BYTE(register uint32 Addr, register uint32 Value) {
-void PUT_BYTE(int Addr, int Value) {
-	// _RamWrite(Addr & ADDRMASK, Value);
-	_RamWrite(Addr & ADDRMASK, (char)(Value % 256) );
-}
+	void PUT_BYTE(int Addr, int Value) {
+		// _RamWrite(Addr & ADDRMASK, Value);
+		_RamWrite(Addr & ADDRMASK, (char)(Value % 256) );
+	}
+
+	void PUT_BYTE(Register r, int Value) {
+		PUT_BYTE(r.get(), Value );
+	}
 
 // static uint16 GET_WORD(register uint32 a) {
 int GET_WORD(int a) {
@@ -1192,12 +1203,18 @@ void PUT_WORD(int Addr, int Value) {
 	_RamWrite(++Addr, (char)(Value >> 8) );
 }
 
-#define RAM_MM(a)   GET_BYTE(a--)
-#define RAM_PP(a)   GET_BYTE(a++)
+//#define RAM_MM(a)   GET_BYTE(a--)
+char RAM_MM(Register a) { char v = GET_BYTE(a); a.dec(); return v; }
 
-#define PUT_BYTE_PP(a,v) PUT_BYTE(a++, v)
-#define PUT_BYTE_MM(a,v) PUT_BYTE(a--, v)
-#define MM_PUT_BYTE(a,v) PUT_BYTE(--a, v)
+//#define RAM_PP(a)   GET_BYTE(a++)
+char RAM_PP(Register a) { char v = GET_BYTE(a); a.inc(); return v; }
+
+//#define PUT_BYTE_PP(a,v) PUT_BYTE(a++, v)
+void PUT_BYTE_PP(Register a, char v) { PUT_BYTE(a, v); a.inc(); }
+//#define PUT_BYTE_MM(a,v) PUT_BYTE(a--, v)
+void PUT_BYTE_MM(Register a, char v) { PUT_BYTE(a, v); a.dec(); }
+//#define MM_PUT_BYTE(a,v) PUT_BYTE(--a, v)
+void MM_PUT_BYTE(Register a, char v) { a.dec(); PUT_BYTE(a, v); }
 
 #define PUSH(x) do {            \
 	MM_PUT_BYTE(SP, (x) >> 8);  \
@@ -1513,7 +1530,7 @@ void  Z80run() {
 	int adr;
 
 	/* main instruction fetch/decode loop */
-	while (!Status) {	/* loop until Status != 0 */
+	while (Status!=0) {	/* loop until Status != 0 */
 
 // #ifdef USE_XTS_HDL
 //         xts_handler();
