@@ -14,6 +14,7 @@ public class CPU {
 
 	class Register {
 		int value;
+		void reset() { this.value = 0; }
 		void set(int value) { this.value = value; }
 		void add(int value) { this.value += value; }
 		void sub(int value) { this.value -= value; }
@@ -25,21 +26,21 @@ public class CPU {
 
 
     // all int32
-    int PCX; /* external view of PC                          */
-    Register AF;  /* AF register                                  */
-    Register BC;  /* BC register                                  */
-    Register DE;  /* DE register                                  */
-    Register HL;  /* HL register                                  */
-    Register IX;  /* IX register                                  */
-    Register IY;  /* IY register                                  */
-    Register PC;  /* program counter                              */
-    Register SP;  /* SP register                                  */
-    Register AF1; /* alternate AF register                        */
-    Register BC1; /* alternate BC register                        */
-    Register DE1; /* alternate DE register                        */
-    Register HL1; /* alternate HL register                        */
-    Register IFF; /* Interrupt Flip Flop                          */
-    Register IR;  /* Interrupt (upper) / Refresh (lower) register */
+    int PCX = 0; /* external view of PC                          */
+    Register AF = new Register();  /* AF register                                  */
+    Register BC = new Register();  /* BC register                                  */
+    Register DE = new Register();  /* DE register                                  */
+    Register HL = new Register();  /* HL register                                  */
+    Register IX = new Register();  /* IX register                                  */
+    Register IY = new Register();  /* IY register                                  */
+    Register PC = new Register();  /* program counter                              */
+    Register SP = new Register();  /* SP register                                  */
+    Register AF1 = new Register(); /* alternate AF register                        */
+    Register BC1 = new Register(); /* alternate BC register                        */
+    Register DE1 = new Register(); /* alternate DE register                        */
+    Register HL1 = new Register(); /* alternate HL register                        */
+    Register IFF = new Register(); /* Interrupt Flip Flop                          */
+    Register IR = new Register();  /* Interrupt (upper) / Refresh (lower) register */
     int Status = 0; /* Status of the CPU 0=running 1=end request 2=back to CCP */
     int Debug = 0;
     int Break = -1;
@@ -87,10 +88,17 @@ public class CPU {
     #define SET_PV      (SET_PVS(sum))
     #define SET_PV2(x)  ((temp == (x)) << 2)
     
-    #define POP(x)  {                               \
-        register uint32 y = RAM_PP(SP);             \
-        x = y + (RAM_PP(SP) << 8);                  \
-    }
+    // #define POP(x)  {                               \
+    //     register uint32 y = RAM_PP(SP);             \
+    //     x = y + (RAM_PP(SP) << 8);                  \
+	// }
+	
+	// pop16()
+	void POP(Register x) {
+		int y = RAM_PP(SP);
+		x.set( y + (RAM_PP(SP) <<8 ) );
+	}
+
     
     // #define JPC(cond) {                             \
     //     if (cond) {                                 \
@@ -1248,7 +1256,8 @@ x == (C - 1) & 0xff for IND
 #define INOUTFLAGS_NONZERO(x)                                           \
     INOUTFLAGS((HIGH_REGISTER(BC) & 0xa8) | ((HIGH_REGISTER(BC) == 0) << 6), x)
 
-static inline void Z80reset(void) {
+// static inline void Z80reset(void) {
+void Z80reset() {
 	PC = 0;
 	IFF = 0;
 	IR = 0;
@@ -1519,15 +1528,20 @@ static inline void Z80reset(void) {
 // }
 // #endif
 
+// defined statically in Z80run
+int temp = 0;
+	int acu=0;
+	int sum=0;
+	int cbits=0;
+	int op=0;
+	int adr=0;
+
+
 //static inline void Z80run(void) {
 void  Z80run() {
 	// all : register uint32 xxx..;
-	int temp = 0;
-	int acu;
-	int sum;
-	int cbits;
-	int op;
-	int adr;
+	temp = 0;
+	// cf static : all values are not touched ... (acu, sum, cbits, op, adr)
 
 	/* main instruction fetch/decode loop */
 	while (Status!=0) {	/* loop until Status != 0 */
@@ -1551,7 +1565,7 @@ void  Z80run() {
 // 			Z80debug();
 // #endif
 
-		PCX = PC;
+		PCX = PC.get();
 
 		switch (RAM_PP(PC)) {
 
