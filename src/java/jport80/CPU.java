@@ -2182,27 +2182,27 @@ System.exit(0);
 			break;
 
 		case 0x78:      /* LD A,B */
-			AF = (AF & 0xff) | (BC & ~0xff);
+			AF.set( (AF.get() & 0xff) | (BC.get() & ~0xff) );
 			break;
 
 		case 0x79:      /* LD A,C */
-			AF = (AF & 0xff) | ((BC & 0xff) << 8);
+			AF.set( (AF.get() & 0xff) | ((BC.get() & 0xff) << 8) );
 			break;
 
 		case 0x7a:      /* LD A,D */
-			AF = (AF & 0xff) | (DE & ~0xff);
+			AF.set( (AF.get() & 0xff) | (DE.get() & ~0xff) );
 			break;
 
 		case 0x7b:      /* LD A,E */
-			AF = (AF & 0xff) | ((DE & 0xff) << 8);
+			AF.set( (AF.get() & 0xff) | ((DE.get() & 0xff) << 8) );
 			break;
 
 		case 0x7c:      /* LD A,H */
-			AF = (AF & 0xff) | (HL & ~0xff);
+			AF.set( (AF.get() & 0xff) | (HL.get() & ~0xff) );
 			break;
 
 		case 0x7d:      /* LD A,L */
-			AF = (AF & 0xff) | ((HL & 0xff) << 8);
+			AF.set( (AF.get() & 0xff) | ((HL.get() & 0xff) << 8) );
 			break;
 
 		case 0x7e:      /* LD A,(HL) */
