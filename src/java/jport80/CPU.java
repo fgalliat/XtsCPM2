@@ -31,6 +31,7 @@ public class CPU {
 		void add(int value) { this.value += value; }
 		void sub(int value) { this.value -= value; }
 		void andEq(int value) { this.value &= value; }
+		void orEq(int value) { this.value |= value; }
 
 		void inc() { this.value++; }
 		void dec() { this.value--; }
@@ -2728,7 +2729,7 @@ System.exit(0);
 				acu = HIGH_REGISTER(AF);
 				break;
 			}
-			
+
 			switch (op & 0xc0) {
 
 			case 0x00:  /* shift/rotate */
@@ -2773,17 +2774,17 @@ System.exit(0);
 					temp = acu >> 1;
 					cbits = acu & 1;
 				cbshflg1:
-					AF = (AF & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits;
+					AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
 				}
 				break;
 
 			case 0x40:  /* BIT */
 				if (acu & (1 << ((op >> 3) & 7)))
-					AF = (AF & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7);
+					AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7) );
 				else
-					AF = (AF & ~0xfe) | 0x54;
+					AF.set( (AF.get() & ~0xfe) | 0x54 );
 				if ((op & 7) != 6)
-					AF |= (acu & 0x28);
+					AF.orEq( (acu & 0x28) );
 				temp = acu;
 				break;
 
@@ -2844,12 +2845,12 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV) );
 			break;
 
 		case 0xcf:      /* RST 8 */
 			PUSH(PC);
-			PC = 8;
+			PC.set(8);
 			break;
 
 		case 0xd0:      /* RET NC */
@@ -2882,12 +2883,12 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV) );
 			break;
 
 		case 0xd7:      /* RST 10H */
 			PUSH(PC);
-			PC = 0x10;
+			PC.set( 0x10 );
 			break;
 
 		case 0xd8:      /* RET C */
@@ -2896,15 +2897,15 @@ System.exit(0);
 			break;
 
 		case 0xd9:      /* EXX */
-			temp = BC;
-			BC = BC1;
-			BC1 = temp;
-			temp = DE;
-			DE = DE1;
-			DE1 = temp;
-			temp = HL;
-			HL = HL1;
-			HL1 = temp;
+			temp = BC.get();
+			BC.set( BC1.get() );
+			BC1.set( temp );
+			temp = DE.get();
+			DE.set( DE1.get() );
+			DE1.set( temp );
+			temp = HL.get();
+			HL.set( HL1.get() );
+			HL1.set( temp );
 			break;
 
 		case 0xda:      /* JP C,nnnn */
