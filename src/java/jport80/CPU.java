@@ -11,13 +11,22 @@ public class CPU {
 	char HIGH_REGISTER( Register v ) { return HIGH_REGISTER(v.get()); }
 	char LOW_REGISTER( Register v ) { return LOW_REGISTER(v.get()); }
 
+	void SET_LOW_REGISTER( Register a, char v ) {
+		System.out.println( "SET_LOW_REGISTER NYI" );
+	}
+	void SET_HIGH_REGISTER( Register a, char v ) {
+		System.out.println( "SET_HIGH_REGISTER NYI" );
+	}
 
 	class Register {
 		int value;
 		void reset() { this.value = 0; }
 		void set(int value) { this.value = value; }
+		
 		void add(int value) { this.value += value; }
 		void sub(int value) { this.value -= value; }
+		void andEq(int value) { this.value &= value; }
+
 		void inc() { this.value++; }
 		void dec() { this.value--; }
 		int get() { return this.value; }
@@ -1592,13 +1601,15 @@ void  Z80run() {
 			break;
 
 		case 0x04:      /* INC B */
-			BC += 0x100;
+			// BC += 0x100;
+			BC.add(0x100);
 			temp = HIGH_REGISTER(BC);
 			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
 			break;
 
 		case 0x05:      /* DEC B */
-			BC -= 0x100;
+			// BC -= 0x100;
+			BC.sub(0x100);
 			temp = HIGH_REGISTER(BC);
 			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
 			break;
@@ -1613,17 +1624,23 @@ void  Z80run() {
 			break;
 
 		case 0x08:      /* EX AF,AF' */
-			temp = AF;
-			AF = AF1;
-			AF1 = temp;
+			// temp = AF;
+			// AF = AF1;
+			// AF1 = temp;
+			temp = AF.get(); //swap
+			AF.set( AF1.get() );
+			AF1.set(temp);
 			break;
 
 		case 0x09:      /* ADD HL,BC */
-			HL &= ADDRMASK;
-			BC &= ADDRMASK;
-			sum = HL + BC;
-			AF = (AF & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL ^ BC ^ sum) >> 8];
-			HL = sum;
+			// HL &= ADDRMASK;
+			HL.andEq(ADDRMASK);
+			//BC &= ADDRMASK;
+			BC.andEq(ADDRMASK);
+			sum = HL.get() + BC.get();
+			//AF = (AF & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL ^ BC ^ sum) >> 8];
+			AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL.get() ^ BC.get() ^ sum) >> 8] );
+			HL.set(sum);
 			break;
 
 		case 0x0a:      /* LD A,(BC) */
@@ -1631,7 +1648,7 @@ void  Z80run() {
 			break;
 
 		case 0x0b:      /* DEC BC */
-			--BC;
+			BC.dec();
 			break;
 
 		case 0x0c:      /* INC C */
