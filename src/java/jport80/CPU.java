@@ -2508,47 +2508,47 @@ System.exit(0);
 			break;
 
 		case 0xad:      /* XOR L */
-			AF = xororTable[((AF >> 8) ^ HL) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) ^ HL.get()) & 0xff] );
 			break;
 
 		case 0xae:      /* XOR (HL) */
-			AF = xororTable[((AF >> 8) ^ GET_BYTE(HL)) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) ^ GET_BYTE(HL)) & 0xff] );
 			break;
 
 		case 0xaf:      /* XOR A */
-			AF = 0x44;
+			AF.set( 0x44 );
 			break;
 
 		case 0xb0:      /* OR B */
-			AF = xororTable[((AF | BC) >> 8) & 0xff];
+			AF.set( xororTable[((AF.get() | BC.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xb1:      /* OR C */
-			AF = xororTable[((AF >> 8) | BC) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) | BC.get()) & 0xff] );
 			break;
 
 		case 0xb2:      /* OR D */
-			AF = xororTable[((AF | DE) >> 8) & 0xff];
+			AF.set( xororTable[((AF.get() | DE.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xb3:      /* OR E */
-			AF = xororTable[((AF >> 8) | DE) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) | DE.get()) & 0xff] );
 			break;
 
 		case 0xb4:      /* OR H */
-			AF = xororTable[((AF | HL) >> 8) & 0xff];
+			AF.set( xororTable[((AF.get() | HL.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xb5:      /* OR L */
-			AF = xororTable[((AF >> 8) | HL) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) | HL.get()) & 0xff] );
 			break;
 
 		case 0xb6:      /* OR (HL) */
-			AF = xororTable[((AF >> 8) | GET_BYTE(HL)) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) | GET_BYTE(HL.get())) & 0xff] );
 			break;
 
 		case 0xb7:      /* OR A */
-			AF = xororTable[(AF >> 8) & 0xff];
+			AF.set( xororTable[(AF.get() >> 8) & 0xff] );
 			break;
 
 		case 0xb8:      /* CP B */
