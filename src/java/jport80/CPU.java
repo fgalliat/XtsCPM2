@@ -2456,55 +2456,55 @@ System.exit(0);
 			break;
 
 		case 0xa0:      /* AND B */
-			AF = andTable[((AF & BC) >> 8) & 0xff];
+			AF.set( andTable[((AF.get() & BC.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xa1:      /* AND C */
-			AF = andTable[((AF >> 8) & BC) & 0xff];
+			AF.set( andTable[((AF.get() >> 8) & BC.get()) & 0xff] );
 			break;
 
 		case 0xa2:      /* AND D */
-			AF = andTable[((AF & DE) >> 8) & 0xff];
+			AF.set( andTable[((AF.get() & DE.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xa3:      /* AND E */
-			AF = andTable[((AF >> 8) & DE) & 0xff];
+			AF.set( andTable[((AF.get() >> 8) & DE.get()) & 0xff] );
 			break;
 
 		case 0xa4:      /* AND H */
-			AF = andTable[((AF & HL) >> 8) & 0xff];
+			AF.set( andTable[((AF.get() & HL.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xa5:      /* AND L */
-			AF = andTable[((AF >> 8) & HL) & 0xff];
+			AF.set( andTable[((AF.get() >> 8) & HL.get()) & 0xff] );
 			break;
 
 		case 0xa6:      /* AND (HL) */
-			AF = andTable[((AF >> 8) & GET_BYTE(HL)) & 0xff];
+			AF.set( andTable[((AF.get() >> 8) & GET_BYTE(HL)) & 0xff] );
 			break;
 
 		case 0xa7:      /* AND A */
-			AF = andTable[(AF >> 8) & 0xff];
+			AF.set( andTable[(AF.get() >> 8) & 0xff] );
 			break;
 
 		case 0xa8:      /* XOR B */
-			AF = xororTable[((AF ^ BC) >> 8) & 0xff];
+			AF.set( xororTable[((AF.get() ^ BC.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xa9:      /* XOR C */
-			AF = xororTable[((AF >> 8) ^ BC) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) ^ BC.get()) & 0xff] );
 			break;
 
 		case 0xaa:      /* XOR D */
-			AF = xororTable[((AF ^ DE) >> 8) & 0xff];
+			AF.set( xororTable[((AF.get() ^ DE.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xab:      /* XOR E */
-			AF = xororTable[((AF >> 8) ^ DE) & 0xff];
+			AF.set( xororTable[((AF.get() >> 8) ^ DE.get()) & 0xff] );
 			break;
 
 		case 0xac:      /* XOR H */
-			AF = xororTable[((AF ^ HL) >> 8) & 0xff];
+			AF.set( xororTable[((AF.get() ^ HL.get()) >> 8) & 0xff] );
 			break;
 
 		case 0xad:      /* XOR L */
