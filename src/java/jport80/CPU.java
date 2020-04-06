@@ -1,5 +1,8 @@
 public class CPU {
 
+	char int8(int v) { return (char)( v % 256 ); }
+	int int16(int v) { return ( v % 65536 ); }
+
 	// forward symbols
 	char _RamRead(int addr) { return 0x00; }
 	void _RamWrite(int addr, char value) { ; }
@@ -17,6 +20,8 @@ public class CPU {
 	void SET_HIGH_REGISTER( Register a, char v ) {
 		System.out.println( "SET_HIGH_REGISTER NYI" );
 	}
+
+
 
 	class Register {
 		int value;
@@ -1209,9 +1214,13 @@ static final char cpTable[] = {
 	}
 
 // static uint16 GET_WORD(register uint32 a) {
-int GET_WORD(int a) {
-	return GET_BYTE(a) | (GET_BYTE(a + 1) << 8);
-}
+	int GET_WORD(int a) {
+		return GET_BYTE(a) | (GET_BYTE(a + 1) << 8);
+	}
+
+	int GET_WORD(Register a) {
+		return GET_WORD(a.get());
+	}
 
 // static void PUT_WORD(register uint32 Addr, register uint32 Value) {
 void PUT_WORD(int Addr, int Value) {
@@ -1653,13 +1662,13 @@ void  Z80run() {
 
 		case 0x0c:      /* INC C */
 			temp = LOW_REGISTER(BC) + 1;
-			SET_LOW_REGISTER(BC, temp);
+			SET_LOW_REGISTER(BC, (char)temp);
 			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80);
 			break;
 
 		case 0x0d:      /* DEC C */
 			temp = LOW_REGISTER(BC) - 1;
-			SET_LOW_REGISTER(BC, temp);
+			SET_LOW_REGISTER(BC, (char)temp);
 			AF = (AF & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f);
 			break;
 
@@ -1679,8 +1688,8 @@ void  Z80run() {
 			break;
 
 		case 0x11:      /* LD DE,nnnn */
-			DE = GET_WORD(PC);
-			PC += 2;
+			DE.set(GET_WORD(PC));
+			PC.add(2);
 			break;
 
 		case 0x12:      /* LD (DE),A */
@@ -1688,17 +1697,17 @@ void  Z80run() {
 			break;
 
 		case 0x13:      /* INC DE */
-			++DE;
+			DE.inc();;
 			break;
 
 		case 0x14:      /* INC D */
-			DE += 0x100;
+			DE.add(0x100);
 			temp = HIGH_REGISTER(DE);
 			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
 			break;
 
 		case 0x15:      /* DEC D */
-			DE -= 0x100;
+			DE.sub(0x100);
 			temp = HIGH_REGISTER(DE);
 			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
 			break;
@@ -1713,15 +1722,15 @@ void  Z80run() {
 			break;
 
 		case 0x18:      /* JR dd */
-			PC += (int8)GET_BYTE(PC) + 1;
+			PC.add( (int8) GET_BYTE(PC) + 1 ); // beware w/ int8 cast & overflow -> TODO %256
 			break;
 
 		case 0x19:      /* ADD HL,DE */
-			HL &= ADDRMASK;
-			DE &= ADDRMASK;
-			sum = HL + DE;
-			AF = (AF & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL ^ DE ^ sum) >> 8];
-			HL = sum;
+			HL.andEq(ADDRMASK);
+			DE.andEq(ADDRMASK);
+			sum = HL.get() + DE.get();
+			AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(HL.get() ^ DE.get() ^ sum) >> 8] );
+			HL.set( sum );
 			break;
 
 		case 0x1a:      /* LD A,(DE) */
@@ -1729,7 +1738,7 @@ void  Z80run() {
 			break;
 
 		case 0x1b:      /* DEC DE */
-			--DE;
+			DE.dec();
 			break;
 
 		case 0x1c:      /* INC E */
@@ -1754,9 +1763,9 @@ void  Z80run() {
 
 		case 0x20:      /* JR NZ,dd */
 			if (TSTFLAG(Z))
-				++PC;
+				PC.inc();
 			else
-				PC += (int8)GET_BYTE(PC) + 1;
+				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO : use %256
 			break;
 
 		case 0x21:      /* LD HL,nnnn */
@@ -1817,26 +1826,26 @@ void  Z80run() {
 
 		case 0x28:      /* JR Z,dd */
 			if (TSTFLAG(Z))
-				PC += (int8)GET_BYTE(PC) + 1;
+				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
 			else
-				++PC;
+				PC.inc();
 			break;
 
 		case 0x29:      /* ADD HL,HL */
-			HL &= ADDRMASK;
-			sum = HL + HL;
-			AF = (AF & ~0x3b) | cbitsDup16Table[sum >> 8];
-			HL = sum;
+			HL.andEq(ADDRMASK);
+			sum = HL.get() + HL.get();
+			AF.set( (AF.get() & ~0x3b) | cbitsDup16Table[sum >> 8] );
+			HL.set( sum );
 			break;
 
 		case 0x2a:      /* LD HL,(nnnn) */
 			temp = GET_WORD(PC);
-			HL = GET_WORD(temp);
-			PC += 2;
+			HL.set( GET_WORD(temp) );
+			PC.add(2);
 			break;
 
 		case 0x2b:      /* DEC HL */
-			--HL;
+			HL.dec();
 			break;
 
 		case 0x2c:      /* INC L */
