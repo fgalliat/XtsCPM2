@@ -3114,7 +3114,7 @@ System.exit(0);
 				break;
 
 			case 0x46:      /* LD B,(IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				SET_HIGH_REGISTER(BC, GET_BYTE(adr));
 				break;
 
@@ -3127,7 +3127,7 @@ System.exit(0);
 				break;
 
 			case 0x4e:      /* LD C,(IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				SET_LOW_REGISTER(BC, GET_BYTE(adr));
 				break;
 
@@ -3140,7 +3140,7 @@ System.exit(0);
 				break;
 
 			case 0x56:      /* LD D,(IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				SET_HIGH_REGISTER(DE, GET_BYTE(adr));
 				break;
 
@@ -3153,7 +3153,7 @@ System.exit(0);
 				break;
 
 			case 0x5e:      /* LD E,(IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				SET_LOW_REGISTER(DE, GET_BYTE(adr));
 				break;
 
@@ -3181,7 +3181,7 @@ System.exit(0);
 				break;
 
 			case 0x66:      /* LD H,(IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				SET_HIGH_REGISTER(HL, GET_BYTE(adr));
 				break;
 
@@ -3213,7 +3213,7 @@ System.exit(0);
 				break;
 
 			case 0x6e:      /* LD L,(IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				SET_LOW_REGISTER(HL, GET_BYTE(adr));
 				break;
 
@@ -3222,32 +3222,32 @@ System.exit(0);
 				break;
 
 			case 0x70:      /* LD (IX+dd),B */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, HIGH_REGISTER(BC));
 				break;
 
 			case 0x71:      /* LD (IX+dd),C */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, LOW_REGISTER(BC));
 				break;
 
 			case 0x72:      /* LD (IX+dd),D */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, HIGH_REGISTER(DE));
 				break;
 
 			case 0x73:      /* LD (IX+dd),E */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, LOW_REGISTER(DE));
 				break;
 
 			case 0x74:      /* LD (IX+dd),H */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, HIGH_REGISTER(HL));
 				break;
 
 			case 0x75:      /* LD (IX+dd),L */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, LOW_REGISTER(HL));
 				break;
 
