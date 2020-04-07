@@ -1268,6 +1268,10 @@ void PUSH(int x) {
 	} while(false); // run only once
 }
 
+void PUSH(Register x) {
+	PUSH( x.get() );
+}
+
 
 /*  Macros for the IN/OUT instructions INI/INIR/IND/INDR/OUTI/OTIR/OUTD/OTDR
 
@@ -1286,15 +1290,29 @@ x == (C + 1) & 0xff for INI
 x == L              for OUTI and OUTD
 x == (C - 1) & 0xff for IND
 */
-#define INOUTFLAGS(syxz, x)                                             \
-    AF = (AF & 0xff00) | (syxz) |               /* SF, YF, XF, ZF   */  \
-        ((acu & 0x80) >> 6) |                           /* NF       */  \
-        ((acu + (x)) > 0xff ? (FLAG_C | FLAG_H) : 0) |  /* CF, HF   */  \
-        parityTable[((acu + (x)) & 7) ^ temp]           /* PF       */
+// #define INOUTFLAGS(syxz, x)                                             \
+//     AF = (AF & 0xff00) | (syxz) |               /* SF, YF, XF, ZF   */  \
+//         ((acu & 0x80) >> 6) |                           /* NF       */  \
+//         ((acu + (x)) > 0xff ? (FLAG_C | FLAG_H) : 0) |  /* CF, HF   */  \
+//         parityTable[((acu + (x)) & 7) ^ temp]           /* PF       */
 
-#define INOUTFLAGS_ZERO(x)      INOUTFLAGS(FLAG_Z, x)
-#define INOUTFLAGS_NONZERO(x)                                           \
-    INOUTFLAGS((HIGH_REGISTER(BC) & 0xa8) | ((HIGH_REGISTER(BC) == 0) << 6), x)
+// #define INOUTFLAGS_ZERO(x)      INOUTFLAGS(FLAG_Z, x)
+// #define INOUTFLAGS_NONZERO(x)                                           \
+//     INOUTFLAGS((HIGH_REGISTER(BC) & 0xa8) | ((HIGH_REGISTER(BC) == 0) << 6), x)
+
+void INOUTFLAGS(int syxz, int x) {
+	AF.set ( 
+	(AF.get() & 0xff00) | (syxz) |               /* SF, YF, XF, ZF   */  
+	((acu & 0x80) >> 6) |                           /* NF       */  
+	((acu + (x)) > 0xff ? (FLAG_C | FLAG_H) : 0) |  /* CF, HF   */  
+	parityTable[((acu + (x)) & 7) ^ temp] );          /* PF       */
+}
+
+
+void INOUTFLAGS_ZERO(int x) { INOUTFLAGS(FLAG_Z, x); }
+
+void INOUTFLAGS_NONZERO(int x) { INOUTFLAGS((HIGH_REGISTER(BC) & 0xa8) | ( ((HIGH_REGISTER(BC) == 0) ? 1 : 0 ) << 6), x); }
+
 
 // static inline void Z80reset(void) {
 void Z80reset() {
@@ -1701,7 +1719,8 @@ void  Z80run() {
 
 		case 0x10:      /* DJNZ dd */
 			if (((BC.sub(0x100)) & 0xff00) != 0)
-				PC.add( (int8)GET_BYTE(PC) + 1 );
+				PC.add( GET_BYTE(PC) + 1 );
+				// PC.add( (int8)GET_BYTE(PC) + 1 );
 			else
 				PC.inc();
 			break;
@@ -1741,7 +1760,8 @@ void  Z80run() {
 			break;
 
 		case 0x18:      /* JR dd */
-			PC.add( (int8) GET_BYTE(PC) + 1 ); // beware w/ int8 cast & overflow -> TODO %256
+			PC.add( GET_BYTE(PC) + 1 );
+			// PC.add( (int8) GET_BYTE(PC) + 1 ); // beware w/ int8 cast & overflow -> TODO %256
 			break;
 
 		case 0x19:      /* ADD HL,DE */
@@ -1784,7 +1804,8 @@ void  Z80run() {
 			if (TSTFLAG(Z))
 				PC.inc();
 			else
-				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO : use %256
+				PC.add( GET_BYTE(PC) + 1 );
+				//PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO : use %256
 			break;
 
 		case 0x21:      /* LD HL,nnnn */
@@ -1823,7 +1844,7 @@ void  Z80run() {
 			temp = LOW_DIGIT(acu);
 			cbits = TSTFLAG(C);
 			if (TSTFLAG(N)) {   /* last operation was a subtract */
-				int hd = (cbits || acu > 0x99) ? 1 : 0;
+				int hd = (cbits != 0 || acu > 0x99) ? 1 : 0;
 				if (TSTFLAG(H) || (temp > 9)) { /* adjust low digit */
 					if (temp > 5)
 						SETFLAG(H, 0);
@@ -1845,7 +1866,8 @@ void  Z80run() {
 
 		case 0x28:      /* JR Z,dd */
 			if (TSTFLAG(Z))
-				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
+				PC.add( GET_BYTE(PC) + 1 );
+				// PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
 			else
 				PC.inc();
 			break;
@@ -1891,7 +1913,8 @@ void  Z80run() {
 			if (TSTFLAG(C))
 				PC.inc();
 			else
-				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
+				PC.add( GET_BYTE(PC) + 1 );
+				//PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
 			break;
 
 		case 0x31:      /* LD SP,nnnn */
@@ -1931,7 +1954,8 @@ void  Z80run() {
 
 		case 0x38:      /* JR C,dd */
 			if (TSTFLAG(C))
-				PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
+				PC.add( GET_BYTE(PC) + 1 );
+				//PC.add( (int8)GET_BYTE(PC) + 1 ); // TODO %256
 			else
 				PC.inc();
 			break;
