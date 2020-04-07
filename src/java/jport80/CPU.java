@@ -38,6 +38,9 @@ public class CPU {
 	void SET_HIGH_REGISTER( Register a, int v ) {
 		SET_HIGH_REGISTER(a, int8(v) );
 	}
+	void SET_LOW_REGISTER( Register a, int v ) {
+		SET_LOW_REGISTER(a, int8(v) );
+	}
 
 	char LOW_DIGIT(int x) {
 		return (char)((x) & 0xf);
@@ -132,6 +135,7 @@ public class CPU {
 	
 	int TSTFLAG(Flag f) { return ((AF.get() & f.fValue) != 0) ? 1 : 0; }
 	void SETFLAG(Flag f, char c) { AF.set( (c != 0) ? AF.get() | f.fValue : AF.get() & ~f.fValue ); }
+	void SETFLAG(Flag f, int c) { SETFLAG(f, int8(c)); }
 
 
     
@@ -1894,7 +1898,7 @@ void  Z80run() {
 					acu -= 0x160;   /* adjust high digit */
 			} else {          /* last operation was an add */
 				if (TSTFLAG(Flag.H) != 0 || (temp > 9)) { /* adjust low digit */
-					SETFLAG(Flag.H, (temp > 9));
+					SETFLAG(Flag.H, (temp > 9) ? 1 : 0 );
 					acu += 6;
 				}
 				if (cbits != 0 || ((acu & 0x1f0) > 0x90))
@@ -2927,7 +2931,7 @@ System.exit(0);
 			break;
 
 		case 0xd0:      /* RET NC */
-			if (!(TSTFLAG(C)))
+			if (!(TSTFLAG(Flag.C) != 0))
 				POP(PC);
 			break;
 
@@ -2936,7 +2940,7 @@ System.exit(0);
 			break;
 
 		case 0xd2:      /* JP NC,nnnn */
-			JPC(!TSTFLAG(Flag.C));
+			JPC(!(TSTFLAG(Flag.C)!=0));
 			break;
 
 		case 0xd3:      /* OUT (nn),A */
@@ -2944,7 +2948,7 @@ System.exit(0);
 			break;
 
 		case 0xd4:      /* CALL NC,nnnn */
-			CALLC(!TSTFLAG(Flag.C));
+			CALLC(!(TSTFLAG(Flag.C) != 0 ));
 			break;
 
 		case 0xd5:      /* PUSH DE */
@@ -2965,7 +2969,7 @@ System.exit(0);
 			break;
 
 		case 0xd8:      /* RET C */
-			if (TSTFLAG(Flag.C))
+			if (TSTFLAG(Flag.C) != 0)
 				POP(PC);
 			break;
 
@@ -3323,12 +3327,12 @@ System.exit(0);
 			case 0x9c:      /* SBC A,IXH */
 				temp = HIGH_REGISTER(IX);
 				acu = HIGH_REGISTER(AF);
-				sum = acu - temp - TSTFLAG(C);
+				sum = acu - temp - TSTFLAG(Flag.C);
 				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0x95:      /* SUB IXL */
-				SETFLAG(C, 0);/* fall through, a bit less efficient but smaller code */
+				SETFLAG(Flag.C, 0);/* fall through, a bit less efficient but smaller code */
 
 			case 0x9d:      /* SBC A,IXL */
 				temp = LOW_REGISTER(IX);
@@ -3472,12 +3476,12 @@ System.exit(0);
 						goto cbshflg2;
 
 					case 0x10:/* RL */
-						temp = (acu << 1) | TSTFLAG(C);
+						temp = (acu << 1) | TSTFLAG(Flag.C);
 						cbits = acu & 0x80;
 						goto cbshflg2;
 
 					case 0x18:/* RR */
-						temp = (acu >> 1) | (TSTFLAG(C) << 7);
+						temp = (acu >> 1) | (TSTFLAG(Flag.C) << 7);
 						cbits = acu & 1;
 						goto cbshflg2;
 
