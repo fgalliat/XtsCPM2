@@ -4215,32 +4215,32 @@ System.exit(0);
 				break;
 
 			case 0x29:      /* ADD IY,IY */
-				IY &= ADDRMASK;
-				sum = IY + IY;
-				AF = (AF & ~0x3b) | cbitsDup16Table[sum >> 8];
-				IY = sum;
+				IY.andEq(ADDRMASK);
+				sum = IY.get() + IY.get();
+				AF.set( (AF.get() & ~0x3b) | cbitsDup16Table[sum >> 8] );
+				IY.set(sum);
 				break;
 
 			case 0x2a:      /* LD IY,(nnnn) */
 				temp = GET_WORD(PC);
-				IY = GET_WORD(temp);
-				PC += 2;
+				IY.set(GET_WORD(temp));
+				PC.add(2);
 				break;
 
 			case 0x2b:      /* DEC IY */
-				--IY;
+				IY.dec();
 				break;
 
 			case 0x2c:      /* INC IYL */
 				temp = LOW_REGISTER(IY) + 1;
 				SET_LOW_REGISTER(IY, temp);
-				AF = (AF & ~0xfe) | incZ80Table[temp];
+				AF.set( (AF.get() & ~0xfe) | incZ80Table[temp] );
 				break;
 
 			case 0x2d:      /* DEC IYL */
 				temp = LOW_REGISTER(IY) - 1;
 				SET_LOW_REGISTER(IY, temp);
-				AF = (AF & ~0xfe) | decZ80Table[temp & 0xff];
+				AF.set( (AF.get() & ~0xfe) | decZ80Table[temp & 0xff] );
 				break;
 
 			case 0x2e:      /* LD IYL,nn */
@@ -4248,30 +4248,30 @@ System.exit(0);
 				break;
 
 			case 0x34:      /* INC (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr) + 1;
 				PUT_BYTE(adr, temp);
-				AF = (AF & ~0xfe) | incZ80Table[temp];
+				AF.set( (AF.get() & ~0xfe) | incZ80Table[temp] );
 				break;
 
 			case 0x35:      /* DEC (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr) - 1;
 				PUT_BYTE(adr, temp);
-				AF = (AF & ~0xfe) | decZ80Table[temp & 0xff];
+				AF.set( (AF.get() & ~0xfe) | decZ80Table[temp & 0xff] );
 				break;
 
 			case 0x36:      /* LD (IY+dd),nn */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, RAM_PP(PC));
 				break;
 
 			case 0x39:      /* ADD IY,SP */
-				IY &= ADDRMASK;
-				SP &= ADDRMASK;
-				sum = IY + SP;
-				AF = (AF & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(IY ^ SP ^ sum) >> 8];
-				IY = sum;
+				IY.andEq(ADDRMASK);
+				SP.andEq(ADDRMASK);
+				sum = IY.get() + SP.get();
+				AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(IY ^ SP ^ sum) >> 8] );
+				IY.set( sum );
 				break;
 
 			case 0x44:      /* LD B,IYH */
@@ -4283,7 +4283,7 @@ System.exit(0);
 				break;
 
 			case 0x46:      /* LD B,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_HIGH_REGISTER(BC, GET_BYTE(adr));
 				break;
 
@@ -4296,7 +4296,7 @@ System.exit(0);
 				break;
 
 			case 0x4e:      /* LD C,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_LOW_REGISTER(BC, GET_BYTE(adr));
 				break;
 
@@ -4309,7 +4309,7 @@ System.exit(0);
 				break;
 
 			case 0x56:      /* LD D,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_HIGH_REGISTER(DE, GET_BYTE(adr));
 				break;
 
@@ -4322,7 +4322,7 @@ System.exit(0);
 				break;
 
 			case 0x5e:      /* LD E,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_LOW_REGISTER(DE, GET_BYTE(adr));
 				break;
 
@@ -4350,7 +4350,7 @@ System.exit(0);
 				break;
 
 			case 0x66:      /* LD H,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_HIGH_REGISTER(HL, GET_BYTE(adr));
 				break;
 
@@ -4382,7 +4382,7 @@ System.exit(0);
 				break;
 
 			case 0x6e:      /* LD L,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_LOW_REGISTER(HL, GET_BYTE(adr));
 				break;
 
@@ -4391,37 +4391,37 @@ System.exit(0);
 				break;
 
 			case 0x70:      /* LD (IY+dd),B */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, HIGH_REGISTER(BC));
 				break;
 
 			case 0x71:      /* LD (IY+dd),C */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, LOW_REGISTER(BC));
 				break;
 
 			case 0x72:      /* LD (IY+dd),D */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, HIGH_REGISTER(DE));
 				break;
 
 			case 0x73:      /* LD (IY+dd),E */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, LOW_REGISTER(DE));
 				break;
 
 			case 0x74:      /* LD (IY+dd),H */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, HIGH_REGISTER(HL));
 				break;
 
 			case 0x75:      /* LD (IY+dd),L */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, LOW_REGISTER(HL));
 				break;
 
 			case 0x77:      /* LD (IY+dd),A */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				PUT_BYTE(adr, HIGH_REGISTER(AF));
 				break;
 
@@ -4434,7 +4434,7 @@ System.exit(0);
 				break;
 
 			case 0x7e:      /* LD A,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				SET_HIGH_REGISTER(AF, GET_BYTE(adr));
 				break;
 
@@ -4442,14 +4442,14 @@ System.exit(0);
 				temp = HIGH_REGISTER(IY);
 				acu = HIGH_REGISTER(AF);
 				sum = acu + temp;
-				AF = addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum];
+				AF.set( addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum] );
 				break;
 
 			case 0x85:      /* ADD A,IYL */
 				temp = LOW_REGISTER(IY);
 				acu = HIGH_REGISTER(AF);
 				sum = acu + temp;
-				AF = addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum];
+				AF.set( addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum] );
 				break;
 
 			case 0x86:      /* ADD A,(IY+dd) */
@@ -4457,14 +4457,14 @@ System.exit(0);
 				temp = GET_BYTE(adr);
 				acu = HIGH_REGISTER(AF);
 				sum = acu + temp;
-				AF = addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum];
+				AF.set( addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum] );
 				break;
 
 			case 0x8c:      /* ADC A,IYH */
 				temp = HIGH_REGISTER(IY);
 				acu = HIGH_REGISTER(AF);
 				sum = acu + temp + TSTFLAG(C);
-				AF = addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum];
+				AF.set( addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum] );
 				break;
 
 			case 0x8d:      /* ADC A,IYL */
@@ -4475,19 +4475,19 @@ System.exit(0);
 				break;
 
 			case 0x8e:      /* ADC A,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
 				acu = HIGH_REGISTER(AF);
 				sum = acu + temp + TSTFLAG(C);
-				AF = addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum];
+				AF.set( addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum] );
 				break;
 
 			case 0x96:      /* SUB (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp;
-				AF = addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0x94:      /* SUB IYH */
@@ -4497,7 +4497,7 @@ System.exit(0);
 				temp = HIGH_REGISTER(IY);
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp - TSTFLAG(C);
-				AF = addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0x95:      /* SUB IYL */
@@ -4507,49 +4507,49 @@ System.exit(0);
 				temp = LOW_REGISTER(IY);
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp - TSTFLAG(C);
-				AF = addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0x9e:      /* SBC A,(IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp - TSTFLAG(C);
-				AF = addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0xa4:      /* AND IYH */
-				AF = andTable[((AF & IY) >> 8) & 0xff];
+				AF.set( andTable[((AF.get() & IY.get()) >> 8) & 0xff] );
 				break;
 
 			case 0xa5:      /* AND IYL */
-				AF = andTable[((AF >> 8) & IY) & 0xff];
+				AF.set( andTable[((AF.get() >> 8) & IY.get()) & 0xff] );
 				break;
 
 			case 0xa6:      /* AND (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
-				AF = andTable[((AF >> 8) & GET_BYTE(adr)) & 0xff];
+				adr = IY.get() + (int8)RAM_PP(PC);
+				AF.set( andTable[((AF.get() >> 8) & GET_BYTE(adr)) & 0xff] );
 				break;
 
 			case 0xac:      /* XOR IYH */
-				AF = xororTable[((AF ^ IY) >> 8) & 0xff];
+				AF.set( xororTable[((AF.get() ^ IY.get()) >> 8) & 0xff] );
 				break;
 
 			case 0xad:      /* XOR IYL */
-				AF = xororTable[((AF >> 8) ^ IY) & 0xff];
+				AF.set( xororTable[((AF.get() >> 8) ^ IY.get()) & 0xff] );
 				break;
 
 			case 0xae:      /* XOR (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
-				AF = xororTable[((AF >> 8) ^ GET_BYTE(adr)) & 0xff];
+				adr = IY.get() + (int8)RAM_PP(PC);
+				AF.set( xororTable[((AF.get() >> 8) ^ GET_BYTE(adr)) & 0xff] );
 				break;
 
 			case 0xb4:      /* OR IYH */
-				AF = xororTable[((AF | IY) >> 8) & 0xff];
+				AF.set( xororTable[((AF.get() | IY.get()) >> 8) & 0xff] );
 				break;
 
 			case 0xb5:      /* OR IYL */
-				AF = xororTable[((AF >> 8) | IY) & 0xff];
+				AF.set( xororTable[((AF.get() >> 8) | IY.get()) & 0xff] );
 				break;
 
 			case 0xb6:      /* OR (IY+dd) */
