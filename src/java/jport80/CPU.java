@@ -8,20 +8,37 @@ public class CPU {
 	void _RamWrite(int addr, char value) { ; }
 	void _Bios() { ; } 
 	void _Bdos() { ; } 
+
 	char HIGH_REGISTER( int v ) { return (char)( v / 256 ); }
 	char LOW_REGISTER( int v ) { return (char)( v % 256 ); }
 
 	char HIGH_REGISTER( Register v ) { return HIGH_REGISTER(v.get()); }
 	char LOW_REGISTER( Register v ) { return LOW_REGISTER(v.get()); }
 
+/*
+
+#define ldig(x)		((x) & 0xf)
+#define hdig(x)		(((x)>>4)&0xf)
+#define lreg(x)		((x)&0xff)
+#define hreg(x)		(((x)>>8)&0xff)
+
+#define Setlreg(x, v)	x = (((x)&0xff00) | ((v)&0xff))
+#define Sethreg(x, v)	x = (((x)&0xff) | (((v)&0xff) << 8))
+
+*/
+
 	void SET_LOW_REGISTER( Register a, char v ) {
-		System.out.println( "SET_LOW_REGISTER NYI" );
+		//System.out.println( "SET_LOW_REGISTER NYI" );
+		a.set( (((a.get())&0xff00) | ((v)&0xff)) );
 	}
 	void SET_HIGH_REGISTER( Register a, char v ) {
-		System.out.println( "SET_HIGH_REGISTER NYI" );
+		//System.out.println( "SET_HIGH_REGISTER NYI" );
+		a.set( (((a.get())&0xff) | (((v)&0xff) << 8)) );
 	}
 
-
+	char LOW_DIGIT(int x) {
+		return (char)((x) & 0xf);
+	}
 
 	class Register {
 		int value;
@@ -91,10 +108,29 @@ public class CPU {
     final int FLAG_P  =4;
     final int FLAG_H  =16;
     final int FLAG_Z  =64;
-    final int FLAG_S  =128;
-    
-    #define SETFLAG(f,c)    (AF = (c) ? AF | FLAG_ ## f : AF & ~FLAG_ ## f)
-    #define TSTFLAG(f)      ((AF & FLAG_ ## f) != 0)
+	final int FLAG_S  =128;
+	
+	enum Flag {
+		C(1),
+		N(2),
+		P(4),
+		H(16),
+		Z(64),
+		S(128);
+
+		protected int fValue;
+		Flag(int fValue) { this.fValue = fValue; }
+	}
+
+	
+	//N.B. a##b => "ab"// FLAG_ ## f => ex. "FLAG_H"
+    //#define SETFLAG(f,c)    (AF = (c) ? AF | FLAG_ ## f : AF & ~FLAG_ ## f)
+	//#define TSTFLAG(f)      ((AF & FLAG_ ## f) != 0)
+	
+	boolean TSTFLAG(Flag f) { return ((AF.get() & f.fValue) != 0); }
+	void SETFLAG(Flag f, char c) { AF.set( (c != 0) ? AF.get() | f.fValue : AF.get() & ~f.fValue ); }
+
+
     
     // #define PARITY(x)   parityTable[(x) & 0xff]
     char PARITY(int x) { return parityTable[(x) & 0xff]; }  
