@@ -1912,13 +1912,13 @@ void  Z80run() {
 		case 0x34:      /* INC (HL) */
 			temp = GET_BYTE(HL) + 1;
 			PUT_BYTE(HL, temp);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80);
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) );
 			break;
 
 		case 0x35:      /* DEC (HL) */
 			temp = GET_BYTE(HL) - 1;
 			PUT_BYTE(HL, temp);
-			AF = (AF & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f);
+			AF.set( (AF.get() & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f) );
 			break;
 
 		case 0x36:      /* LD (HL),nn */
@@ -1957,13 +1957,13 @@ void  Z80run() {
 		case 0x3c:      /* INC A */
 			AF.add( 0x100 );
 			temp = HIGH_REGISTER(AF);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x3d:      /* DEC A */
-			AF.dec(0x100);
+			AF.sub(0x100);
 			temp = HIGH_REGISTER(AF);
-			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | decTable[temp] | SET_PV2(0x7f) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x3e:      /* LD A,nn */
@@ -2236,7 +2236,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x81:      /* ADD A,C */
@@ -2244,7 +2244,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x82:      /* ADD A,D */
@@ -2252,7 +2252,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x83:      /* ADD A,E */
@@ -2260,7 +2260,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x84:      /* ADD A,H */
@@ -2268,7 +2268,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x85:      /* ADD A,L */
@@ -2276,7 +2276,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()));
 			break;
 
 		case 0x86:      /* ADD A,(HL) */
@@ -2284,12 +2284,12 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp;
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x87:      /* ADD A,A */
 			cbits = 2 * HIGH_REGISTER(AF);
-			AF = cbitsDup8Table[cbits] | (SET_PVS(cbits));
+			AF.set( cbitsDup8Table[cbits] | (SET_PVS(cbits)) );
 			break;
 
 		case 0x88:      /* ADC A,B */
@@ -2297,7 +2297,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x89:      /* ADC A,C */
@@ -2305,7 +2305,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x8a:      /* ADC A,D */
@@ -2313,7 +2313,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x8b:      /* ADC A,E */
@@ -2321,7 +2321,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x8c:      /* ADC A,H */
@@ -2329,7 +2329,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x8d:      /* ADC A,L */
@@ -2337,7 +2337,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x8e:      /* ADC A,(HL) */
@@ -2345,12 +2345,12 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu + temp + TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = addTable[sum] | cbitsTable[cbits] | (SET_PV);
+			AF.set( addTable[sum] | cbitsTable[cbits] | (SET_PV()) );
 			break;
 
 		case 0x8f:      /* ADC A,A */
 			cbits = 2 * HIGH_REGISTER(AF) + TSTFLAG(C);
-			AF = cbitsDup8Table[cbits] | (SET_PVS(cbits));
+			AF.set( cbitsDup8Table[cbits] | (SET_PVS(cbits)) );
 			break;
 
 		case 0x90:      /* SUB B */
@@ -2358,7 +2358,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x91:      /* SUB C */
@@ -2366,7 +2366,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x92:      /* SUB D */
@@ -2374,7 +2374,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x93:      /* SUB E */
@@ -2382,7 +2382,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x94:      /* SUB H */
@@ -2390,7 +2390,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x95:      /* SUB L */
@@ -2398,7 +2398,7 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x96:      /* SUB (HL) */
@@ -2406,11 +2406,11 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0x97:      /* SUB A */
-			AF = 0x42;
+			AF.set( 0x42 );
 			break;
 
 		case 0x98:      /* SBC A,B */
