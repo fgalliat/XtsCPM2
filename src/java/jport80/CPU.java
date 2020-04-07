@@ -3309,7 +3309,7 @@ System.exit(0);
 				adr = IX.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
 				acu = HIGH_REGISTER(AF);
-				sum = acu + temp + TSTFLAG(C);
+				sum = acu + temp + TSTFLAG(Flag.C);
 				AF.set( addTable[sum] | cbitsZ80Table[acu ^ temp ^ sum] );
 				break;
 
@@ -3322,7 +3322,7 @@ System.exit(0);
 				break;
 
 			case 0x94:      /* SUB IXH */
-				SETFLAG(C, 0);/* fall through, a bit less efficient but smaller code */
+				SETFLAG(Flag.C, 0);/* fall through, a bit less efficient but smaller code */
 
 			case 0x9c:      /* SBC A,IXH */
 				temp = HIGH_REGISTER(IX);
@@ -3337,7 +3337,7 @@ System.exit(0);
 			case 0x9d:      /* SBC A,IXL */
 				temp = LOW_REGISTER(IX);
 				acu = HIGH_REGISTER(AF);
-				sum = acu - temp - TSTFLAG(C);
+				sum = acu - temp - TSTFLAG(Flag.C);
 				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
@@ -3345,7 +3345,7 @@ System.exit(0);
 				adr = IX.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
 				acu = HIGH_REGISTER(AF);
-				sum = acu - temp - TSTFLAG(C);
+				sum = acu - temp - TSTFLAG(Flag.C);
 				AF.set( addTable[sum & 0xff] | cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
@@ -3380,7 +3380,7 @@ System.exit(0);
 				break;
 
 			case 0xb5:      /* OR IXL */
-				AF.set( xororTable[((AF.get() >> 8) | IX) & 0xff]);
+				AF.set( xororTable[((AF.get() >> 8) | IX.get()) & 0xff]);
 				break;
 
 			case 0xb6:      /* OR (IX+dd) */
@@ -3504,13 +3504,14 @@ System.exit(0);
 						temp = acu >> 1;
 						cbits = acu & 1;
 					cbshflg2:
-						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+						//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | (cbits != 0 ? 1 : 0 ) );
 					}
 					break;
 
 				case 0x40:  /* BIT */
-					if (acu & (1 << ((op >> 3) & 7)))
-						AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7) );
+					if ((acu & (1 << ((op >> 3) & 7))) !=0)
+						AF.set( (AF.get() & ~0xfe) | 0x10 | ((((op & 0x38) == 0x38) ? 1 : 0) << 7) );
 					else
 						AF.set( (AF.get() & ~0xfe) | 0x54 );
 					if ((op & 7) != 6)
@@ -3603,7 +3604,7 @@ System.exit(0);
 			break;
 
 		case 0xe0:      /* RET PO */
-			if (!(TSTFLAG(P)))
+			if (!(TSTFLAG(Flag.P) != 0))
 				POP(PC);
 			break;
 
@@ -3612,7 +3613,7 @@ System.exit(0);
 			break;
 
 		case 0xe2:      /* JP PO,nnnn */
-			JPC(!TSTFLAG(P));
+			JPC(!(TSTFLAG(Flag.P)!=0));
 			break;
 
 		case 0xe3:      /* EX (SP),HL */
@@ -3622,7 +3623,7 @@ System.exit(0);
 			break;
 
 		case 0xe4:      /* CALL PO,nnnn */
-			CALLC(!TSTFLAG(P));
+			CALLC(!(TSTFLAG(Flag.P) != 0));
 			break;
 
 		case 0xe5:      /* PUSH HL */
@@ -3639,16 +3640,16 @@ System.exit(0);
 			break;
 
 		case 0xe8:      /* RET PE */
-			if (TSTFLAG(P))
+			if (TSTFLAG(Flag.P)!=0)
 				POP(PC);
 			break;
 
 		case 0xe9:      /* JP (HL) */
-			PC.set( HL );
+			PC.set( HL.get() );
 			break;
 
 		case 0xea:      /* JP PE,nnnn */
-			JPC(TSTFLAG(P));
+			JPC(TSTFLAG(Flag.P));
 			break;
 
 		case 0xeb:      /* EX DE,HL */
@@ -3658,7 +3659,7 @@ System.exit(0);
 			break;
 
 		case 0xec:      /* CALL PE,nnnn */
-			CALLC(TSTFLAG(P));
+			CALLC(TSTFLAG(Flag.P));
 			break;
 
 		case 0xed:      /* ED prefix */
@@ -3677,15 +3678,15 @@ System.exit(0);
 			case 0x42:      /* SBC HL,BC */
 				HL.andEq(ADDRMASK);
 				BC.andEq(ADDRMASK);
-				sum = HL.get() - BC.get() - TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() - BC.get() - TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | ((((sum & ADDRMASK) == 0) ? 1 : 0) << 6) |
 					cbits2Z80Table[((HL.get() ^ BC.get() ^ sum) >> 8) & 0x1ff] );
 				HL.set( sum );
 				break;
 
 			case 0x43:      /* LD (nnnn),BC */
 				temp = GET_WORD(PC);
-				PUT_WORD(temp, BC);
+				PUT_WORD(temp, BC.get());
 				PC.add(2);
 				break;
 
@@ -3706,7 +3707,7 @@ System.exit(0);
 			case 0x7C:      /* NEG, unofficial */
 				temp = HIGH_REGISTER(AF);
 				AF.set( ((~(AF.get() & 0xff00) + 1) & 0xff00) ); /* AF = (-(AF & 0xff00) & 0xff00); */
-				AF.orEq( ((AF.get() >> 8) & 0xa8) | (((AF.get() & 0xff00) == 0) << 6) | negTable[temp] );
+				AF.orEq( ((AF.get() >> 8) & 0xa8) | ((((AF.get() & 0xff00) == 0) ? 1 : 0 ) << 6) | negTable[temp] );
 				break;
 
 			case 0x45:      /* RETN */
@@ -3747,8 +3748,8 @@ System.exit(0);
 			case 0x4a:      /* ADC HL,BC */
 				HL.andEq(ADDRMASK);
 				BC.andEq(ADDRMASK);
-				sum = HL.get() + BC.get() + TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() + BC.get() + TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | ((((sum & ADDRMASK) == 0) ? 1 : 0) << 6) |
 					cbitsZ80Table[(HL.get() ^ BC.get() ^ sum) >> 8] );
 				HL.set(sum);
 				break;
@@ -3781,15 +3782,15 @@ System.exit(0);
 			case 0x52:      /* SBC HL,DE */
 				HL.andEq(ADDRMASK);
 				DE.andEq(ADDRMASK);
-				sum = HL.get() - DE.get() - TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() - DE.get() - TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | ((((sum & ADDRMASK) == 0)? 1 : 0) << 6) |
 					cbits2Z80Table[((HL.get() ^ DE.get() ^ sum) >> 8) & 0x1ff] );
 				HL.set( sum );
 				break;
 
 			case 0x53:      /* LD (nnnn),DE */
 				temp = GET_WORD(PC);
-				PUT_WORD(temp, DE);
+				PUT_WORD(temp, DE.get());
 				PC.add(2);
 				break;
 
@@ -3798,7 +3799,7 @@ System.exit(0);
 				break;
 
 			case 0x57:      /* LD A,I */
-				AF.set( (AF.get() & 0x29) | (IR.get() & ~0xff) | ((IR.get() >> 8) & 0x80) | (((IR.get() & ~0xff) == 0) << 6) | ((IFF.get() & 2) << 1) );
+				AF.set( (AF.get() & 0x29) | (IR.get() & ~0xff) | ((IR.get() >> 8) & 0x80) | ((((IR.get() & ~0xff) == 0) ? 1 : 0) << 6) | ((IFF.get() & 2) << 1) );
 				break;
 
 			case 0x58:      /* IN E,(C) */
@@ -3814,8 +3815,8 @@ System.exit(0);
 			case 0x5a:      /* ADC HL,DE */
 				HL.andEq(ADDRMASK);
 				DE.andEq(ADDRMASK);
-				sum = HL.get() + DE.get() + TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() + DE.get() + TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | ((((sum & ADDRMASK) == 0) ? 1 : 0) << 6) |
 					cbitsZ80Table[(HL.get() ^ DE.get() ^ sum) >> 8] );
 				HL.set( sum );
 				break;
@@ -3832,7 +3833,7 @@ System.exit(0);
 
 			case 0x5f:      /* LD A,R */
 				AF.set( (AF.get() & 0x29) | ((IR.get() & 0xff) << 8) | (IR.get() & 0x80) |
-					(((IR.get() & 0xff) == 0) << 6) | ((IFF.get() & 2) << 1) );
+					((((IR.get() & 0xff) == 0) ? 1 : 0) << 6) | ((IFF.get() & 2) << 1) );
 				break;
 
 			case 0x60:      /* IN H,(C) */
@@ -3847,15 +3848,15 @@ System.exit(0);
 
 			case 0x62:      /* SBC HL,HL */
 				HL.andEq(ADDRMASK);
-				sum = HL.get() - HL.get() - TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() - HL.get() - TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((((sum & ADDRMASK) == 0) ? 1 : 0) << 6) |
 					cbits2Z80DupTable[(sum >> 8) & 0x1ff]);
 				HL.set(sum);
 				break;
 
 			case 0x63:      /* LD (nnnn),HL */
 				temp = GET_WORD(PC);
-				PUT_WORD(temp, HL);
+				PUT_WORD(temp, HL.get());
 				PC.add(2);
 				break;
 
@@ -3863,7 +3864,7 @@ System.exit(0);
 				temp = GET_BYTE(HL);
 				acu = HIGH_REGISTER(AF);
 				PUT_BYTE(HL, HIGH_DIGIT(temp) | (LOW_DIGIT(acu) << 4));
-				AF.set( rrdrldTable[(acu & 0xf0) | LOW_DIGIT(temp)] | (AF & 1) );
+				AF.set( rrdrldTable[(acu & 0xf0) | LOW_DIGIT(temp)] | (AF.get() & 1) );
 				break;
 
 			case 0x68:      /* IN L,(C) */
@@ -3878,8 +3879,8 @@ System.exit(0);
 
 			case 0x6a:      /* ADC HL,HL */
 				HL.andEq(ADDRMASK);
-				sum = HL.get() + HL.get() + TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() + HL.get() + TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((((sum & ADDRMASK) == 0)?1:0) << 6) |
 					cbitsZ80DupTable[sum >> 8] );
 				HL.set( sum );
 				break;
@@ -3910,15 +3911,15 @@ System.exit(0);
 			case 0x72:      /* SBC HL,SP */
 				HL.andEq( ADDRMASK );
 				SP.andEq( ADDRMASK );
-				sum = HL.get() - SP.get() - TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() - SP.get() - TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | ((((sum & ADDRMASK) == 0)?1:0) << 6) |
 					cbits2Z80Table[((HL.get() ^ SP.get() ^ sum) >> 8) & 0x1ff] );
 				HL.set( sum );
 				break;
 
 			case 0x73:      /* LD (nnnn),SP */
 				temp = GET_WORD(PC);
-				PUT_WORD(temp, SP);
+				PUT_WORD(temp, SP.get());
 				PC.add(2);
 				break;
 
@@ -3935,8 +3936,8 @@ System.exit(0);
 			case 0x7a:      /* ADC HL,SP */
 				HL.andEq(ADDRMASK);
 				SP.andEq(ADDRMASK);
-				sum = HL.get() + SP.get() + TSTFLAG(C);
-				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+				sum = HL.get() + SP.get() + TSTFLAG(Flag.C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | ((((sum & ADDRMASK) == 0)?1:0) << 6) |
 					cbitsZ80Table[(HL.get() ^ SP.get() ^ sum) >> 8] );
 				HL.set( sum );
 				break;
@@ -3949,11 +3950,11 @@ System.exit(0);
 
 			case 0xa0:      /* LDI */
 				acu = RAM_PP(HL);
-				PUT_BYTE_PP(DE, acu);
+				PUT_BYTE_PP(DE, int8(acu) );
 				acu += HIGH_REGISTER(AF);
 
 				AF.set( (AF.get() & ~0x3e) | (acu & 8) | ((acu & 2) << 4) |
-					(((BC.dec() & ADDRMASK) != 0) << 2) );
+					((((BC.dec() & ADDRMASK) != 0)?1:0) << 2) );
 					// (((--BC & ADDRMASK) != 0) << 2); // (*a)
 				break;
 
@@ -3963,11 +3964,12 @@ System.exit(0);
 				sum = acu - temp;
 				cbits = acu ^ temp ^ sum;
 
-				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
+				// AF = (AF & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
+				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | ((!((sum & 0xff)!=0)?1:0) << 6) |
 					(((sum - ((cbits & 16) >> 4)) & 2) << 4) | (cbits & 16) |
 					((sum - ((cbits >> 4) & 1)) & 8) |
 					// ((--BC & ADDRMASK) != 0) << 2 | 2; // (*a)
-					((BC.dec() & ADDRMASK) != 0) << 2 | 2 );
+					((BC.dec() & ADDRMASK) != 0)?1:0 << 2 | 2 );
 
 				if ((sum & 15) == 8 && (cbits & 16) != 0)
 					AF.andEq( ~8 );
@@ -4061,7 +4063,7 @@ System.exit(0);
 					BC.set( 0x10000 );
 				do {
 					acu = RAM_PP(HL);
-					PUT_BYTE_PP(DE, acu);
+					PUT_BYTE_PP(DE, int8(acu) );
 				} while (BC.dec() != 0);
 				acu += HIGH_REGISTER(AF);
 				AF.set( (AF.get() & ~0x3e) | (acu & 8) | ((acu & 2) << 4) );
@@ -4074,9 +4076,9 @@ System.exit(0);
 					BC.set( 0x10000 );
 				do {
 					temp = RAM_PP(HL);
-					op = BC.dec() != 0;
+					op = (BC.dec() != 0) ? 1 : 0;
 					sum = acu - temp;
-				} while (op && sum != 0);
+				} while ( op!=0 && sum!=0);
 				cbits = acu ^ temp ^ sum;
 				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
 					(((sum - ((cbits & 16) >> 4)) & 2) << 4) |
@@ -4095,7 +4097,7 @@ System.exit(0);
 					acu = cpu_in(LOW_REGISTER(BC));
 					PUT_BYTE(HL, acu);
 					HL.inc();
-				} while (--temp);
+				} while (--temp != 0);
 				temp = HIGH_REGISTER(BC);
 				SET_HIGH_REGISTER(BC, 0);
 				INOUTFLAGS_ZERO((LOW_REGISTER(BC) + 1) & 0xff);
@@ -4109,7 +4111,7 @@ System.exit(0);
 					acu = GET_BYTE(HL);
 					cpu_out(LOW_REGISTER(BC), acu);
 					HL.inc();
-				} while (--temp);
+				} while (--temp != 0);
 				temp = HIGH_REGISTER(BC);
 				SET_HIGH_REGISTER(BC, 0);
 				INOUTFLAGS_ZERO(LOW_REGISTER(HL));
@@ -4121,7 +4123,7 @@ System.exit(0);
 					BC.set(0x10000);
 				do {
 					acu = RAM_MM(HL);
-					PUT_BYTE_MM(DE, acu);
+					PUT_BYTE_MM(DE, int8(acu) );
 				} while (BC.dec() != 0);
 				acu += HIGH_REGISTER(AF);
 				AF.set( (AF.get() & ~0x3e) | (acu & 8) | ((acu & 2) << 4) );
@@ -4134,9 +4136,10 @@ System.exit(0);
 					BC.set( 0x10000 );
 				do {
 					temp = RAM_MM(HL);
-					op = BC.dec() != 0;
+					op = (BC.dec() != 0) ? 1 : 0;
 					sum = acu - temp;
-				} while (op && sum != 0);
+				} while (op != 0 && sum != 0);
+				//} while (op && sum != 0);
 				cbits = acu ^ temp ^ sum;
 				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
 					(((sum - ((cbits & 16) >> 4)) & 2) << 4) |
@@ -4153,7 +4156,7 @@ System.exit(0);
 				do {
 					acu = cpu_in(LOW_REGISTER(BC));
 					PUT_BYTE(HL, acu);
-					--HL;
+					HL.dec();
 				} while (--temp != 0);
 				temp = HIGH_REGISTER(BC);
 				SET_HIGH_REGISTER(BC, 0);
@@ -4168,7 +4171,7 @@ System.exit(0);
 					acu = GET_BYTE(HL);
 					cpu_out(LOW_REGISTER(BC), acu);
 					HL.dec();
-				} while (--temp);
+				} while (--temp != 0);
 				temp = HIGH_REGISTER(BC);
 				SET_HIGH_REGISTER(BC, 0);
 				INOUTFLAGS_ZERO(LOW_REGISTER(HL));
@@ -4189,7 +4192,7 @@ System.exit(0);
 			break;
 
 		case 0xf0:      /* RET P */
-			if (!(TSTFLAG(S)))
+			if (!(TSTFLAG(Flag.S) != 0))
 				POP(PC);
 			break;
 
@@ -4198,7 +4201,7 @@ System.exit(0);
 			break;
 
 		case 0xf2:      /* JP P,nnnn */
-			JPC(!TSTFLAG(S));
+			JPC(!(TSTFLAG(Flag.S)!=0));
 			break;
 
 		case 0xf3:      /* DI */
@@ -4206,7 +4209,7 @@ System.exit(0);
 			break;
 
 		case 0xf4:      /* CALL P,nnnn */
-			CALLC(!TSTFLAG(S));
+			CALLC(!(TSTFLAG(Flag.S)!=0));
 			break;
 
 		case 0xf5:      /* PUSH AF */
@@ -4223,7 +4226,7 @@ System.exit(0);
 			break;
 
 		case 0xf8:      /* RET M */
-			if (TSTFLAG(S))
+			if (TSTFLAG(Flag.S)!=0)
 				POP(PC);
 			break;
 
@@ -4232,7 +4235,7 @@ System.exit(0);
 			break;
 
 		case 0xfa:      /* JP M,nnnn */
-			JPC(TSTFLAG(S));
+			JPC(TSTFLAG(Flag.S)!=0);
 			break;
 
 		case 0xfb:      /* EI */
@@ -4240,7 +4243,7 @@ System.exit(0);
 			break;
 
 		case 0xfc:      /* CALL M,nnnn */
-			CALLC(TSTFLAG(S));
+			CALLC(TSTFLAG(Flag.S)!=0);
 			break;
 
 		case 0xfd:      /* FD prefix */
@@ -4269,7 +4272,7 @@ System.exit(0);
 
 			case 0x22:      /* LD (nnnn),IY */
 				temp = GET_WORD(PC);
-				PUT_WORD(temp, IY);
+				PUT_WORD(temp, IY.get() );
 				PC.add(2);
 				break;
 
