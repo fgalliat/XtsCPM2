@@ -29,7 +29,7 @@ public class CPU {
 		void set(int value) { this.value = value; }
 		
 		void add(int value) { this.value += value; }
-		void sub(int value) { this.value -= value; }
+		int sub(int value) { this.value -= value; return this.value; }
 		void andEq(int value) { this.value &= value; }
 		void orEq(int value) { this.value |= value; }
 
@@ -99,8 +99,11 @@ public class CPU {
     // #define PARITY(x)   parityTable[(x) & 0xff]
     char PARITY(int x) { return parityTable[(x) & 0xff]; }  
     
-    #define SET_PVS(s)  (((cbits >> 6) ^ (cbits >> 5)) & 4)
-	#define SET_PV      (SET_PVS(sum))
+	//#define SET_PVS(s)  (((cbits >> 6) ^ (cbits >> 5)) & 4)
+	int SET_PVS(int s) { return (((cbits >> 6) ^ (cbits >> 5)) & 4); }
+
+	//#define SET_PV      (SET_PVS(sum))
+	int SET_PV() { return SET_PVS(sum); }
 	
 	//#define SET_PV2(x)  ((temp == (x)) << 2)
 	int SET_PV2(int x) { return ( ((temp == (x)) ? 1 : 0 ) << 2); }
@@ -126,9 +129,9 @@ public class CPU {
 	// }
 	void JPC(boolean cond) {
 		if ( cond ) {
-			PC = GET_WORD(PC);
+			PC.set( GET_WORD(PC) );
 		} else {
-			PC += 2;
+			PC.add(2);
 		}
 	}
 
@@ -149,10 +152,10 @@ public class CPU {
     void CALLC(boolean cond) {
         if (cond) {
             int adrr = GET_WORD(PC);
-            PUSH(PC + 2);
-            PC = adrr;
+            PUSH(PC.get() + 2);
+            PC.set( adrr );
         } else {
-            PC += 2;
+            PC.add(2);
         }
 	}
 	
@@ -1253,10 +1256,18 @@ void PUT_BYTE_MM(Register a, char v) { PUT_BYTE(a, v); a.dec(); }
 //#define MM_PUT_BYTE(a,v) PUT_BYTE(--a, v)
 void MM_PUT_BYTE(Register a, char v) { a.dec(); PUT_BYTE(a, v); }
 
-#define PUSH(x) do {            \
-	MM_PUT_BYTE(SP, (x) >> 8);  \
-	MM_PUT_BYTE(SP, x);         \
-} while (0)
+// #define PUSH(x) do {            \
+// 	MM_PUT_BYTE(SP, (x) >> 8);  \
+// 	MM_PUT_BYTE(SP, x);         \
+// } while (0)
+
+void PUSH(int x) {
+	do {
+		MM_PUT_BYTE(SP, int8(x >> 8) );
+		MM_PUT_BYTE(SP, int8(x));
+	} while(false); // run only once
+}
+
 
 /*  Macros for the IN/OUT instructions INI/INIR/IND/INDR/OUTI/OTIR/OUTD/OTDR
 
@@ -1624,14 +1635,14 @@ void  Z80run() {
 			// BC += 0x100;
 			BC.add(0x100);
 			temp = HIGH_REGISTER(BC);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x05:      /* DEC B */
 			// BC -= 0x100;
 			BC.sub(0x100);
 			temp = HIGH_REGISTER(BC);
-			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | decTable[temp] | SET_PV2(0x7f) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x06:      /* LD B,nn */
@@ -1639,14 +1650,11 @@ void  Z80run() {
 			break;
 
 		case 0x07:      /* RLCA */
-			AF = ((AF >> 7) & 0x0128) | ((AF << 1) & ~0x1ff) |
-				(AF & 0xc4) | ((AF >> 15) & 1);
+			AF.set( ((AF.get() >> 7) & 0x0128) | ((AF.get() << 1) & ~0x1ff) |
+				(AF.get() & 0xc4) | ((AF.get() >> 15) & 1) );
 			break;
 
 		case 0x08:      /* EX AF,AF' */
-			// temp = AF;
-			// AF = AF1;
-			// AF1 = temp;
 			temp = AF.get(); //swap
 			AF.set( AF1.get() );
 			AF1.set(temp);
@@ -1674,13 +1682,13 @@ void  Z80run() {
 		case 0x0c:      /* INC C */
 			temp = LOW_REGISTER(BC) + 1;
 			SET_LOW_REGISTER(BC, (char)temp);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80);
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) );
 			break;
 
 		case 0x0d:      /* DEC C */
 			temp = LOW_REGISTER(BC) - 1;
 			SET_LOW_REGISTER(BC, (char)temp);
-			AF = (AF & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f);
+			AF.set( (AF.get() & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f) );
 			break;
 
 		case 0x0e:      /* LD C,nn */
@@ -1688,14 +1696,14 @@ void  Z80run() {
 			break;
 
 		case 0x0f:      /* RRCA */
-			AF = (AF & 0xc4) | rrcaTable[HIGH_REGISTER(AF)];
+			AF.set( (AF.get() & 0xc4) | rrcaTable[HIGH_REGISTER(AF)] );
 			break;
 
 		case 0x10:      /* DJNZ dd */
-			if ((BC -= 0x100) & 0xff00)
-				PC += (int8)GET_BYTE(PC) + 1;
+			if (((BC.sub(0x100)) & 0xff00) != 0)
+				PC.add( (int8)GET_BYTE(PC) + 1 );
 			else
-				++PC;
+				PC.inc();
 			break;
 
 		case 0x11:      /* LD DE,nnnn */
@@ -1714,13 +1722,13 @@ void  Z80run() {
 		case 0x14:      /* INC D */
 			DE.add(0x100);
 			temp = HIGH_REGISTER(DE);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x15:      /* DEC D */
 			DE.sub(0x100);
 			temp = HIGH_REGISTER(DE);
-			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | decTable[temp] | SET_PV2(0x7f) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x16:      /* LD D,nn */
@@ -1728,8 +1736,8 @@ void  Z80run() {
 			break;
 
 		case 0x17:      /* RLA */
-			AF = ((AF << 8) & 0x0100) | ((AF >> 7) & 0x28) | ((AF << 1) & ~0x01ff) |
-				(AF & 0xc4) | ((AF >> 15) & 1);
+			AF.set( ((AF.get() << 8) & 0x0100) | ((AF.get() >> 7) & 0x28) | ((AF.get() << 1) & ~0x01ff) |
+				(AF.get() & 0xc4) | ((AF.get() >> 15) & 1) );
 			break;
 
 		case 0x18:      /* JR dd */
@@ -1754,14 +1762,14 @@ void  Z80run() {
 
 		case 0x1c:      /* INC E */
 			temp = LOW_REGISTER(DE) + 1;
-			SET_LOW_REGISTER(DE, temp);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80);
+			SET_LOW_REGISTER(DE, int8(temp));
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) );
 			break;
 
 		case 0x1d:      /* DEC E */
 			temp = LOW_REGISTER(DE) - 1;
-			SET_LOW_REGISTER(DE, temp);
-			AF = (AF & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f);
+			SET_LOW_REGISTER(DE, int8(temp));
+			AF.set( (AF.get() & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f) );
 			break;
 
 		case 0x1e:      /* LD E,nn */
@@ -1769,7 +1777,7 @@ void  Z80run() {
 			break;
 
 		case 0x1f:      /* RRA */
-			AF = ((AF & 1) << 15) | (AF & 0xc4) | rraTable[HIGH_REGISTER(AF)];
+			AF.set( ((AF.get() & 1) << 15) | (AF.get() & 0xc4) | rraTable[HIGH_REGISTER(AF)] );
 			break;
 
 		case 0x20:      /* JR NZ,dd */
@@ -1780,30 +1788,30 @@ void  Z80run() {
 			break;
 
 		case 0x21:      /* LD HL,nnnn */
-			HL = GET_WORD(PC);
-			PC += 2;
+			HL.set( GET_WORD(PC) );
+			PC.add(2);
 			break;
 
 		case 0x22:      /* LD (nnnn),HL */
 			temp = GET_WORD(PC);
-			PUT_WORD(temp, HL);
-			PC += 2;
+			PUT_WORD(temp, HL.get());
+			PC.add(2);
 			break;
 
 		case 0x23:      /* INC HL */
-			++HL;
+			HL.inc();
 			break;
 
 		case 0x24:      /* INC H */
-			HL += 0x100;
+			HL.add(0x100);
 			temp = HIGH_REGISTER(HL);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x25:      /* DEC H */
-			HL -= 0x100;
+			HL.sub( 0x100 );
 			temp = HIGH_REGISTER(HL);
-			AF = (AF & ~0xfe) | decTable[temp] | SET_PV2(0x7f); /* SET_PV2 uses temp */
+			AF.set( (AF.get() & ~0xfe) | decTable[temp] | SET_PV2(0x7f) ); /* SET_PV2 uses temp */
 			break;
 
 		case 0x26:      /* LD H,nn */
@@ -1815,24 +1823,24 @@ void  Z80run() {
 			temp = LOW_DIGIT(acu);
 			cbits = TSTFLAG(C);
 			if (TSTFLAG(N)) {   /* last operation was a subtract */
-				int hd = cbits || acu > 0x99;
+				int hd = (cbits || acu > 0x99) ? 1 : 0;
 				if (TSTFLAG(H) || (temp > 9)) { /* adjust low digit */
 					if (temp > 5)
 						SETFLAG(H, 0);
 					acu -= 6;
 					acu &= 0xff;
 				}
-				if (hd)
+				if (hd != 0)
 					acu -= 0x160;   /* adjust high digit */
 			} else {          /* last operation was an add */
 				if (TSTFLAG(H) || (temp > 9)) { /* adjust low digit */
 					SETFLAG(H, (temp > 9));
 					acu += 6;
 				}
-				if (cbits || ((acu & 0x1f0) > 0x90))
+				if (cbits != 0 || ((acu & 0x1f0) > 0x90))
 					acu += 0x60;   /* adjust high digit */
 			}
-			AF = (AF & 0x12) | rrdrldTable[acu & 0xff] | ((acu >> 8) & 1) | cbits;
+			AF.set( (AF.get() & 0x12) | rrdrldTable[acu & 0xff] | ((acu >> 8) & 1) | cbits );
 			break;
 
 		case 0x28:      /* JR Z,dd */
@@ -1861,14 +1869,14 @@ void  Z80run() {
 
 		case 0x2c:      /* INC L */
 			temp = LOW_REGISTER(HL) + 1;
-			SET_LOW_REGISTER(HL, temp);
-			AF = (AF & ~0xfe) | incTable[temp] | SET_PV2(0x80);
+			SET_LOW_REGISTER(HL, int8(temp));
+			AF.set( (AF.get() & ~0xfe) | incTable[temp] | SET_PV2(0x80) );
 			break;
 
 		case 0x2d:      /* DEC L */
 			temp = LOW_REGISTER(HL) - 1;
-			SET_LOW_REGISTER(HL, temp);
-			AF = (AF & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f);
+			SET_LOW_REGISTER(HL, int8(temp));
+			AF.set( (AF.get() & ~0xfe) | decTable[temp & 0xff] | SET_PV2(0x7f) );
 			break;
 
 		case 0x2e:      /* LD L,nn */
@@ -1876,7 +1884,7 @@ void  Z80run() {
 			break;
 
 		case 0x2f:      /* CPL */
-			AF = (~AF & ~0xff) | (AF & 0xc5) | ((~AF >> 8) & 0x28) | 0x12;
+			AF.set( (~AF.get() & ~0xff) | (AF.get() & 0xc5) | ((~AF.get() >> 8) & 0x28) | 0x12 );
 			break;
 
 		case 0x30:      /* JR NC,dd */
