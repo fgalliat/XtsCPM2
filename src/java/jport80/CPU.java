@@ -3490,7 +3490,7 @@ System.exit(0);
 				break;
 
 			case 0xe3:      /* EX (SP),IX */
-				temp = IX;
+				temp = IX.get();
 				POP(IX);
 				PUSH(temp);
 				break;
@@ -3500,15 +3500,15 @@ System.exit(0);
 				break;
 
 			case 0xe9:      /* JP (IX) */
-				PC = IX;
+				PC.set( IX.get() );
 				break;
 
 			case 0xf9:      /* LD SP,IX */
-				SP = IX;
+				SP.set( IX.get() );
 				break;
 
 			default:                /* ignore DD */
-				--PC;
+				PC.dec();
 			}
 			break;
 
@@ -3517,12 +3517,12 @@ System.exit(0);
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp - TSTFLAG(C);
 			cbits = acu ^ temp ^ sum;
-			AF = subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV);
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV) );
 			break;
 
 		case 0xdf:      /* RST 18H */
 			PUSH(PC);
-			PC = 0x18;
+			PC.set( 0x18 );
 			break;
 
 		case 0xe0:      /* RET PO */
@@ -3539,7 +3539,7 @@ System.exit(0);
 			break;
 
 		case 0xe3:      /* EX (SP),HL */
-			temp = HL;
+			temp = HL.get();
 			POP(HL);
 			PUSH(temp);
 			break;
@@ -3553,12 +3553,12 @@ System.exit(0);
 			break;
 
 		case 0xe6:      /* AND nn */
-			AF = andTable[((AF >> 8) & RAM_PP(PC)) & 0xff];
+			AF.set( andTable[((AF.get() >> 8) & RAM_PP(PC)) & 0xff] );
 			break;
 
 		case 0xe7:      /* RST 20H */
 			PUSH(PC);
-			PC = 0x20;
+			PC.set( 0x20 );
 			break;
 
 		case 0xe8:      /* RET PE */
@@ -3567,7 +3567,7 @@ System.exit(0);
 			break;
 
 		case 0xe9:      /* JP (HL) */
-			PC = HL;
+			PC.set( HL );
 			break;
 
 		case 0xea:      /* JP PE,nnnn */
@@ -3575,9 +3575,9 @@ System.exit(0);
 			break;
 
 		case 0xeb:      /* EX DE,HL */
-			temp = HL;
-			HL = DE;
-			DE = temp;
+			temp = HL.get();
+			HL.set(DE.get());
+			DE.set( temp );
 			break;
 
 		case 0xec:      /* CALL PE,nnnn */
@@ -3590,7 +3590,7 @@ System.exit(0);
 			case 0x40:      /* IN B,(C) */
 				temp = cpu_in(LOW_REGISTER(BC));
 				SET_HIGH_REGISTER(BC, temp);
-				AF = (AF & ~0xfe) | rotateShiftTable[temp & 0xff];
+				AF.set( (AF.get() & ~0xfe) | rotateShiftTable[temp & 0xff] );
 				break;
 
 			case 0x41:      /* OUT (C),B */
@@ -3598,18 +3598,18 @@ System.exit(0);
 				break;
 
 			case 0x42:      /* SBC HL,BC */
-				HL &= ADDRMASK;
-				BC &= ADDRMASK;
-				sum = HL - BC - TSTFLAG(C);
-				AF = (AF & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
-					cbits2Z80Table[((HL ^ BC ^ sum) >> 8) & 0x1ff];
-				HL = sum;
+				HL.andEq(ADDRMASK);
+				BC.andEq(ADDRMASK);
+				sum = HL.get() - BC.get() - TSTFLAG(C);
+				AF.set( (AF.get() & ~0xff) | ((sum >> 8) & 0xa8) | (((sum & ADDRMASK) == 0) << 6) |
+					cbits2Z80Table[((HL.get() ^ BC.get() ^ sum) >> 8) & 0x1ff] );
+				HL.set( sum );
 				break;
 
 			case 0x43:      /* LD (nnnn),BC */
 				temp = GET_WORD(PC);
 				PUT_WORD(temp, BC);
-				PC += 2;
+				PC.add(2);
 				break;
 
 			case 0x44:      /* NEG */
