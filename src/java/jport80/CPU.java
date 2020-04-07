@@ -4553,79 +4553,79 @@ System.exit(0);
 				break;
 
 			case 0xb6:      /* OR (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
-				AF = xororTable[((AF >> 8) | GET_BYTE(adr)) & 0xff];
+				adr = IY.get() + (int8)RAM_PP(PC);
+				AF.set( xororTable[((AF.get() >> 8) | GET_BYTE(adr)) & 0xff] );
 				break;
 
 			case 0xbc:      /* CP IYH */
 				temp = HIGH_REGISTER(IY);
-				AF = (AF & ~0x28) | (temp & 0x28);
+				AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp;
-				AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0xbd:      /* CP IYL */
 				temp = LOW_REGISTER(IY);
-				AF = (AF & ~0x28) | (temp & 0x28);
+				AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp;
-				AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0xbe:      /* CP (IY+dd) */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
-				AF = (AF & ~0x28) | (temp & 0x28);
+				AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp;
-				AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0xcb:      /* CB prefix */
-				adr = IY + (int8)RAM_PP(PC);
+				adr = IY.get() + (int8)RAM_PP(PC);
 				switch ((op = GET_BYTE(PC)) & 7) {
 
 				case 0:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(BC);
 					break;
 
 				case 1:
-					++PC;
+					PC.inc();
 					acu = LOW_REGISTER(BC);
 					break;
 
 				case 2:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(DE);
 					break;
 
 				case 3:
-					++PC;
+					PC.inc();
 					acu = LOW_REGISTER(DE);
 					break;
 
 				case 4:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(HL);
 					break;
 
 				case 5:
-					++PC;
+					PC.inc();
 					acu = LOW_REGISTER(HL);
 					break;
 
 				case 6:
-					++PC;
+					PC.inc();
 					acu = GET_BYTE(adr);
 					break;
 
 				case 7:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(AF);
 					break;
 				}
@@ -4673,17 +4673,17 @@ System.exit(0);
 						temp = acu >> 1;
 						cbits = acu & 1;
 					cbshflg3:
-						AF = (AF & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits;
+						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
 					}
 					break;
 
 				case 0x40:  /* BIT */
 					if (acu & (1 << ((op >> 3) & 7)))
-						AF = (AF & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7);
+						AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7) );
 					else
-						AF = (AF & ~0xfe) | 0x54;
+						AF.set( (AF.get() & ~0xfe) | 0x54 );
 					if ((op & 7) != 6)
-						AF |= (acu & 0x28);
+						AF.orEq( (acu & 0x28) );
 					temp = acu;
 					break;
 
@@ -4746,31 +4746,31 @@ System.exit(0);
 				break;
 
 			case 0xe9:      /* JP (IY) */
-				PC = IY;
+				PC.set( IY.get() );
 				break;
 
 			case 0xf9:      /* LD SP,IY */
-				SP = IY;
+				SP.set( IY.get() );
 				break;
 
 			default:            /* ignore FD */
-				--PC;
+				PC.dec();
 			}
 			break;
 
 		case 0xfe:      /* CP nn */
 			temp = RAM_PP(PC);
-			AF = (AF & ~0x28) | (temp & 0x28);
+			AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 			acu = HIGH_REGISTER(AF);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
-			AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff];
+			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+				(SET_PV) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xff:      /* RST 38H */
 			PUSH(PC);
-			PC = 0x38;
+			PC.set(0x38);
 		}
 	}
 end_decode:
