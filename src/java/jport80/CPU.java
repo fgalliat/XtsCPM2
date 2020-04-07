@@ -100,8 +100,10 @@ public class CPU {
     char PARITY(int x) { return parityTable[(x) & 0xff]; }  
     
     #define SET_PVS(s)  (((cbits >> 6) ^ (cbits >> 5)) & 4)
-    #define SET_PV      (SET_PVS(sum))
-    #define SET_PV2(x)  ((temp == (x)) << 2)
+	#define SET_PV      (SET_PVS(sum))
+	
+	//#define SET_PV2(x)  ((temp == (x)) << 2)
+	int SET_PV2(int x) { return ( ((temp == (x)) ? 1 : 0 ) << 2); }
     
     // #define POP(x)  {                               \
     //     register uint32 y = RAM_PP(SP);             \
