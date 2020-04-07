@@ -3628,8 +3628,8 @@ System.exit(0);
 
 			case 0x7C:      /* NEG, unofficial */
 				temp = HIGH_REGISTER(AF);
-				AF = ((~(AF & 0xff00) + 1) & 0xff00); /* AF = (-(AF & 0xff00) & 0xff00); */
-				AF |= ((AF >> 8) & 0xa8) | (((AF & 0xff00) == 0) << 6) | negTable[temp];
+				AF.set( ((~(AF.get() & 0xff00) + 1) & 0xff00) ); /* AF = (-(AF & 0xff00) & 0xff00); */
+				AF.orEq( ((AF.get() >> 8) & 0xa8) | (((AF.get() & 0xff00) == 0) << 6) | negTable[temp] );
 				break;
 
 			case 0x45:      /* RETN */
@@ -3645,7 +3645,7 @@ System.exit(0);
 			case 0x75:      /* RETN, unofficial */
 
 			case 0x7D:      /* RETN, unofficial */
-				IFF |= IFF >> 1;
+				IFF.orEq( IFF.get() >> 1);
 				POP(PC);
 				break;
 
@@ -3654,7 +3654,7 @@ System.exit(0);
 				break;
 
 			case 0x47:      /* LD I,A */
-				IR = (IR & 0xff) | (AF & ~0xff);
+				IR.set( (IR.get() & 0xff) | (AF.get() & ~0xff) );
 				break;
 
 			case 0x48:      /* IN C,(C) */
