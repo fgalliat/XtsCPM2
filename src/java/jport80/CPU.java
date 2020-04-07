@@ -3322,64 +3322,64 @@ System.exit(0);
 
 			case 0xbd:      /* CP IXL */
 				temp = LOW_REGISTER(IX);
-				AF = (AF & ~0x28) | (temp & 0x28);
+				AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp;
-				AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0xbe:      /* CP (IX+dd) */
-				adr = IX + (int8)RAM_PP(PC);
+				adr = IX.get() + (int8)RAM_PP(PC);
 				temp = GET_BYTE(adr);
-				AF = (AF & ~0x28) | (temp & 0x28);
+				AF.set( (AF.get() & ~0x28) | (temp & 0x28) );
 				acu = HIGH_REGISTER(AF);
 				sum = acu - temp;
-				AF = (AF & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff];
+				AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
+					cbits2Z80Table[(acu ^ temp ^ sum) & 0x1ff] );
 				break;
 
 			case 0xcb:      /* CB prefix */
-				adr = IX + (int8)RAM_PP(PC);
+				adr = IX.get() + (int8)RAM_PP(PC);
 				switch ((op = GET_BYTE(PC)) & 7) {
 
 				case 0:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(BC);
 					break;
 
 				case 1:
-					++PC;
+					PC.inc();
 					acu = LOW_REGISTER(BC);
 					break;
 
 				case 2:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(DE);
 					break;
 
 				case 3:
-					++PC;
+					PC.inc();
 					acu = LOW_REGISTER(DE);
 					break;
 
 				case 4:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(HL);
 					break;
 
 				case 5:
-					++PC;
+					PC.inc();
 					acu = LOW_REGISTER(HL);
 					break;
 
 				case 6:
-					++PC;
+					PC.inc();
 					acu = GET_BYTE(adr);
 					break;
 
 				case 7:
-					++PC;
+					PC.inc();
 					acu = HIGH_REGISTER(AF);
 					break;
 				}
@@ -3427,17 +3427,17 @@ System.exit(0);
 						temp = acu >> 1;
 						cbits = acu & 1;
 					cbshflg2:
-						AF = (AF & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits;
+						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
 					}
 					break;
 
 				case 0x40:  /* BIT */
 					if (acu & (1 << ((op >> 3) & 7)))
-						AF = (AF & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7);
+						AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7) );
 					else
-						AF = (AF & ~0xfe) | 0x54;
+						AF.set( (AF.get() & ~0xfe) | 0x54 );
 					if ((op & 7) != 6)
-						AF |= (acu & 0x28);
+						AF.orEq( (acu & 0x28) );
 					temp = acu;
 					break;
 
