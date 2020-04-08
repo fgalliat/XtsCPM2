@@ -2,10 +2,12 @@ public class CPM {
 
     protected MEM mem;
     protected CPU cpu;
+    protected Console console;
 
-    public CPM(MEM mem, CPU cpu) {
+    public CPM(MEM mem, CPU cpu, Console console) {
         this.mem = mem;
         this.cpu = cpu;
+        this.console = console;
     }
 
     static final int TRUE = 1;
@@ -40,13 +42,7 @@ public class CPM {
     }
 
     // ============ Console ==============
-    void _puts(String str) {
-        System.out.print(str);
-    }
-
-    void _puthex8(char ch) {
-        System.out.print(Integer.toHexString(ch));
-    }
+   
 
     // ============ PINs ==============
 
@@ -414,17 +410,17 @@ public class CPM {
                 cpu.setStatus(2); // 1 - WBOOT - Back to CCP
                 break;
             case 0x06: // 2 - CONST - Console status
-                SET_HIGH_REGISTER(cpu.AF, _chready());
+                SET_HIGH_REGISTER(cpu.AF, console._chready());
                 break;
             case 0x09: // 3 - CONIN - Console input
-                SET_HIGH_REGISTER(cpu.AF, _getch());
+                SET_HIGH_REGISTER(cpu.AF, console._getch());
                 // #ifdef DEBUG
                 // if (HIGH_REGISTER(AF) == 4)
                 // Debug = 1;
                 // #endif
                 break;
             case 0x0C: // 4 - CONOUT - Console output
-                _putcon(LOW_REGISTER(cpu.BC.get()));
+                console._putcon(LOW_REGISTER(cpu.BC.get()));
                 break;
             case 0x0F: // 5 - LIST - List output
                 break;
@@ -463,10 +459,10 @@ public class CPM {
                 break;
             default:
                 // #ifdef DEBUG // Show unimplemented BIOS calls only when debugging
-                _puts("\r\nUnimplemented BIOS call.\r\n");
-                _puts("C = 0x");
-                _puthex8(ch);
-                _puts("\r\n");
+                console._puts("\r\nUnimplemented BIOS call.\r\n");
+                console._puts("C = 0x");
+                console._puthex8(ch);
+                console._puts("\r\n");
                 // #endif
                 break;
         }
@@ -505,7 +501,7 @@ public class CPM {
              * C = 1 : Console input Gets a char from the console Returns: A=Char
              */
             case 1:
-                cpu.HL.set(_getche());
+                cpu.HL.set(console._getche());
                 // #ifdef DEBUG
                 // if (HL == 4)
                 // Debug = 1;
@@ -515,7 +511,7 @@ public class CPM {
              * C = 2 : Console output E = Char Sends the char in E to the console
              */
             case 2:
-                _putcon(LOW_REGISTER(cpu.DE));
+                console._putcon(LOW_REGISTER(cpu.DE));
                 break;
             /*
              * C = 3 : Auxiliary (Reader) input Returns: A=Char
@@ -556,13 +552,13 @@ public class CPM {
              */
             case 6:
                 if (LOW_REGISTER(cpu.DE) == 0xff) {
-                    cpu.HL.set(_getchNB());
+                    cpu.HL.set( console._getchNB());
                     // #ifdef DEBUG
                     // if (HL == 4)
                     // Debug = 1;
                     // #endif
                 } else {
-                    _putcon(LOW_REGISTER(cpu.DE));
+                    console._putcon(LOW_REGISTER(cpu.DE));
                 }
                 break;
             /*
@@ -575,7 +571,7 @@ public class CPM {
              * C = 8 : Set IOBYTE E = IOBYTE Sets the system IOBYTE to E
              */
             case 8:
-                _RamWrite(0x0003, LOW_REGISTER(DE));
+                _RamWrite(0x0003, LOW_REGISTER(cpu.DE));
                 break;
             /*
              * C = 9 : Output string DE = Address of string Sends the $ terminated string
@@ -583,7 +579,7 @@ public class CPM {
              */
             case 9:
                 while ((ch = _RamRead(cpu.DE.inc())) != '$')
-                    _putcon(ch);
+                    console._putcon(ch);
                 break;
             /*
              * C = 10 (0Ah) : Buffered input DE = Address of buffer Reads (DE) bytes from
@@ -603,9 +599,9 @@ public class CPM {
                 count = 0;
                 while (c != 0) // Very simplistic line input
                 {
-                    chr = _getch();
+                    chr = console._getch();
                     if (chr == 3 && count == 0) { // ^C
-                        _puts("^C");
+                        console._puts("^C");
                         cpu.setStatus(2);
                         break;
                     }
@@ -614,9 +610,9 @@ public class CPM {
                     // Debug = 1;
                     // #endif
                     if (chr == 5) // ^E
-                        _puts("\r\n");
+                        console._puts("\r\n");
                     if ((chr == 0x08 || chr == 0x7F) && count > 0) { // ^H and DEL
-                        _puts("\b \b");
+                        console._puts("\b \b");
                         count--;
                         continue;
                     }
@@ -627,12 +623,12 @@ public class CPM {
                         break;
                     }
                     if (chr == 18) { // ^R
-                        _puts("#\r\n  ");
+                        console._puts("#\r\n  ");
                         for (j = 1; j <= count; ++j)
-                            _putcon(_RamRead(i + j));
+                            console._putcon(_RamRead(i + j));
                     }
                     if (chr == 21) { // ^U
-                        _puts("#\r\n  ");
+                        console._puts("#\r\n  ");
                         i = WORD16(cpu.DE);
                         c = _RamRead(i);
                         ++i;
@@ -640,7 +636,7 @@ public class CPM {
                     }
                     if (chr == 24) { // ^X
                         for (j = 0; j < count; ++j)
-                            _puts("\b \b");
+                            console._puts("\b \b");
                         i = WORD16(cpu.DE);
                         c = _RamRead(i);
                         ++i;
@@ -648,20 +644,20 @@ public class CPM {
                     }
                     if (chr < 0x20 || chr > 0x7E) // Invalid character
                         continue;
-                    _putcon(chr);
+                    console._putcon(chr);
                     ++count;
                     _RamWrite((i + count) & 0xffff, chr);
                     if (count == c) // Reached the expected count
                         break;
                 }
                 _RamWrite(i & 0xffff, count); // Saves the number of characters read
-                _putcon('\r'); // Gives a visual feedback that read ended
+                console._putcon('\r'); // Gives a visual feedback that read ended
                 break;
             /*
              * C = 11 (0Bh) : Get console status Returns: A=0x00 or 0xFF
              */
             case 11:
-                cpu.HL.set(_chready());
+                cpu.HL.set(console._chready());
                 break;
             /*
              * C = 12 (0Ch) : Get version number Returns: B=H=system type, A=L=version
@@ -952,10 +948,10 @@ public class CPM {
              */
             default:
                 // #ifdef DEBUG // Show unimplemented BDOS calls only when debugging
-                _puts("\r\nUnimplemented BDOS call.\r\n");
-                _puts("C = 0x");
-                _puthex8(ch);
-                _puts("\r\n");
+                console._puts("\r\nUnimplemented BDOS call.\r\n");
+                console._puts("C = 0x");
+                console._puthex8(ch);
+                console._puts("\r\n");
                 // #endif
                 break;
         }

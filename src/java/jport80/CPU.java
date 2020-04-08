@@ -70,7 +70,7 @@ public class CPU {
 		void andEq(int value) { this.value &= value; }
 		void orEq(int value) { this.value |= value; }
 
-		void inc() { this.value++; }
+		int inc() { this.value++; return this.value; }
 		int dec() { this.value--; return this.value; }
 		int get() { return this.value; }
 		void copyTo(Register reg) { reg.set(this.get()); }
