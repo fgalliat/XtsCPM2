@@ -3905,7 +3905,10 @@ System.exit(0);
 
 			case 0x70:      /* IN (C) */
 				temp = cpu_in(LOW_REGISTER(BC));
-				SET_LOW_REGISTER(temp, temp);
+				
+				// SET_LOW_REGISTER(temp, temp);
+				temp = ( (((temp)&0xff00) | ((temp)&0xff)) );
+
 				AF.set( (AF.get() & ~0xfe) | rotateShiftTable[temp & 0xff] );
 				break;
 
@@ -4749,12 +4752,12 @@ System.exit(0);
 						goto cbshflg3;
 
 					case 0x10:/* RL */
-						temp = (acu << 1) | TSTFLAG(C);
+						temp = (acu << 1) | TSTFLAG(Flag.C);
 						cbits = acu & 0x80;
 						goto cbshflg3;
 
 					case 0x18:/* RR */
-						temp = (acu >> 1) | (TSTFLAG(C) << 7);
+						temp = (acu >> 1) | (TSTFLAG(Flag.C) << 7);
 						cbits = acu & 1;
 						goto cbshflg3;
 
