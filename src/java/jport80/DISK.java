@@ -11,6 +11,17 @@ public class DISK {
         this.mem = cpm.mem;
     }   
 
+    typedef struct {
+        uint8 dr;
+        uint8 fn[8];
+        uint8 tp[3];
+        uint8 ex, s1, s2, rc;
+        uint8 al[16];
+        uint8 cr, r0, r1, r2;
+    } CPM_FCB;
+
+
+
 /*
 Cf global.h
 
