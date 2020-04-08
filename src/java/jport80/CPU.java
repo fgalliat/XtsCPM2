@@ -2266,7 +2266,7 @@ System.exit(0);
 			PC.dec();
 			// goto end_decode;
 			return;
-			break; // still meanfull
+			//break; // still meanfull
 
 		case 0x77:      /* LD (HL),A */
 			PUT_BYTE(HL, HIGH_REGISTER(AF));
@@ -2835,7 +2835,7 @@ System.exit(0);
 					break;
 
 				case 0x10:/* RL */
-					temp = (acu << 1) | TSTFLAG(C);
+					temp = (acu << 1) | TSTFLAG(Flag.C);
 					cbits = acu & 0x80;
 					// goto cbshflg1;
 					cbshflg1 = true;
@@ -3493,48 +3493,68 @@ System.exit(0);
 				switch (op & 0xc0) {
 
 				case 0x00:  /* shift/rotate */
+					boolean cbshflg2 = false;
 					switch (op & 0x38) {
 
 					case 0x00:/* RLC */
 						temp = (acu << 1) | (acu >> 7);
 						cbits = temp & 1;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x08:/* RRC */
 						temp = (acu >> 1) | (acu << 7);
 						cbits = temp & 0x80;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x10:/* RL */
 						temp = (acu << 1) | TSTFLAG(Flag.C);
 						cbits = acu & 0x80;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x18:/* RR */
 						temp = (acu >> 1) | (TSTFLAG(Flag.C) << 7);
 						cbits = acu & 1;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x20:/* SLA */
 						temp = acu << 1;
 						cbits = acu & 0x80;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x28:/* SRA */
 						temp = (acu >> 1) | (acu & 0x80);
 						cbits = acu & 1;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x30:/* SLIA */
 						temp = (acu << 1) | 1;
 						cbits = acu & 0x80;
-						goto cbshflg2;
+						// goto cbshflg2;
+						cbshflg2 = true;
+						break;
 
 					case 0x38:/* SRL */
 						temp = acu >> 1;
 						cbits = acu & 1;
-					cbshflg2:
-						//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+						cbshflg2 = true;
+						break;
+					// cbshflg2:
+					// 	//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+					// 	AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | (cbits != 0 ? 1 : 0 ) );
+					}
+					if ( cbshflg2 ) {
 						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | (cbits != 0 ? 1 : 0 ) );
 					}
 					break;
@@ -4764,48 +4784,68 @@ System.exit(0);
 				switch (op & 0xc0) {
 
 				case 0x00:  /* shift/rotate */
+					boolean cbshflg3 = false;
 					switch (op & 0x38) {
 
 					case 0x00:/* RLC */
 						temp = (acu << 1) | (acu >> 7);
 						cbits = temp & 1;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x08:/* RRC */
 						temp = (acu >> 1) | (acu << 7);
 						cbits = temp & 0x80;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x10:/* RL */
 						temp = (acu << 1) | TSTFLAG(Flag.C);
 						cbits = acu & 0x80;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x18:/* RR */
 						temp = (acu >> 1) | (TSTFLAG(Flag.C) << 7);
 						cbits = acu & 1;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x20:/* SLA */
 						temp = acu << 1;
 						cbits = acu & 0x80;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x28:/* SRA */
 						temp = (acu >> 1) | (acu & 0x80);
 						cbits = acu & 1;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x30:/* SLIA */
 						temp = (acu << 1) | 1;
 						cbits = acu & 0x80;
-						goto cbshflg3;
+						// goto cbshflg3;
+						cbshflg3 = true;
+						break;
 
 					case 0x38:/* SRL */
 						temp = acu >> 1;
 						cbits = acu & 1;
-					cbshflg3:
-						//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+						cbshflg3 = true;
+						break;
+					// cbshflg3:
+					// 	//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+					// 	AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | ((cbits != 0) ? 1 : 0) );
+					}
+					if ( cbshflg3 ) {
 						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | ((cbits != 0) ? 1 : 0) );
 					}
 					break;
