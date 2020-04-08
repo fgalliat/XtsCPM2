@@ -5,22 +5,44 @@ public class DISK {
     protected MEM mem;
     protected CPM cpm;
 
+	static final char FOLDERCHAR = '/';
+
     public DISK(CPM cpm) {
         this.console = cpm.console;
         this.cpu = cpm.cpu;
         this.mem = cpm.mem;
     }   
 
-    typedef struct {
-        uint8 dr;
-        uint8 fn[8];
-        uint8 tp[3];
-        uint8 ex, s1, s2, rc;
-        uint8 al[16];
-        uint8 cr, r0, r1, r2;
-    } CPM_FCB;
+    // typedef struct {
+    //     uint8 dr;
+    //     uint8 fn[8];
+    //     uint8 tp[3];
+    //     uint8 ex, s1, s2, rc;
+    //     uint8 al[16];
+    //     uint8 cr, r0, r1, r2;
+	// } CPM_FCB;
+	
+	class FPM_FCB {
+		char dr = 0x00; // 0 -> 'A'
+		char[] fn = new char[8];
+		char[] tp = new char[3];
+		char ex, s1, s2, rc;
+		char[] al = new char[16];
+		char cr, r0, r1, r2;
+	}
 
-
+	// char*, uint8*
+	class charP {
+		char[] ptr = null;
+		int ptrA = 0; // cursor 
+		public charP(int len) {
+			ptr = new char[len];
+		}
+		char get() { return ptr[ ptrA ]; }
+		void set(char x) { ptr[ ptrA ] = x; }
+		char inc() { ptrA++; return get(); }
+		char dec() { ptrA--; return get(); }
+	}
 
 /*
 Cf global.h
@@ -41,8 +63,8 @@ final int errWRITEPROT = 1;
 final int errSELECT = 2;
 
 // #define RW	(roVector & (1 << F->dr))
-boolean RW() {
-    return (cpm.roVector & (1 << F->dr)) != 0;
+boolean RW(FPM_FCB F) {
+    return (cpm.roVector & (1 << F.dr)) != 0;
 }
 
 /*
@@ -102,27 +124,35 @@ int _SelectDisk(char dr) {
 }
 
 //uint8 _FCBtoHostname(uint16 fcbaddr, uint8 *filename) {
-char _FCBtoHostname(int fcbaddr, String filename) {
+char _FCBtoHostname(int fcbaddr, charP filename) {
 	char addDot = (char)TRUE;
 	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	char i = 0;
 	char unique = (char)TRUE;
 
 	if (F->dr) {
-		*(filename++) = (F->dr - 1) + 'A';
+		//*(filename++) = (F->dr - 1) + 'A';
+		filename.ptr[ filename.ptrA++ ] = ((char) ((int)(F.dr - 1) + (int)'A') );
 	} else {
-		*(filename++) = cDrive + 'A';
+		// *(filename++) = cDrive + 'A';
+		filename.ptr[ filename.ptrA++ ] = ((char) ((int)(cpm.cDrive) + (int)'A') );
 	}
-	*(filename++) = FOLDERCHAR;
+	// *(filename++) = FOLDERCHAR;
+	filename.ptr[ filename.ptrA++ ] = FOLDERCHAR;
 
-	*(filename++) = toupper(tohex(userCode));
-	*(filename++) = FOLDERCHAR;
+	// *(filename++) = toupper(tohex(userCode));
+	filename.ptr[ filename.ptrA++ ] = DataUtils.toupper(DataUtils.tohex(userCode));
+	// *(filename++) = FOLDERCHAR;
+	filename.ptr[ filename.ptrA++ ] = FOLDERCHAR;
 
 	while (i < 8) {
-		if (F->fn[i] > 32)
-			*(filename++) = toupper(F->fn[i]);
-		if (F->fn[i] == '?')
+		if (F.fn[i] > 32) {
+			//*(filename++) = toupper(F->fn[i]);
+			filename.ptr[ filename.ptrA++ ] = DataUtils.toupper( F.fn[i] );
+		}
+		if (F.fn[i] == '?') {
 			unique = FALSE;
+		}
 		++i;
 	}
 	i = 0;
@@ -130,54 +160,62 @@ char _FCBtoHostname(int fcbaddr, String filename) {
 		if (F->tp[i] > 32) {
 			if (addDot) {
 				addDot = FALSE;
-				*(filename++) = '.';	// Only add the dot if there's an extension
+				// *(filename++) = '.';	// Only add the dot if there's an extension
+				filename.ptr[ filename.ptrA++ ] = '.';
 			}
-			*(filename++) = toupper(F->tp[i]);
+			// *(filename++) = toupper(F->tp[i]);
+			filename.ptr[ filename.ptrA++ ] = DataUtils.toupper( F.tp[i] );
 		}
 		if (F->tp[i] == '?')
 			unique = FALSE;
 		++i;
 	}
-	*filename = 0x00;
+	// *filename = 0x00;
+	filename.ptr[ filename.ptrA++ ] = 0x00;
 
 	return(unique);
 }
 
-void _HostnameToFCB(uint16 fcbaddr, uint8 *filename) {
+void _HostnameToFCB(int fcbaddr, charP filename) {
 	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
-	uint8 i = 0;
+	char i = 0;
 
-	++filename;
-	if (*filename == FOLDERCHAR) {	// Skips the drive and / if needed
-		filename += 3;
+	// ++filename;
+	filename.ptrA++;
+	if (filename.get() == FOLDERCHAR) {	// Skips the drive and / if needed
+		//filename += 3;
+		filename.ptrA+=3;
 	} else {
-		--filename;
+		//--filename;
+		filename.ptrA--;
 	}
 
-	while (*filename != 0 && *filename != '.') {
-		F->fn[i] = toupper(*filename);
-		++filename;
+	while (filename.get() != 0 && filename.get() != '.') {
+		F.fn[i] = DataUtils.toupper(filename.get());
+		filename.inc();
 		++i;
 	}
+
 	while (i < 8) {
-		F->fn[i] = ' ';
+		F.fn[i] = ' ';
 		++i;
 	}
-	if (*filename == '.')
-		++filename;
+	if (filename.get() == '.')
+		filename.inc();
+
 	i = 0;
-	while (*filename != 0) {
-		F->tp[i] = toupper(*filename);
-		++filename;
+	while (filename.get() != 0) {
+		F.tp[i] = DataUtils.toupper(filename.get());
+		filename.inc();
 		++i;
 	}
 	while (i < 3) {
-		F->tp[i] = ' ';
+		F.tp[i] = ' ';
 		++i;
 	}
 }
 
-void _HostnameToFCBname(uint8 *from, uint8 *to) {	// Converts a string name (AB.TXT) to FCB name (AB      TXT)
+void _HostnameToFCBname(charP from, charP to) {	// Converts a string name (AB.TXT) to FCB name (AB      TXT)
 	int i = 0;
 
 	++from;

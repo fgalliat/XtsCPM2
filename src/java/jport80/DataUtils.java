@@ -33,4 +33,16 @@ public class DataUtils {
 
     public static int WORD16(int x)	{ return((x) & 0xffff); }
 
+	//#define tohex(x)	((x) < 10 ? (x) + 48 : (x) + 87)
+	public static final char tohex(char x) {
+		return (char)( ((x) < 10 ? (x) + 48 : (x) + 87) );
+	}
+
+	public static final char toupper(char x) {
+		if ( x >= 'a' && x <= 'z' ) {
+			x = (char)( (int)x - (int)'a' + (int)'A' );
+		}
+		return x;
+	}
+
 }
