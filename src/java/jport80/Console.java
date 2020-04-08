@@ -5,6 +5,10 @@ public class Console {
     // Beware : LF blocking by default
     InputStream in = System.in; 
 
+    public void _putch(char c) {
+        System.out.print(c);
+    }
+
     public void _putcon(char c) {
         System.out.print(c);
     }
@@ -50,7 +54,18 @@ public class Console {
         }
     }
 
+    public int _kbhit() {
+        try {
+            return in.available();
+        } catch(Exception ex) {
+            return 0;
+        }
+    }
 
+    void _clrscr() {
+        // cls + cursor Home in VT100
+        System.out.println( ((char)27)+"[H"+((char)27)+"[J");
+    }
 
 
 }

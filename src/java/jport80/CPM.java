@@ -21,18 +21,18 @@ public class CPM {
     // static uint8 newname[17]; // New filename in host filesystem format
     // static uint8 fcbname[13]; // Current filename in CP/M format
     // static uint8 pattern[13]; // File matching pattern in CP/M format
-    static int dmaAddr = 0x0080; // Current dmaAddr
-    static char oDrive = 0; // Old selected drive
-    static char cDrive = 0; // Currently selected drive
-    static char userCode = 0; // Current user code
-    static int roVector = 0;
-    static int loginVector = 0;
+    int dmaAddr = 0x0080; // Current dmaAddr
+    char oDrive = 0; // Old selected drive
+    char cDrive = 0; // Currently selected drive
+    char userCode = 0; // Current user code
+    int roVector = 0;
+    int loginVector = 0;
 
     // mode CCP_DR
-    static String CCPname;
-    static char VersionCCP; // Version to be used by INFO.COM
-    static int BatchFCB; // Position of the $$$.SUB fcb on this CCP
-    static int CCPaddr; // CCP memory address
+    String CCPname;
+    char VersionCCP; // Version to be used by INFO.COM
+    int BatchFCB; // Position of the $$$.SUB fcb on this CCP
+    int CCPaddr; // CCP memory address
 
     public CPM(CPU cpu, MEM mem) {
         CCPname = "CCP-DR." + mem.TPASIZE + "K";
