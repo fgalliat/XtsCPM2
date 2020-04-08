@@ -2264,8 +2264,9 @@ void  Z80run() {
 System.out.println(":: CPU HALTED ::");
 System.exit(0);
 			PC.dec();
-			goto end_decode;
-			break;
+			// goto end_decode;
+			return;
+			break; // still meanfull
 
 		case 0x77:      /* LD (HL),A */
 			PUT_BYTE(HL, HIGH_REGISTER(AF));
@@ -2814,50 +2815,74 @@ System.exit(0);
 			switch (op & 0xc0) {
 
 			case 0x00:  /* shift/rotate */
+
+				boolean cbshflg1 = false;
+
 				switch (op & 0x38) {
 
 				case 0x00:/* RLC */
 					temp = (acu << 1) | (acu >> 7);
 					cbits = temp & 1;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x08:/* RRC */
 					temp = (acu >> 1) | (acu << 7);
 					cbits = temp & 0x80;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x10:/* RL */
 					temp = (acu << 1) | TSTFLAG(C);
 					cbits = acu & 0x80;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x18:/* RR */
-					temp = (acu >> 1) | (TSTFLAG(C) << 7);
+					temp = (acu >> 1) | (TSTFLAG(Flag.C) << 7);
 					cbits = acu & 1;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x20:/* SLA */
 					temp = acu << 1;
 					cbits = acu & 0x80;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x28:/* SRA */
 					temp = (acu >> 1) | (acu & 0x80);
 					cbits = acu & 1;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x30:/* SLIA */
 					temp = (acu << 1) | 1;
 					cbits = acu & 0x80;
-					goto cbshflg1;
+					// goto cbshflg1;
+					cbshflg1 = true;
+					break;
 
 				case 0x38:/* SRL */
 					temp = acu >> 1;
 					cbits = acu & 1;
-				cbshflg1:
-					//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+					cbshflg1 = true;
+					break;
+				// cbshflg1:
+				// 	//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+				// 	AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | ((cbits != 0) ? 1:0) );
+				}
+
+				if ( cbshflg1 ) {
 					AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | ((cbits != 0) ? 1:0) );
 				}
+
 				break;
 
 			case 0x40:  /* BIT */
@@ -4881,8 +4906,8 @@ System.exit(0);
 			PC.set(0x38);
 		}
 	}
-end_decode:
-	;
+//end_decode:
+//	;
 }
 
 } 
