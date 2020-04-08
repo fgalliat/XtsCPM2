@@ -21,11 +21,11 @@ public class CPU {
 	void _Bios() { ; } 
 	void _Bdos() { ; } 
 
-	char HIGH_REGISTER( int v ) { return (char)( v / 256 ); }
-	char LOW_REGISTER( int v ) { return (char)( v % 256 ); }
+	char HIGH_REGISTER( int v ) { return DataUtils.HIGH_REGISTER(v); }
+	char LOW_REGISTER( int v ) { return DataUtils.LOW_REGISTER(v); }
 
-	char HIGH_REGISTER( Register v ) { return HIGH_REGISTER(v.get()); }
-	char LOW_REGISTER( Register v ) { return LOW_REGISTER(v.get()); }
+	char HIGH_REGISTER( Register v ) { return DataUtils.HIGH_REGISTER(v); }
+	char LOW_REGISTER( Register v ) { return DataUtils.LOW_REGISTER(v); }
 
 /*
 
@@ -40,29 +40,27 @@ public class CPU {
 */
 
 	void SET_LOW_REGISTER( Register a, char v ) {
-		//System.out.println( "SET_LOW_REGISTER NYI" );
-		a.set( (((a.get())&0xff00) | ((v)&0xff)) );
+		DataUtils.SET_LOW_REGISTER(a, v);
 	}
 	void SET_HIGH_REGISTER( Register a, char v ) {
-		//System.out.println( "SET_HIGH_REGISTER NYI" );
-		a.set( (((a.get())&0xff) | (((v)&0xff) << 8)) );
+		DataUtils.SET_HIGH_REGISTER(a, v);
 	}
 	void SET_HIGH_REGISTER( Register a, int v ) {
-		SET_HIGH_REGISTER(a, int8(v) );
+		DataUtils.SET_HIGH_REGISTER(a, v);
 	}
 	void SET_LOW_REGISTER( Register a, int v ) {
-		SET_LOW_REGISTER(a, int8(v) );
+		DataUtils.SET_LOW_REGISTER(a, v);
 	}
 
 	char LOW_DIGIT(int x) {
-		return (char)((x) & 0xf);
+		return DataUtils.LOW_DIGIT(x);
 	}
 
 	char HIGH_DIGIT(int x) {
-		return (char)(((x)>>4)&0xf);
+		return DataUtils.HIGH_DIGIT(x);
 	}
 
-	class Register {
+	public static class Register {
 		int value;
 		void reset() { this.value = 0; }
 		void set(int value) { this.value = value; }
@@ -99,7 +97,13 @@ public class CPU {
     int Debug = 0;
     int Break = -1;
     int Step = -1;
-    
+	
+	public int getStatus() {return Status; }
+	public void setStatus(int status) { Status = status; }
+	public int getPCX() {return PCX; }
+
+
+
     /*
         Functions needed by the soft CPU implementation
     */
