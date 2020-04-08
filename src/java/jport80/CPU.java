@@ -1,11 +1,23 @@
+/*
+  no static methods in hardware ... may want 2 CPUs ...
+*/
+
 public class CPU {
 
-	char int8(int v) { return (char)( v % 256 ); }
-	int int16(int v) { return ( v % 65536 ); }
+	protected MEM mem;
+
+	public CPU(MEM mem) {
+		this.mem = mem;
+	}
+
+
+
+	char int8(int v) { return DataUtils.int8(v); }
+	int int16(int v) { return DataUtils.int16(v); }
 
 	// forward symbols
-	char _RamRead(int addr) { return 0x00; }
-	void _RamWrite(int addr, char value) { ; }
+	char _RamRead(int addr) { return mem._RamRead(addr); }
+	void _RamWrite(int addr, char value) { mem._RamWrite(addr, value); }
 	void _Bios() { ; } 
 	void _Bdos() { ; } 
 
