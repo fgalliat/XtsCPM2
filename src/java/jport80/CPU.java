@@ -46,6 +46,10 @@ public class CPU {
 		return (char)((x) & 0xf);
 	}
 
+	char HIGH_DIGIT(int x) {
+		return (char)(((x)>>4)&0xf);
+	}
+
 	class Register {
 		int value;
 		void reset() { this.value = 0; }
@@ -2851,13 +2855,14 @@ System.exit(0);
 					temp = acu >> 1;
 					cbits = acu & 1;
 				cbshflg1:
-					AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+					//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+					AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | ((cbits != 0) ? 1:0) );
 				}
 				break;
 
 			case 0x40:  /* BIT */
-				if (acu & (1 << ((op >> 3) & 7)))
-					AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7) );
+				if ((acu & (1 << ((op >> 3) & 7))) != 0)
+					AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) ? 1:0 << 7) );
 				else
 					AF.set( (AF.get() & ~0xfe) | 0x54 );
 				if ((op & 7) != 6)
@@ -3079,21 +3084,21 @@ System.exit(0);
 				break;
 
 			case 0x34:      /* INC (IX+dd) */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8( RAM_PP(PC) );
 				temp = GET_BYTE(adr) + 1;
 				PUT_BYTE(adr, temp);
 				AF.set( (AF.get() & ~0xfe) | incZ80Table[temp] );
 				break;
 
 			case 0x35:      /* DEC (IX+dd) */
-				adr = IX + (int8)RAM_PP(PC);
+				adr = IX.get() + int8(RAM_PP(PC));
 				temp = GET_BYTE(adr) - 1;
 				PUT_BYTE(adr, temp);
 				AF.set( (AF.get() & ~0xfe) | decZ80Table[temp & 0xff] );
 				break;
 
 			case 0x36:      /* LD (IX+dd),nn */
-				adr = IX.get() + (int8)RAM_PP(PC);
+				adr = IX.get() + int8( RAM_PP(PC) );
 				PUT_BYTE(adr, RAM_PP(PC));
 				break;
 
@@ -3101,7 +3106,7 @@ System.exit(0);
 				IX.andEq( ADDRMASK );
 				SP.andEq( ADDRMASK );
 				sum = IX.get() + SP.get();
-				AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(IX ^ SP ^ sum) >> 8] );
+				AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(IX.get() ^ SP.get() ^ sum) >> 8] );
 				IX.set( sum );
 				break;
 
@@ -3593,9 +3598,9 @@ System.exit(0);
 		case 0xde:          /* SBC A,nn */
 			temp = RAM_PP(PC);
 			acu = HIGH_REGISTER(AF);
-			sum = acu - temp - TSTFLAG(C);
+			sum = acu - temp - TSTFLAG(Flag.C);
 			cbits = acu ^ temp ^ sum;
-			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV) );
+			AF.set( subTable[sum & 0xff] | cbitsTable[cbits & 0x1ff] | (SET_PV()) );
 			break;
 
 		case 0xdf:      /* RST 18H */
@@ -3965,11 +3970,15 @@ System.exit(0);
 				cbits = acu ^ temp ^ sum;
 
 				// AF = (AF & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
-				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | ((!((sum & 0xff)!=0)?1:0) << 6) |
-					(((sum - ((cbits & 16) >> 4)) & 2) << 4) | (cbits & 16) |
-					((sum - ((cbits >> 4) & 1)) & 8) |
+				int toto = (((! ( (sum & 0xff) != 0))?1:0) << 6);
+				int titi = (AF.get() & ~0xfe) | (sum & 0x80) | toto;
+				int tutu = (((sum - ((cbits & 16) >> 4)) & 2) << 4) | (cbits & 16);
+				int tata = ((sum - ((cbits >> 4) & 1)) & 8);
+				int tyty = (((BC.dec() & ADDRMASK) != 0)?1:0) << 2;
+
+				AF.set( titi | tutu | tata	|
 					// ((--BC & ADDRMASK) != 0) << 2 | 2; // (*a)
-					((BC.dec() & ADDRMASK) != 0)?1:0 << 2 | 2 );
+					tyty | 2 );
 
 				if ((sum & 15) == 8 && (cbits & 16) != 0)
 					AF.andEq( ~8 );
@@ -4010,10 +4019,10 @@ System.exit(0);
 
 			case 0xa8:      /* LDD */
 				acu = RAM_MM(HL);
-				PUT_BYTE_MM(DE, acu);
+				PUT_BYTE_MM(DE, int8(acu) );
 				acu += HIGH_REGISTER(AF);
 				AF.set( (AF.get() & ~0x3e) | (acu & 8) | ((acu & 2) << 4) |
-					(((BC.dec() & ADDRMASK) != 0) << 2) );
+					((((BC.dec() & ADDRMASK) != 0) ? 1 : 0) << 2) );
 					// (((--BC & ADDRMASK) != 0) << 2);
 				break;
 
@@ -4022,10 +4031,15 @@ System.exit(0);
 				temp = RAM_MM(HL);
 				sum = acu - temp;
 				cbits = acu ^ temp ^ sum;
-				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
+
+				// (!(sum & 0xff) << 6)
+				int tt = ((sum & 0xff) == 0 ) ? 1 : 0;
+				tt = tt << 6;
+
+				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | tt |
 					(((sum - ((cbits & 16) >> 4)) & 2) << 4) | (cbits & 16) |
 					((sum - ((cbits >> 4) & 1)) & 8) |
-					((BC.dec() & ADDRMASK) != 0) << 2 | 2 );
+					(((BC.dec() & ADDRMASK) != 0) ? 1:0 << 2) | 2 );
 					// ((--BC & ADDRMASK) != 0) << 2 | 2;
 
 				if ((sum & 15) == 8 && (cbits & 16) != 0)
@@ -4080,7 +4094,12 @@ System.exit(0);
 					sum = acu - temp;
 				} while ( op!=0 && sum!=0);
 				cbits = acu ^ temp ^ sum;
-				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
+
+				// (!(sum & 0xff) << 6)
+				tt = ((sum & 0xff) == 0 ) ? 1 : 0;
+				tt = tt << 6;
+
+				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | tt |
 					(((sum - ((cbits & 16) >> 4)) & 2) << 4) |
 					(cbits & 16) | ((sum - ((cbits >> 4) & 1)) & 8) |
 					op << 2 | 2 );
@@ -4141,7 +4160,12 @@ System.exit(0);
 				} while (op != 0 && sum != 0);
 				//} while (op && sum != 0);
 				cbits = acu ^ temp ^ sum;
-				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | (!(sum & 0xff) << 6) |
+
+				// (!(sum & 0xff) << 6)
+				tt = ((sum & 0xff) == 0 ) ? 1 : 0;
+				tt = tt << 6;
+
+				AF.set( (AF.get() & ~0xfe) | (sum & 0x80) | tt |
 					(((sum - ((cbits & 16) >> 4)) & 2) << 4) |
 					(cbits & 16) | ((sum - ((cbits >> 4) & 1)) & 8) |
 					op << 2 | 2 );
@@ -4328,21 +4352,21 @@ System.exit(0);
 				break;
 
 			case 0x34:      /* INC (IY+dd) */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				temp = GET_BYTE(adr) + 1;
 				PUT_BYTE(adr, temp);
 				AF.set( (AF.get() & ~0xfe) | incZ80Table[temp] );
 				break;
 
 			case 0x35:      /* DEC (IY+dd) */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				temp = GET_BYTE(adr) - 1;
 				PUT_BYTE(adr, temp);
 				AF.set( (AF.get() & ~0xfe) | decZ80Table[temp & 0xff] );
 				break;
 
 			case 0x36:      /* LD (IY+dd),nn */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				PUT_BYTE(adr, RAM_PP(PC));
 				break;
 
@@ -4350,7 +4374,7 @@ System.exit(0);
 				IY.andEq(ADDRMASK);
 				SP.andEq(ADDRMASK);
 				sum = IY.get() + SP.get();
-				AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(IY ^ SP ^ sum) >> 8] );
+				AF.set( (AF.get() & ~0x3b) | ((sum >> 8) & 0x28) | cbitsTable[(IY.get() ^ SP.get() ^ sum) >> 8] );
 				IY.set( sum );
 				break;
 
@@ -4363,7 +4387,7 @@ System.exit(0);
 				break;
 
 			case 0x46:      /* LD B,(IY+dd) */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				SET_HIGH_REGISTER(BC, GET_BYTE(adr));
 				break;
 
@@ -4376,7 +4400,7 @@ System.exit(0);
 				break;
 
 			case 0x4e:      /* LD C,(IY+dd) */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				SET_LOW_REGISTER(BC, GET_BYTE(adr));
 				break;
 
@@ -4389,7 +4413,7 @@ System.exit(0);
 				break;
 
 			case 0x56:      /* LD D,(IY+dd) */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				SET_HIGH_REGISTER(DE, GET_BYTE(adr));
 				break;
 
@@ -4402,7 +4426,7 @@ System.exit(0);
 				break;
 
 			case 0x5e:      /* LD E,(IY+dd) */
-				adr = IY.get() + (int8)RAM_PP(PC);
+				adr = IY.get() + int8(RAM_PP(PC));
 				SET_LOW_REGISTER(DE, GET_BYTE(adr));
 				break;
 
@@ -4753,13 +4777,14 @@ System.exit(0);
 						temp = acu >> 1;
 						cbits = acu & 1;
 					cbshflg3:
-						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+						//AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | !!cbits );
+						AF.set( (AF.get() & ~0xff) | rotateShiftTable[temp & 0xff] | ((cbits != 0) ? 1 : 0) );
 					}
 					break;
 
 				case 0x40:  /* BIT */
-					if (acu & (1 << ((op >> 3) & 7)))
-						AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) << 7) );
+					if ((acu & (1 << ((op >> 3) & 7))) != 0)
+						AF.set( (AF.get() & ~0xfe) | 0x10 | (((op & 0x38) == 0x38) ? 1 : 0 << 7) );
 					else
 						AF.set( (AF.get() & ~0xfe) | 0x54 );
 					if ((op & 7) != 6)
@@ -4816,7 +4841,7 @@ System.exit(0);
 				break;
 
 			case 0xe3:      /* EX (SP),IY */
-				temp = IY;
+				temp = IY.get();
 				POP(IY);
 				PUSH(temp);
 				break;
@@ -4845,7 +4870,7 @@ System.exit(0);
 			sum = acu - temp;
 			cbits = acu ^ temp ^ sum;
 			AF.set( (AF.get() & ~0xff) | cpTable[sum & 0xff] | (temp & 0x28) |
-				(SET_PV) | cbits2Table[cbits & 0x1ff] );
+				(SET_PV()) | cbits2Table[cbits & 0x1ff] );
 			break;
 
 		case 0xff:      /* RST 38H */
