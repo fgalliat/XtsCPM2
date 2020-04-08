@@ -1,3 +1,5 @@
+import javax.xml.crypto.Data;
+
 public class DISK {
 
     protected Console console;
@@ -38,10 +40,15 @@ public class DISK {
 		public charP(int len) {
 			ptr = new char[len];
 		}
+
+		charP reset() { ptrA = 0; return this; }
+
 		char get() { return ptr[ ptrA ]; }
 		void set(char x) { ptr[ ptrA ] = x; }
-		char inc() { ptrA++; return get(); }
-		char dec() { ptrA--; return get(); }
+		char inc(int i) { ptrA+=i; return get(); }
+		char dec(int i) { ptrA-=i; return get(); }
+		char inc() { return inc(1); }
+		char dec() { return dec(1); }
 	}
 
 /*
@@ -218,42 +225,42 @@ void _HostnameToFCB(int fcbaddr, charP filename) {
 void _HostnameToFCBname(charP from, charP to) {	// Converts a string name (AB.TXT) to FCB name (AB      TXT)
 	int i = 0;
 
-	++from;
-	if (*from == FOLDERCHAR) {	// Skips the drive and / if needed
-		from += 3;
+	from.inc();
+	if (from.get() == FOLDERCHAR) {	// Skips the drive and / if needed
+		from.inc(3);
 	} else {
-		--from;
+		from.dec();
 	}
 
-	while (*from != 0 && *from != '.') {
-		*to = toupper(*from);
-		++to; ++from; ++i;
+	while (from.get() != 0 && from.get() != '.') {
+		to.set( DataUtils.toupper(from.get()) );
+		to.inc(); from.inc(); ++i;
 	}
 	while (i < 8) {
-		*to = ' ';
-		++to;  ++i;
+		to.set( ' ' );
+		to.inc();  ++i;
 	}
-	if (*from == '.')
-		++from;
+	if (from.get() == '.')
+		from.inc();
 	i = 0;
-	while (*from != 0) {
-		*to = toupper(*from);
-		++to; ++from; ++i;
+	while (from.get() != 0) {
+		to.set( DataUtils.toupper(from.get()) );
+		to.inc(); from.inc(); ++i;
 	}
 	while (i < 3) {
-		*to = ' ';
-		++to;  ++i;
+		to.set(' ');
+		to.inc();  ++i;
 	}
-	*to = 0;
+	to.set( (char)0x00);
 }
 
-uint8 match(uint8 *fcbname, uint8 *pattern) {
-	uint8 result = 1;
-	uint8 i;
+char match(charP fcbname, charP pattern) {
+	char result = 1;
+	char i;
 
 	for (i = 0; i < 12; ++i) {
-		if (*pattern == '?' || *pattern == *fcbname) {
-			++pattern; ++fcbname;
+		if (pattern.get() == '?' || pattern.get() == fcbname.get()) {
+			pattern.inc(); fcbname.inc();
 			continue;
 		} else {
 			result = 0;
@@ -263,12 +270,12 @@ uint8 match(uint8 *fcbname, uint8 *pattern) {
 	return(result);
 }
 
-long _FileSize(uint16 fcbaddr) {
+long _FileSize(int fcbaddr) {
 	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	long r, l = -1;
 
 	if (!_SelectDisk(F->dr)) {
-		_FCBtoHostname(fcbaddr, &filename[0]);
+		_FCBtoHostname(fcbaddr, filename.reset() );
 		l = _sys_filesize(filename);
 		r = l % BlkSZ;
 		if (r)
