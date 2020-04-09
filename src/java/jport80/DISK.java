@@ -358,25 +358,28 @@ uint8 _MakeFile(uint16 fcbaddr) {
 	return(result);
 }
 
-uint8 _SearchFirst(uint16 fcbaddr, uint8 isdir) {
+char _SearchFirst(int fcbaddr, char isdir) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	if (!_SelectDisk(F->dr)) {
-		_FCBtoHostname(fcbaddr, &filename[0]);
+	// if (!_SelectDisk(F.dr)) {
+	if (_SelectDisk(F.dr) == 0 ) {
+		_FCBtoHostname(fcbaddr, cpm.filename.reset());
 		result = _findfirst(isdir);
 	}
 	return(result);
 }
 
-uint8 _SearchNext(uint16 fcbaddr, uint8 isdir) {
+char _SearchNext(int fcbaddr, char isdir) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	if (!_SelectDisk(F->dr))
+	//if (!_SelectDisk(F->dr))
+	if (_SelectDisk(F.dr) == 0 ) 
 		result = _findnext(isdir);
+
 	return(result);
 }
 
@@ -588,14 +591,14 @@ char _MakeDisk(int fcbaddr) {
 char _CheckSUB() {
 	char result;
 	char oCode = cpm.userCode;							// Saves the current user code (original BDOS does not do this)
-	_HostnameToFCB(tmpFCB, new charP("$???????.???") );	// The original BDOS in fact only looks for a file which start with $
+	_HostnameToFCB( mem.tmpFCB, new charP("$???????.???") );	// The original BDOS in fact only looks for a file which start with $
 // #ifdef BATCHA
-	_RamWrite(tmpFCB, 1);							// Forces it to be checked on drive A:
+	mem._RamWrite( mem.tmpFCB, (char)0x01);						// Forces it to be checked on drive A:
 // #endif
 // #ifdef BATCH0
 // 	userCode = 0;									// Forces it to be checked on user 0
 // #endif
-	result = (_SearchFirst(tmpFCB, FALSE) == 0x00) ? 0xff : 0x00;
+	result = (_SearchFirst( mem.tmpFCB, FALSE) == 0x00) ? 0xff : 0x00;
 	userCode = oCode;								// Restores the current user code
 	return(result);
 }

@@ -21,6 +21,12 @@ public class CPM {
     // static uint8 newname[17]; // New filename in host filesystem format
     // static uint8 fcbname[13]; // Current filename in CP/M format
     // static uint8 pattern[13]; // File matching pattern in CP/M format
+    charP filename = new charP(17);
+    charP newname = new charP(17);
+    charP fcbname = new charP(13);
+    charP pattern = new charP(13);
+
+
     int dmaAddr = 0x0080; // Current dmaAddr
     char oDrive = 0; // Old selected drive
     char cDrive = 0; // Currently selected drive

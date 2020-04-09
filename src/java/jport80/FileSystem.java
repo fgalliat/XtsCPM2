@@ -20,40 +20,6 @@ public class FileSystem {
     }
 
 
-    // char*, uint8*
-    protected class charP {
-        char[] ptr = null;
-        int ptrA = 0; // cursor 
-
-        public charP(int len) {
-            ptr = new char[len];
-        }
-
-        public charP(char[] content) {
-            ptr = content;
-        }
-
-        public charP(String content) {
-            ptr = content.toCharArray();
-        }
-
-        charP reset() { ptrA = 0; return this; }
-
-        char get() { return ptr[ ptrA ]; }
-        char get(int addr) { return ptr[ addr ]; }
-        void set(char x) { ptr[ ptrA ] = x; }
-        void set(int addr, char x) { ptr[ addr ] = x; }
-        char inc(int i) { ptrA+=i; return get(); }
-        char dec(int i) { ptrA-=i; return get(); }
-        char inc() { return inc(1); }
-        char dec() { return dec(1); }
-
-        public String toString() {
-            return new String( ptr );
-        }
-    }
-
-
     long _sys_filesize(charP filename) {
         // FIXME : TODO ...
         return -1;
@@ -84,5 +50,46 @@ public class FileSystem {
         SD.mkdir(path.toString());
         _driveLedOff();
     }
+
+    char _findnext(char isdir) {
+        File f;
+        uint8 result = 0xff;
+        uint8 dirname[13];
+        bool isfile;
+    
+        _driveLedOn();
+        while (f = root.openNextFile()) {
+            f.getName((char*)&dirname[0], 13);
+            isfile = !f.isDirectory();
+            f.close();
+            if (!isfile)
+                continue;
+            _HostnameToFCBname(dirname, fcbname);
+            if (match(fcbname, pattern)) {
+                if (isdir) {
+                    _HostnameToFCB(dmaAddr, dirname);
+                    _RamWrite(dmaAddr, 0x00);
+                }
+                _RamWrite(tmpFCB, filename[0] - '@');
+                _HostnameToFCB(tmpFCB, dirname);
+                result = 0x00;
+                break;
+            }
+        }
+        _driveLedOff();
+        return(result);
+    }
+    
+    char _findfirst(char isdir) {
+        uint8 path[4] = { '?', FOLDERCHAR, '?', 0 };
+        path[0] = filename[0];
+        path[2] = filename[2];
+        if (root)
+            root.close();
+        root = SD.open((char *)path); // Set directory search to start from the first position
+        _HostnameToFCBname(filename, pattern);
+        return(_findnext(isdir));
+    }
+
 
 }
