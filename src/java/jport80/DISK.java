@@ -425,17 +425,17 @@ char _DeleteFile(int fcbaddr) {
 	return(deleted);
 }
 
-uint8 _RenameFile(uint16 fcbaddr) {
+char _RenameFile(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	if (!_SelectDisk(F->dr)) {
-		if (!RW) {
-			_RamWrite(fcbaddr + 16, _RamRead(fcbaddr));	// Prevents rename from moving files among folders
-			_FCBtoHostname(fcbaddr + 16, &newname[0]);
-			_FCBtoHostname(fcbaddr, &filename[0]);
-			if (_sys_renamefile(&filename[0], &newname[0]))
+	if (!_SelectDisk(F.dr)) {
+		if (!RW(F)) {
+			mem._RamWrite(fcbaddr + 16, mem._RamRead(fcbaddr));	// Prevents rename from moving files among folders
+			_FCBtoHostname(fcbaddr + 16, cpm.newname.reset());
+			_FCBtoHostname(fcbaddr, cpm.filename.reset() );
+			if (_sys_renamefile(cpm.filename.reset(), cpm.newname.reset()))
 				result = 0x00;
 		} else {
 			_error(errWRITEPROT);
