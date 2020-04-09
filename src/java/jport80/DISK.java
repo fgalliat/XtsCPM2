@@ -67,7 +67,7 @@ final int errWRITEPROT = 1;
 final int errSELECT = 2;
 
 // #define RW	(roVector & (1 << F->dr))
-boolean RW(FPM_FCB F) {
+boolean RW(CPM_FCB F) {
     return (cpm.roVector & (1 << F.dr)) != 0;
 }
 
@@ -278,11 +278,12 @@ long _FileSize(int fcbaddr) {
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	long r, l = -1;
 
-	if (!_SelectDisk(F->dr)) {
-		_FCBtoHostname(fcbaddr, filename.reset() );
-		l = _sys_filesize(filename);
+	//if (!_SelectDisk(F.dr)) {
+	if ( _SelectDisk(F.dr) == 0) {
+		_FCBtoHostname(fcbaddr, cpm.filename.reset() );
+		l = _sys_filesize(cpm.filename);
 		r = l % BlkSZ;
-		if (r)
+		if (r != 0)
 			l = l + BlkSZ - r;
 	}
 	return(l);
@@ -383,30 +384,35 @@ char _SearchNext(int fcbaddr, char isdir) {
 	return(result);
 }
 
-uint8 _DeleteFile(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
-#if defined(USE_PUN) || defined(USE_LST)
-	CPM_FCB *T = (CPM_FCB*)_RamSysAddr(tmpFCB);
-#endif
-	uint8 result = 0xff;
-	uint8 deleted = 0xff;
+char _DeleteFile(int fcbaddr) {
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 
-	if (!_SelectDisk(F->dr)) {
-		if (!RW) {
+// FIXME
+// #if defined(USE_PUN) || defined(USE_LST)
+// 	CPM_FCB *T = (CPM_FCB*)_RamSysAddr(tmpFCB);
+// #endif
+
+	char result = 0xff;
+	char deleted = 0xff;
+
+	//if (!_SelectDisk(F.dr)) {
+	if (!_SelectDisk(F.dr) == 0) {
+		if (!RW(F)) {
 			result = _SearchFirst(fcbaddr, FALSE);	// FALSE = Does not create a fake dir entry when finding the file
 			while (result != 0xff) {
-#ifdef USE_PUN
-				if (!strcmp((char*)T->fn, "PUN     TXT") && pun_open) {
-					_sys_fclose(pun_dev);
-					pun_open = FALSE;
-				}
-#endif
-#ifdef USE_LST
-				if (!strcmp((char*)T->fn, "LST     TXT") && lst_open) {
-					_sys_fclose(lst_dev);
-					lst_open = FALSE;
-				}
-#endif
+// #ifdef USE_PUN
+// 				if (!strcmp((char*)T->fn, "PUN     TXT") && pun_open) {
+// 					_sys_fclose(pun_dev);
+// 					pun_open = FALSE;
+// 				}
+// #endif
+// #ifdef USE_LST
+// 				if (!strcmp((char*)T->fn, "LST     TXT") && lst_open) {
+// 					_sys_fclose(lst_dev);
+// 					lst_open = FALSE;
+// 				}
+// #endif
 				_FCBtoHostname(tmpFCB, &filename[0]);
 				if (_sys_deletefile(&filename[0]))
 					deleted = 0x00;
@@ -544,33 +550,33 @@ uint8 _WriteRand(uint16 fcbaddr) {
 	return(result);
 }
 
-uint8 _GetFileSize(uint16 fcbaddr) {
+char _GetFileSize(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
-	int32 count = _FileSize(DE) >> 7;
+	char result = 0xff;
+	int count = (int)_FileSize(cpu.DE.get()) >> 7;
 
 	if (count != -1) {
-		F->r0 = count & 0xff;
-		F->r1 = (count >> 8) & 0xff;
-		F->r2 = (count >> 16) & 0xff;
+		F.r0 = (char)(count & 0xff);
+		F.r1 = (char)((count >> 8) & 0xff);
+		F.r2 = (char)((count >> 16) & 0xff);
 		result = 0x00;
 	}
 	return(result);
 }
 
-uint8 _SetRandom(uint16 fcbaddr) {
+char _SetRandom(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0x00;
+	char result = 0x00;
 
-	int32 count = F->cr & 0x7f;
-		  count += (F->ex & 0x1f) << 7;
-		  count += F->s2 << 12;
+	int count = F.cr & 0x7f;
+	count += (F.ex & 0x1f) << 7;
+	count += F.s2 << 12;
 
-	F->r0 = count & 0xff;
-	F->r1 = (count >> 8) & 0xff;
-	F->r2 = (count >> 16) & 0xff;
+	F.r0 = (char)(count & 0xff);
+	F.r1 = (char)((count >> 8) & 0xff);
+	F.r2 = (char)((count >> 16) & 0xff);
 
 	return(result);
 }
@@ -598,8 +604,8 @@ char _CheckSUB() {
 // #ifdef BATCH0
 // 	userCode = 0;									// Forces it to be checked on user 0
 // #endif
-	result = (_SearchFirst( mem.tmpFCB, FALSE) == 0x00) ? 0xff : 0x00;
-	userCode = oCode;								// Restores the current user code
+	result = (_SearchFirst( mem.tmpFCB, (char)FALSE) == 0x00) ? (char)0xff : (char)0x00;
+	cpm.userCode = oCode;								// Restores the current user code
 	return(result);
 }
 
