@@ -1,15 +1,12 @@
-import javax.xml.crypto.Data;
 
-public class DISK {
+public class DISK extends FileSystem {
 
     protected Console console;
     protected CPU cpu;
     protected MEM mem;
-    protected CPM cpm;
-
-	static final char FOLDERCHAR = '/';
 
     public DISK(CPM cpm) {
+		super(cpm);
         this.console = cpm.console;
         this.cpu = cpm.cpu;
         this.mem = cpm.mem;
@@ -24,7 +21,7 @@ public class DISK {
     //     uint8 cr, r0, r1, r2;
 	// } CPM_FCB;
 	
-	class FPM_FCB {
+	class CPM_FCB {
 		char dr = 0x00; // 0 -> 'A'
 		char[] fn = new char[8];
 		char[] tp = new char[3];
@@ -33,22 +30,23 @@ public class DISK {
 		char cr, r0, r1, r2;
 	}
 
-	// char*, uint8*
-	class charP {
-		char[] ptr = null;
-		int ptrA = 0; // cursor 
-		public charP(int len) {
-			ptr = new char[len];
-		}
-
-		charP reset() { ptrA = 0; return this; }
-
-		char get() { return ptr[ ptrA ]; }
-		void set(char x) { ptr[ ptrA ] = x; }
-		char inc(int i) { ptrA+=i; return get(); }
-		char dec(int i) { ptrA-=i; return get(); }
-		char inc() { return inc(1); }
-		char dec() { return dec(1); }
+	// CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB readFCBFromRamSysAddr(int fcbaddr) {
+		CPM_FCB result = new CPM_FCB();
+		int address = fcbaddr;
+		result.dr = mem._RamRead(address++);
+		for(int i=0; i < 8; i++) { result.fn[i] = mem._RamRead(address++); }
+		for(int i=0; i < 3; i++) { result.tp[i] = mem._RamRead(address++); }
+		result.ex = mem._RamRead(address++);
+		result.s1 = mem._RamRead(address++);
+		result.s2 = mem._RamRead(address++);
+		result.rc = mem._RamRead(address++);
+		for(int i=0; i < 16; i++) { result.al[i] = mem._RamRead(address++); }
+		result.cr = mem._RamRead(address++);
+		result.r0 = mem._RamRead(address++);
+		result.r1 = mem._RamRead(address++);
+		result.r2 = mem._RamRead(address++);
+		return result;
 	}
 
 /*
@@ -60,8 +58,7 @@ Cf global.h
                         // on drive A: current user, which made it complicated to run SUBMITs when not logged to drive A: user 0
 */
 
-static int TRUE = 1;
-static int FALSE = 0;
+
 
 /*
 Disk errors
@@ -111,7 +108,8 @@ void _error(int error) {
 // dr != 'A'
 int _SelectDisk(char dr) {
 	char result = 0xff;
-	char disk[] = { 'A', 0 };
+	charP disk = new charP( new char[] { 'A', 0x00 } );
+	// [] = { 'A', 0 };
 
 	if (dr == 0) {
 		dr = cpm.cDrive;	// This will set dr to defDisk in case no disk is passed
@@ -119,9 +117,12 @@ int _SelectDisk(char dr) {
 		--dr;			// Called from BDOS, set dr back to 0=A: format
 	}
 
-	disk[0] += dr;
-	if (_sys_select(&disk[0])) {
-		cpm.loginVector = cpm.loginVector | (1 << (disk[0] - 'A'));
+	//disk[0] += dr;
+	disk.set( 0, (char)(disk.get(0) + dr) );
+
+	//if (_sys_select(&disk[0])) {
+	if (_sys_select(disk.reset()) != FALSE) {
+		cpm.loginVector = cpm.loginVector | (1 << (disk.get(0) - 'A'));
 		result = 0x00;
 	} else {
 		_error(errSELECT);
@@ -133,7 +134,8 @@ int _SelectDisk(char dr) {
 //uint8 _FCBtoHostname(uint16 fcbaddr, uint8 *filename) {
 char _FCBtoHostname(int fcbaddr, charP filename) {
 	char addDot = (char)TRUE;
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	char i = 0;
 	char unique = (char)TRUE;
 
@@ -184,7 +186,8 @@ char _FCBtoHostname(int fcbaddr, charP filename) {
 }
 
 void _HostnameToFCB(int fcbaddr, charP filename) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	char i = 0;
 
 	// ++filename;
@@ -271,7 +274,8 @@ char match(charP fcbname, charP pattern) {
 }
 
 long _FileSize(int fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	long r, l = -1;
 
 	if (!_SelectDisk(F->dr)) {
@@ -285,7 +289,8 @@ long _FileSize(int fcbaddr) {
 }
 
 uint8 _OpenFile(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 	long len;
 	int32 i;
@@ -310,7 +315,8 @@ uint8 _OpenFile(uint16 fcbaddr) {
 }
 
 uint8 _CloseFile(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	if (!_SelectDisk(F->dr)) {
@@ -327,7 +333,8 @@ uint8 _CloseFile(uint16 fcbaddr) {
 }
 
 uint8 _MakeFile(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 	uint8 i;
 
@@ -352,7 +359,8 @@ uint8 _MakeFile(uint16 fcbaddr) {
 }
 
 uint8 _SearchFirst(uint16 fcbaddr, uint8 isdir) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	if (!_SelectDisk(F->dr)) {
@@ -363,7 +371,8 @@ uint8 _SearchFirst(uint16 fcbaddr, uint8 isdir) {
 }
 
 uint8 _SearchNext(uint16 fcbaddr, uint8 isdir) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(tmpFCB);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	if (!_SelectDisk(F->dr))
@@ -408,7 +417,8 @@ uint8 _DeleteFile(uint16 fcbaddr) {
 }
 
 uint8 _RenameFile(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	if (!_SelectDisk(F->dr)) {
@@ -426,7 +436,8 @@ uint8 _RenameFile(uint16 fcbaddr) {
 }
 
 uint8 _ReadSeq(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	long fpos =	((F->s2 & MaxS2) * BlkS2 * BlkSZ) + 
@@ -454,7 +465,8 @@ uint8 _ReadSeq(uint16 fcbaddr) {
 }
 
 uint8 _WriteSeq(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	long fpos =	((F->s2 & MaxS2) * BlkS2 * BlkSZ) +
@@ -486,7 +498,8 @@ uint8 _WriteSeq(uint16 fcbaddr) {
 }
 
 uint8 _ReadRand(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	int32 record = (F->r2 << 16) | (F->r1 << 8) | F->r0;
@@ -505,7 +518,8 @@ uint8 _ReadRand(uint16 fcbaddr) {
 }
 
 uint8 _WriteRand(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 
 	int32 record = (F->r2 << 16) | (F->r1 << 8) | F->r0;
@@ -528,7 +542,8 @@ uint8 _WriteRand(uint16 fcbaddr) {
 }
 
 uint8 _GetFileSize(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0xff;
 	int32 count = _FileSize(DE) >> 7;
 
@@ -542,7 +557,8 @@ uint8 _GetFileSize(uint16 fcbaddr) {
 }
 
 uint8 _SetRandom(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	uint8 result = 0x00;
 
 	int32 count = F->cr & 0x7f;
@@ -556,28 +572,29 @@ uint8 _SetRandom(uint16 fcbaddr) {
 	return(result);
 }
 
-void _SetUser(uint8 user) {
-	userCode = user & 0x1f;	// BDOS unoficially allows user areas 0-31
+void _SetUser(char user) {
+	cpm.userCode = (char)(user & 0x1f);	// BDOS unoficially allows user areas 0-31
 							// this may create folders from G-V if this function is called from an user program
 							// It is an unwanted behavior, but kept as BDOS does it
 	_MakeUserDir();			// Creates the user dir (0-F[G-V]) if needed
 }
 
-uint8 _MakeDisk(uint16 fcbaddr) {
-	CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
-	return(_sys_makedisk(F->dr));
+char _MakeDisk(int fcbaddr) {
+	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
+	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
+	return(_sys_makedisk(F.dr));
 }
 
-uint8 _CheckSUB(void) {
-	uint8 result;
-	uint8 oCode = userCode;							// Saves the current user code (original BDOS does not do this)
-	_HostnameToFCB(tmpFCB, (uint8*)"$???????.???");	// The original BDOS in fact only looks for a file which start with $
-#ifdef BATCHA
+char _CheckSUB() {
+	char result;
+	char oCode = cpm.userCode;							// Saves the current user code (original BDOS does not do this)
+	_HostnameToFCB(tmpFCB, new charP("$???????.???") );	// The original BDOS in fact only looks for a file which start with $
+// #ifdef BATCHA
 	_RamWrite(tmpFCB, 1);							// Forces it to be checked on drive A:
-#endif
-#ifdef BATCH0
-	userCode = 0;									// Forces it to be checked on user 0
-#endif
+// #endif
+// #ifdef BATCH0
+// 	userCode = 0;									// Forces it to be checked on user 0
+// #endif
 	result = (_SearchFirst(tmpFCB, FALSE) == 0x00) ? 0xff : 0x00;
 	userCode = oCode;								// Restores the current user code
 	return(result);
