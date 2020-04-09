@@ -4,6 +4,7 @@ public class DataUtils {
 	public static int TRUE = 1;
     public static int FALSE = 0;
 
+	public static char int8(long v) { return (char)( v % 256 ); }
     public static char int8(int v) { return (char)( v % 256 ); }
     public static int int16(int v) { return ( v % 65536 ); }
     

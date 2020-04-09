@@ -44,6 +44,7 @@ public abstract class FileSystem {
 
     abstract void _HostnameToFCBname(charP from, charP to);
     abstract void _HostnameToFCB(int fcbaddr, charP filename);
+    abstract char match(charP fcbname, charP pattern);
 
 
 
@@ -74,7 +75,7 @@ public abstract class FileSystem {
             if (!isfile)
                 continue;
             _HostnameToFCBname(dirname, cpm.fcbname);
-            if (match(cpm.fcbname, cpm.pattern)) {
+            if (match(cpm.fcbname, cpm.pattern) != 0) {
                 if (isdir != 0) {
                     _HostnameToFCB(cpm.dmaAddr, dirname);
                     mem._RamWrite(cpm.dmaAddr, (char)0x00);
@@ -129,5 +130,19 @@ public abstract class FileSystem {
         return(result);
       }
 
+
+      int _sys_openfile(charP filename) {
+        File f;
+        int result = 0;
+    
+        _driveLedOn();
+        f = SD.open((char *)filename, O_READ);
+        if (f) {
+            f.close();
+            result = 1;
+        }
+        _driveLedOff();
+        return(result);
+    }
 
 }

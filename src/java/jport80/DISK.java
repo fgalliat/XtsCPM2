@@ -289,25 +289,26 @@ long _FileSize(int fcbaddr) {
 	return(l);
 }
 
-uint8 _OpenFile(uint16 fcbaddr) {
+char _OpenFile(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 	long len;
-	int32 i;
+	//int32 i;
+	int i;
 
-	if (!_SelectDisk(F->dr)) {
-		_FCBtoHostname(fcbaddr, &filename[0]);
-		if (_sys_openfile(&filename[0])) {
+	if ( _SelectDisk(F.dr) == 0 ) {
+		_FCBtoHostname(fcbaddr, cpm.filename.reset());
+		if (_sys_openfile(cpm.filename.reset())) {
 
 			len = _FileSize(fcbaddr) / 128;	// Compute the len on the file in blocks
 
-			F->s1 = 0x00;
-			F->s2 = 0x00;
+			F.s1 = 0x00;
+			F.s2 = 0x00;
 	
-			F->rc = len > MaxRC ? 0x80 : (uint8)len;
+			F.rc = len > MaxRC ? 0x80 : DataUtils.int8(len);
 			for (i = 0; i < 16; ++i)	// Clean up AL
-				F->al[i] = 0x00;
+				F.al[i] = 0x00;
 
 			result = 0x00;
 		}
