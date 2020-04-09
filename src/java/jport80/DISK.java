@@ -473,19 +473,19 @@ uint8 _ReadSeq(uint16 fcbaddr) {
 	return(result);
 }
 
-uint8 _WriteSeq(uint16 fcbaddr) {
+char _WriteSeq(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	long fpos =	((F->s2 & MaxS2) * BlkS2 * BlkSZ) +
-				(F->ex * BlkEX * BlkSZ) + 
-				(F->cr * BlkSZ);
+	long fpos =	((F.s2 & MaxS2) * BlkS2 * BlkSZ) +
+				(F.ex * BlkEX * BlkSZ) + 
+				(F.cr * BlkSZ);
 
-	if (!_SelectDisk(F->dr)) {
-		if (!RW) {
-			_FCBtoHostname(fcbaddr, &filename[0]);
-			result = _sys_writeseq(&filename[0], fpos);
+	if (_SelectDisk(F->dr) == 0) {
+		if (!RW(F)) {
+			_FCBtoHostname(fcbaddr, cpm.filename.reset());
+			result = _sys_writeseq(cpm.filename.reset(), fpos);
 			if (!result) {	// Write succeeded, adjust FCB
 				++F->cr;
 				if (F->cr > MaxCR) {
@@ -506,42 +506,45 @@ uint8 _WriteSeq(uint16 fcbaddr) {
 	return(result);
 }
 
-uint8 _ReadRand(uint16 fcbaddr) {
+char _ReadRand(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	int32 record = (F->r2 << 16) | (F->r1 << 8) | F->r0;
+	//int32 (uses 24 bits ?)
+	//int32 record = (F->r2 << 16) | (F->r1 << 8) | F->r0;
+	int record = (F.r2 << 16) | (F.r1 << 8) | F.r0;
 	long fpos = record * BlkSZ;
 
-	if (!_SelectDisk(F->dr)) {
-		_FCBtoHostname(fcbaddr, &filename[0]);
-		result = _sys_readrand(&filename[0], fpos);
-		if (!result) {	// Read succeeded, adjust FCB
-			F->cr = record & 0x7F;
-			F->ex = (record >> 7) & 0x1f;
-			F->s2 = (record >> 12) & 0xff;
+	if (_SelectDisk(F.dr) == 0) {
+		_FCBtoHostname(fcbaddr, cpm.filename.reset());
+		result = _sys_readrand(cpm.filename.reset(), fpos);
+		if (result == 0) {	// Read succeeded, adjust FCB
+			F.cr = (char)(record & 0x7F);
+			F.ex = (char)((record >> 7) & 0x1f);
+			F.s2 = (char)((record >> 12) & 0xff);
 		}
 	}
 	return(result);
 }
 
-uint8 _WriteRand(uint16 fcbaddr) {
+char _WriteRand(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	int32 record = (F->r2 << 16) | (F->r1 << 8) | F->r0;
+	// int32 (uses 24 bits ?)
+	int record = (F.r2 << 16) | (F.r1 << 8) | F.r0;
 	long fpos = record * BlkSZ;
 
-	if (!_SelectDisk(F->dr)) {
-		if (!RW) {
-			_FCBtoHostname(fcbaddr, &filename[0]);
-			result = _sys_writerand(&filename[0], fpos);
-			if (!result) {	// Write succeeded, adjust FCB
-				F->cr = record & 0x7F;
-				F->ex = (record >> 7) & 0x1f;
-				F->s2 = (record >> 12) & 0xff;
+	if (_SelectDisk(F.dr) == 0) {
+		if ( !RW(F) ) {
+			_FCBtoHostname(fcbaddr, cpm.filename.reset());
+			result = _sys_writerand(cpm.filename.reset(), fpos);
+			if (result == 0) {	// Write succeeded, adjust FCB
+				F.cr = (char)(record & 0x7F);
+				F.ex = (char)((record >> 7) & 0x1f);
+				F.s2 = (char)((record >> 12) & 0xff);
 			}
 		} else {
 			_error(errWRITEPROT);
