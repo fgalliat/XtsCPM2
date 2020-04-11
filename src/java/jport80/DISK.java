@@ -139,7 +139,7 @@ char _FCBtoHostname(int fcbaddr, charP filename) {
 	char i = 0;
 	char unique = (char)TRUE;
 
-	if (F->dr) {
+	if (F.dr != 0) {
 		//*(filename++) = (F->dr - 1) + 'A';
 		filename.ptr[ filename.ptrA++ ] = ((char) ((int)(F.dr - 1) + (int)'A') );
 	} else {
@@ -150,7 +150,7 @@ char _FCBtoHostname(int fcbaddr, charP filename) {
 	filename.ptr[ filename.ptrA++ ] = FOLDERCHAR;
 
 	// *(filename++) = toupper(tohex(userCode));
-	filename.ptr[ filename.ptrA++ ] = DataUtils.toupper(DataUtils.tohex(userCode));
+	filename.ptr[ filename.ptrA++ ] = DataUtils.toupper(DataUtils.tohex(cpm.userCode));
 	// *(filename++) = FOLDERCHAR;
 	filename.ptr[ filename.ptrA++ ] = FOLDERCHAR;
 
@@ -160,23 +160,23 @@ char _FCBtoHostname(int fcbaddr, charP filename) {
 			filename.ptr[ filename.ptrA++ ] = DataUtils.toupper( F.fn[i] );
 		}
 		if (F.fn[i] == '?') {
-			unique = FALSE;
+			unique = (char)FALSE;
 		}
 		++i;
 	}
 	i = 0;
 	while (i < 3) {
-		if (F->tp[i] > 32) {
-			if (addDot) {
-				addDot = FALSE;
+		if (F.tp[i] > 32) {
+			if (addDot != 0) {
+				addDot = (char)FALSE;
 				// *(filename++) = '.';	// Only add the dot if there's an extension
 				filename.ptr[ filename.ptrA++ ] = '.';
 			}
 			// *(filename++) = toupper(F->tp[i]);
 			filename.ptr[ filename.ptrA++ ] = DataUtils.toupper( F.tp[i] );
 		}
-		if (F->tp[i] == '?')
-			unique = FALSE;
+		if (F.tp[i] == '?')
+			unique = (char)FALSE;
 		++i;
 	}
 	// *filename = 0x00;
@@ -415,7 +415,7 @@ char _DeleteFile(int fcbaddr) {
 // 				}
 // #endif
 				_FCBtoHostname(mem.tmpFCB, cpm.filename.reset());
-				if (_sys_deletefile(cpm.filename.reset()))
+				if (_sys_deletefile(cpm.filename.reset()) != 0)
 					deleted = 0x00;
 				result = _SearchFirst(fcbaddr, FALSE);	// FALSE = Does not create a fake dir entry when finding the file
 			}
@@ -436,7 +436,7 @@ char _RenameFile(int fcbaddr) {
 			mem._RamWrite(fcbaddr + 16, mem._RamRead(fcbaddr));	// Prevents rename from moving files among folders
 			_FCBtoHostname(fcbaddr + 16, cpm.newname.reset());
 			_FCBtoHostname(fcbaddr, cpm.filename.reset() );
-			if (_sys_renamefile(cpm.filename.reset(), cpm.newname.reset()))
+			if (_sys_renamefile(cpm.filename.reset(), cpm.newname.reset()) != 0 )
 				result = 0x00;
 		} else {
 			_error(errWRITEPROT);
@@ -483,7 +483,7 @@ char _WriteSeq(int fcbaddr) {
 				(F.ex * BlkEX * BlkSZ) + 
 				(F.cr * BlkSZ);
 
-	if (_SelectDisk(F->dr) == 0) {
+	if (_SelectDisk(F.dr) == 0) {
 		if (!RW(F)) {
 			_FCBtoHostname(fcbaddr, cpm.filename.reset());
 			result = _sys_writeseq(cpm.filename.reset(), fpos);

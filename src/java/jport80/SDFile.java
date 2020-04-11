@@ -1,6 +1,11 @@
 import java.io.File;
 import java.io.IOException;
 
+/*
+https://github.com/greiman/SdFat/blob/master/src/FatLib/FatFile.cpp
+*/
+
+
 public class SDFile {
 
     public static final int F_WRITE = SD.O_WRITE;
@@ -60,6 +65,12 @@ public class SDFile {
 
     boolean seekSet(int pos) {
         // FIXME : TODO
+        return true;
+    }
+
+    boolean seek(long pos) {
+        // FIXME : TODO
+        // is it alias for seekSet or seekAdd
         return true;
     }
 

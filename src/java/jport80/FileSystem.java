@@ -175,5 +175,43 @@ public abstract class FileSystem {
         return(result);
     }
 
+    int _sys_deletefile(charP filename) {
+        _driveLedOn();
+        return(SD.remove(filename.toString()) 1 : 0);
+        _driveLedOff();
+    }
+        
+
+    char _sys_readseq(charP filename, long fpos) {
+        char result = 0xff;
+        SDFile f = null;
+        char bytesread;
+        char[] dmabuf = new char[128];
+        char i;
+    
+        _driveLedOn();
+        if (_sys_extendfile((char*)filename, fpos))
+            f = SD.open((char*)filename, O_READ);
+        if (f != null) {
+            if (f.seek(fpos)) {
+                for (i = 0; i < 128; ++i)
+                    dmabuf[i] = 0x1a;
+                // bytesread = f.read(&dmabuf[0], 128);
+                bytesread = f.read(dmabuf, 128);
+                if (bytesread != 0) {
+                    for (i = 0; i < 128; ++i)
+                        mem._RamWrite(cpm.dmaAddr + i, dmabuf[i]);
+                }
+                result = (bytesread != 0) ? (char)0x00 : (char)0x01;
+            } else {
+                result = 0x01;
+            }
+            f.close();
+        } else {
+            result = 0x10;
+        }
+        _driveLedOff();
+        return(result);
+    }
 
 }

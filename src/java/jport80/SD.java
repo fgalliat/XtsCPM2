@@ -29,6 +29,15 @@ public class SD {
         return true;
     }
 
+
+    static boolean remove(String filePath) {
+        File origFile = new File(filePath);
+        if ( !origFile.delete() ) {
+            return false;
+        }
+        return true;
+    }
+
     static SDFile open(String filePath, int flags) {
         if ( (flags & O_WRITE) == O_WRITE ) {
             // do not check if exists
