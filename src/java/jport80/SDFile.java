@@ -1,5 +1,7 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /*
 https://github.com/greiman/SdFat/blob/master/src/FatLib/FatFile.cpp
@@ -64,16 +66,36 @@ public class SDFile {
     }
 
     boolean seekSet(int pos) {
-        // FIXME : TODO
+        if ( pos > m_fileSize ) {
+          return false;
+        }
+        m_curPosition = pos;
         return true;
     }
 
     boolean seek(long pos) {
-        // FIXME : TODO
         // is it alias for seekSet or seekAdd
-        return true;
+
+        // return seekSet(m_curPosition + (int)pos);
+        return seekSet((int)pos);
     }
 
+    int read(char[] dest, int maxLen) {
+      try {
+        InputStream in = new FileInputStream(descr);
+        byte[] buff = new byte[maxLen];
+        in.skip(m_curPosition);
+        int read = in.read(buff, 0, maxLen);
+        in.close();
+        for(int i=0; i < read; i++) {
+          dest[i] = (char)(buff[i] < 0 ? 255+buff[i] : buff[i] );
+        }
+        return read;
+      } catch(Exception ex) {
+        ex.printStackTrace();
+        return 0;
+      }
+    }
 
     boolean truncate(int length) {
         if ( !exists() ) {

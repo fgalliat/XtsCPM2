@@ -191,13 +191,13 @@ public abstract class FileSystem {
     
         _driveLedOn();
         if (_sys_extendfile((char*)filename, fpos))
-            f = SD.open((char*)filename, O_READ);
+            f = SD.open( filename.toString(), SD.O_READ);
         if (f != null) {
             if (f.seek(fpos)) {
                 for (i = 0; i < 128; ++i)
                     dmabuf[i] = 0x1a;
                 // bytesread = f.read(&dmabuf[0], 128);
-                bytesread = f.read(dmabuf, 128);
+                bytesread = (char)f.read(dmabuf, 128);
                 if (bytesread != 0) {
                     for (i = 0; i < 128; ++i)
                         mem._RamWrite(cpm.dmaAddr + i, dmabuf[i]);
