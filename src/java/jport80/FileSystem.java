@@ -1,3 +1,4 @@
+import java.io.File;
 
 public abstract class FileSystem {
 
@@ -128,21 +129,40 @@ public abstract class FileSystem {
         }
         _driveLedOff();
         return(result);
-      }
+    }
 
 
-      int _sys_openfile(charP filename) {
-        File f;
+    int _sys_openfile(charP filename) {
+        // File f;
         int result = 0;
     
         _driveLedOn();
-        f = SD.open((char *)filename, O_READ);
-        if (f) {
-            f.close();
+        // f = SD.open((char *)filename, O_READ);
+        // if (f) {
+        //     f.close();
+        //     result = 1;
+        // }
+        if ( SD.exists( filename.toString() ) ) {
             result = 1;
         }
         _driveLedOff();
         return(result);
+    }
+
+    char _Truncate(charP filename, char rc) {
+        SDFile f;
+        char result = 0;
+      
+        _driveLedOn();
+        f = SD.open( filename.toString(), SD.O_WRITE | SD.O_APPEND);
+        if (f != null) {
+          if (SD.truncate(f, rc*128)) {
+            // f.close();
+            result = 1;
+          }
+        }
+        _driveLedOff();
+        return result;
     }
 
 }

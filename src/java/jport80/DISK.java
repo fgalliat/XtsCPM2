@@ -299,7 +299,7 @@ char _OpenFile(int fcbaddr) {
 
 	if ( _SelectDisk(F.dr) == 0 ) {
 		_FCBtoHostname(fcbaddr, cpm.filename.reset());
-		if (_sys_openfile(cpm.filename.reset())) {
+		if (_sys_openfile(cpm.filename.reset()) != 0) {
 
 			len = _FileSize(fcbaddr) / 128;	// Compute the len on the file in blocks
 
@@ -316,16 +316,16 @@ char _OpenFile(int fcbaddr) {
 	return(result);
 }
 
-uint8 _CloseFile(uint16 fcbaddr) {
+char _CloseFile(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	if (!_SelectDisk(F->dr)) {
-		if (!RW) {
-			_FCBtoHostname(fcbaddr, &filename[0]);
-			if (fcbaddr == BatchFCB)
-				_Truncate((char*)filename, F->rc);	// Truncate $$$.SUB to F->rc CP/M records so SUBMIT.COM can work
+	if (_SelectDisk(F.dr) == 0) {
+		if (!RW(F)) {
+			_FCBtoHostname(fcbaddr, cpm.filename.reset());
+			if (fcbaddr == cpm.BatchFCB)
+				_Truncate(cpm.filename, F.rc);	// Truncate $$$.SUB to F->rc CP/M records so SUBMIT.COM can work
 			result = 0x00;
 		} else {
 			_error(errWRITEPROT);
