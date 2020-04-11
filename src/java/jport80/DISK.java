@@ -334,23 +334,23 @@ char _CloseFile(int fcbaddr) {
 	return(result);
 }
 
-uint8 _MakeFile(uint16 fcbaddr) {
+char _MakeFile(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
-	uint8 i;
+	char result = 0xff;
+	char i;
 
-	if (!_SelectDisk(F->dr)) {
-		if (!RW) {
-			_FCBtoHostname(fcbaddr, &filename[0]);
-			if (_sys_makefile(&filename[0])) {
-				F->ex = 0x00;	// Makefile also initializes the FCB (file becomes "open")
-				F->s1 = 0x00;
-				F->s2 = 0x00;
-				F->rc = 0x00;
+	if ( _SelectDisk(F.dr) == 0 ) {
+		if (!RW(F)) {
+			_FCBtoHostname(fcbaddr, cpm.filename.reset());
+			if (_sys_makefile(cpm.filename.reset()) != 0) {
+				F.ex = 0x00;	// Makefile also initializes the FCB (file becomes "open")
+				F.s1 = 0x00;
+				F.s2 = 0x00;
+				F.rc = 0x00;
 				for (i = 0; i < 16; ++i)	// Clean up AL
-					F->al[i] = 0x00;
-				F->cr = 0x00;
+					F.al[i] = 0x00;
+				F.cr = 0x00;
 				result = 0x00;
 			}
 		} else {
@@ -398,7 +398,7 @@ char _DeleteFile(int fcbaddr) {
 	char deleted = 0xff;
 
 	//if (!_SelectDisk(F.dr)) {
-	if (!_SelectDisk(F.dr) == 0) {
+	if ( _SelectDisk(F.dr) == 0) {
 		if (!RW(F)) {
 			result = _SearchFirst(fcbaddr, FALSE);	// FALSE = Does not create a fake dir entry when finding the file
 			while (result != 0xff) {
@@ -414,8 +414,8 @@ char _DeleteFile(int fcbaddr) {
 // 					lst_open = FALSE;
 // 				}
 // #endif
-				_FCBtoHostname(tmpFCB, &filename[0]);
-				if (_sys_deletefile(&filename[0]))
+				_FCBtoHostname(mem.tmpFCB, cpm.filename.reset());
+				if (_sys_deletefile(cpm.filename.reset()))
 					deleted = 0x00;
 				result = _SearchFirst(fcbaddr, FALSE);	// FALSE = Does not create a fake dir entry when finding the file
 			}
@@ -431,7 +431,7 @@ char _RenameFile(int fcbaddr) {
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
 	char result = 0xff;
 
-	if (!_SelectDisk(F.dr)) {
+	if ( _SelectDisk(F.dr) == 0 ) {
 		if (!RW(F)) {
 			mem._RamWrite(fcbaddr + 16, mem._RamRead(fcbaddr));	// Prevents rename from moving files among folders
 			_FCBtoHostname(fcbaddr + 16, cpm.newname.reset());
@@ -445,29 +445,29 @@ char _RenameFile(int fcbaddr) {
 	return(result);
 }
 
-uint8 _ReadSeq(uint16 fcbaddr) {
+char _ReadSeq(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	uint8 result = 0xff;
+	char result = 0xff;
 
-	long fpos =	((F->s2 & MaxS2) * BlkS2 * BlkSZ) + 
-				(F->ex * BlkEX * BlkSZ) + 
-				(F->cr * BlkSZ);
+	long fpos =	((F.s2 & MaxS2) * BlkS2 * BlkSZ) + 
+				(F.ex * BlkEX * BlkSZ) + 
+				(F.cr * BlkSZ);
 
-	if (!_SelectDisk(F->dr)) {
-		_FCBtoHostname(fcbaddr, &filename[0]);
-		result = _sys_readseq(&filename[0], fpos);
-		if (!result) {	// Read succeeded, adjust FCB
-			++F->cr;
-			if (F->cr > MaxCR) {
-				F->cr = 1;
-				++F->ex;
+	if ( _SelectDisk(F.dr) == 0 ) {
+		_FCBtoHostname(fcbaddr, cpm.filename.reset());
+		result = _sys_readseq(cpm.filename.reset(), fpos);
+		if (result == 0) {	// Read succeeded, adjust FCB
+			F.cr++;
+			if (F.cr > MaxCR) {
+				F.cr = 1;
+				F.ex++;
 			}
-			if (F->ex > MaxEX) {
-				F->ex = 0;
-				++F->s2;
+			if (F.ex > MaxEX) {
+				F.ex = 0;
+				F.s2++;
 			}
-			if (F->s2 > MaxS2)
+			if (F.s2 > MaxS2)
 				result = 0xfe;	// (todo) not sure what to do 
 		}
 	}
@@ -487,17 +487,17 @@ char _WriteSeq(int fcbaddr) {
 		if (!RW(F)) {
 			_FCBtoHostname(fcbaddr, cpm.filename.reset());
 			result = _sys_writeseq(cpm.filename.reset(), fpos);
-			if (!result) {	// Write succeeded, adjust FCB
-				++F->cr;
-				if (F->cr > MaxCR) {
-					F->cr = 1;
-					++F->ex;
+			if (result == 0) {	// Write succeeded, adjust FCB
+				F.cr++;
+				if (F.cr > MaxCR) {
+					F.cr = 1;
+					F.ex++;
 				}
-				if (F->ex > MaxEX) {
-					F->ex = 0;
-					++F->s2;
+				if (F.ex > MaxEX) {
+					F.ex = 0;
+					F.s2++;
 				}
-				if (F->s2 > MaxS2)
+				if (F.s2 > MaxS2)
 					result = 0xfe;	// (todo) not sure what to do 
 			}
 		} else {

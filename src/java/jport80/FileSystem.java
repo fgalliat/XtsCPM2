@@ -33,10 +33,6 @@ public abstract class FileSystem {
         return -1;
     }
 
-    int _sys_makefile(charP filename) {
-        // FIXME : TODO ...
-        return -1;
-    }
 
     char _sys_makedisk(char drive) {
         // FIXME : TODO ...
@@ -164,5 +160,20 @@ public abstract class FileSystem {
         _driveLedOff();
         return result;
     }
+
+    int _sys_makefile(charP filename) {
+        SDFile f;
+        int result = 0;
+    
+        _driveLedOn();
+        f = SD.open(filename.toString(), SD.O_CREAT | SD.O_WRITE);
+        if (f != null ) {
+            f.close();
+            result = 1;
+        }
+        _driveLedOff();
+        return(result);
+    }
+
 
 }

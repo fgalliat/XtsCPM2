@@ -3,13 +3,14 @@ import java.io.IOException;
 
 public class SDFile {
 
-    public static int F_WRITE = SD.O_WRITE;
+    public static final int F_WRITE = SD.O_WRITE;
+    public static final int F_CREAT = SD.O_CREAT;
 
-    public static int F_FILE_DIR_DIRTY = 16;
+    public static final int F_FILE_DIR_DIRTY = 16;
 
     protected String path;
     protected int m_curPosition;
-    protected int flags;
+    protected int m_flags;
     protected int m_fileSize;
 
     protected File descr;
@@ -17,13 +18,20 @@ public class SDFile {
     public SDFile(String path, int flags) {
         this.path = path;
         this.descr = new File( this.path );
-        this.flags = flags;
+        this.m_flags = flags;
+        if ( (this.m_flags & F_CREAT) == F_CREAT ) {
+            createNewFile();
+        }
         this.m_curPosition = 0;
         this.m_fileSize = exists() ? length() : 0;
     }
 
     boolean exists() {
         return descr.exists();
+    }
+
+    void close() {
+        // .....
     }
 
     boolean createNewFile() {
@@ -47,7 +55,7 @@ public class SDFile {
     }
 
     boolean isWrite() {
-        return (flags & F_WRITE) == F_WRITE;
+        return (m_flags & F_WRITE) == F_WRITE;
     }
 
     boolean seekSet(int pos) {

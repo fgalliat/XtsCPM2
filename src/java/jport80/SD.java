@@ -1,11 +1,11 @@
 import java.io.File;
-import java.io.IOException;
 
 // emulation of Arduino SD driver lib
 public class SD {
 
     public static final int O_APPEND = 1;
     public static final int O_WRITE = 2;
+    public static final int O_CREAT = 4;
 
     static boolean mkdir(String path) {
         return new File( new File("."), path ).mkdirs();
