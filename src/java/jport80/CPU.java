@@ -1665,6 +1665,8 @@ int temp = 0;
 	int adr=0;
 
 
+boolean DBUG = !false;
+
 //static inline void Z80run(void) {
 void  Z80run() {
 System.out.println("CPU > run");
@@ -1697,13 +1699,26 @@ System.out.println("CPU > run");
 // #endif
 
 		PCX = PC.get();
+
+
+// System.out.print("(DBG) PC:"+PC.get());
+		char opCode = RAM_PP(PC);
 // System.out.println("(DBG) PC:"+PC.get());
 
+// System.out.print(" ");
+// System.out.println( "OpCode 0x"+Integer.toHexString(opCode) +" => ("+ PC.get() +")" );
 
-		char opCode = RAM_PP(PC);
+if ( opCode != 0 && DBUG ) {
+	// System.exit(0);
+	System.out.print("(DBG) PC:"+PCX);
+	System.out.print(" ");
+	System.out.println( "OpCode 0x"+Integer.toHexString(opCode) +" => ("+ PC.get() +")" );	
+}
+
+
 //System.out.println( "(DBG) OpCode "+Integer.toHexString(opCode) );
 
-		switch (op) {
+		switch (opCode) {
 
 		case 0x00:      /* NOP */
 			break;
@@ -2754,7 +2769,14 @@ System.exit(0);
 			break;
 
 		case 0xc2:      /* JP NZ,nnnn */
-			JPC(!(TSTFLAG(Flag.Z) != 0));
+			// JPC(!TSTFLAG(Z));
+			// JPC(!(TSTFLAG(Flag.Z) != 0));
+if (DBUG) {
+	System.out.println("JP NZ ("+ TSTFLAG(Flag.Z) +") ");
+}
+			JPC( TSTFLAG(Flag.Z) == 0);
+// System.out.println("Bye 0x01");
+// System.exit(0);
 			break;
 
 		case 0xc3:      /* JP nnnn */
@@ -2762,7 +2784,9 @@ System.exit(0);
 			break;
 
 		case 0xc4:      /* CALL NZ,nnnn */
-			CALLC(!(TSTFLAG(Flag.Z) != 0));
+			// CALLC(!TSTFLAG(Z));
+			// CALLC(!(TSTFLAG(Flag.Z) != 0));
+			CALLC( TSTFLAG(Flag.Z) == 0 );
 			break;
 
 		case 0xc5:      /* PUSH BC */
@@ -2779,7 +2803,7 @@ System.exit(0);
 
 		case 0xc7:      /* RST 0 */
 			PUSH(PC);
-			PC.reset();;
+			PC.reset();
 			break;
 
 		case 0xc8:      /* RET Z */

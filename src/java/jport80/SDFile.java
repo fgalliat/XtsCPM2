@@ -31,7 +31,7 @@ public class SDFile {
         this.m_flags = flags;
         if ( (this.m_flags & F_CREAT) == F_CREAT ) {
           createNewFile();
-      }
+        }
         this.m_curPosition = 0;
         this.m_fileSize = exists() ? length() : 0;
         if ( (this.m_flags & F_APPEND) == F_APPEND ) {
@@ -66,6 +66,7 @@ public class SDFile {
           fout.write( c );
           fout.flush();
           fout.close();
+          m_curPosition++;
 
           return 1;
         }
@@ -145,7 +146,7 @@ public class SDFile {
         }
     }
 
-    int length() {
+    private int length() {
         return (int)descr.length();
     }
 
