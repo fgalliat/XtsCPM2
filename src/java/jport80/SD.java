@@ -1,4 +1,6 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 // emulation of Arduino SD driver lib
 public class SD {
@@ -7,6 +9,20 @@ public class SD {
     public static final int O_WRITE = 2;
     public static final int O_CREAT = 4;
     public static final int O_READ = 8;
+    public static final int O_RDWR = 32;
+
+
+    static List<SDFile> ls(String path) {
+        File[] content = new File( new File("."), path ).listFiles();
+        List<SDFile> files = new ArrayList<>();
+        for(File entry : content) {
+            if ( entry.isDirectory() && (entry.getName().equals(".") || entry.getName().equals("..") ) ) {
+              continue;  
+            }
+            files.add( new SDFile(path, O_READ) ); 
+        }
+        return files;
+    }
 
     static boolean mkdir(String path) {
         return new File( new File("."), path ).mkdirs();
@@ -41,6 +57,14 @@ public class SD {
 
     static SDFile open(String filePath, int flags) {
         if ( (flags & O_WRITE) == O_WRITE ) {
+            if ( (flags & O_APPEND) == O_APPEND ) {
+                // FIXME ....
+                try {
+                    new File(filePath).createNewFile();
+                }catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
             // do not check if exists
         }
         return new SDFile(filePath, flags);

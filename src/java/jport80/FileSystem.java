@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.List;
 
 public abstract class FileSystem {
 
@@ -56,15 +57,20 @@ public abstract class FileSystem {
         _driveLedOff();
     }
 
+
+
+
     char _findnext(char isdir) {
-        File f;
+        // File f;
         char result = 0xff;
         charP dirname = new charP(13);
         // uint8 dirname[13];
         boolean isfile;
     
         _driveLedOn();
-        while (f = root.openNextFile()) {
+
+        //while (f = root.openNextFile()) {
+        for(SDFile f : root) {
             //f.getName((char*)&dirname[0], 13);
             f.getName( dirname.reset(), 13);
             isfile = !f.isDirectory();
@@ -87,6 +93,8 @@ public abstract class FileSystem {
         return(result);
     }
     
+    List<SDFile> root = null;
+
     char _findfirst(char isdir) {
         // uint8 path[4] = { '?', FOLDERCHAR, '?', 0 };
         charP path = new charP( new char[] { '?', FOLDERCHAR, '?', 0 } );
@@ -96,10 +104,15 @@ public abstract class FileSystem {
         // path[2] = filename[2];
         path.set(2, cpm.filename.get(2) );
 
-        if (root)
-            root.close();
+        // if (root)
+        //     root.close();
+        if ( root != null ) {
+            root.clear();
+            root = null;
+        }
 
-        root = SD.open((char *)path); // Set directory search to start from the first position
+        // root = SD.open((char *)path); // Set directory search to start from the first position
+        root = SD.ls( path.toString() );
 
         _HostnameToFCBname(cpm.filename, cpm.pattern);
         return(_findnext(isdir));
@@ -177,8 +190,9 @@ public abstract class FileSystem {
 
     int _sys_deletefile(charP filename) {
         _driveLedOn();
-        return(SD.remove(filename.toString()) 1 : 0);
+        int result = (SD.remove(filename.reset().toString()) ? 1 : 0);
         _driveLedOff();
+        return result;
     }
         
 
@@ -190,7 +204,7 @@ public abstract class FileSystem {
         char i;
     
         _driveLedOn();
-        if (_sys_extendfile((char*)filename, fpos))
+        if (_sys_extendfile(filename, fpos))
             f = SD.open( filename.toString(), SD.O_READ);
         if (f != null) {
             if (f.seek(fpos)) {
@@ -203,6 +217,53 @@ public abstract class FileSystem {
                         mem._RamWrite(cpm.dmaAddr + i, dmabuf[i]);
                 }
                 result = (bytesread != 0) ? (char)0x00 : (char)0x01;
+            } else {
+                result = 0x01;
+            }
+            f.close();
+        } else {
+            result = 0x10;
+        }
+        _driveLedOff();
+        return(result);
+    }
+
+
+    boolean _sys_extendfile(charP fn, /*unsigned*/ long fpos) {
+        boolean result = true;
+        SDFile f;
+        /*unsigned*/ long i;
+    
+        _driveLedOn();
+        if ((f = SD.open(fn.reset().toString(), SD.O_WRITE | SD.O_APPEND)) != null) {
+            if (fpos > f.size()) {
+                for (i = 0; i < f.size() - fpos; ++i) {
+                    if (f.write((char)0) < 0) {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+            f.close();
+        } else {
+            result = false;
+        }
+        _driveLedOff();
+        return(result);
+    }
+
+    char _sys_writeseq(charP filename, long fpos) {
+        char result = 0xff;
+        SDFile f;
+    
+        _driveLedOn();
+        if (_sys_extendfile(filename.reset(), fpos))
+            f = SD.open(filename.reset().toString(), SD.O_RDWR);
+        if (f != null) {
+            if (f.seek(fpos)) {
+                // if (f.write(mem._RamSysAddr(cpm.dmaAddr), 128))
+                if (f.write(mem._RamSysAddr(cpm.dmaAddr, 128), 128) != 0)
+                    result = 0x00;
             } else {
                 result = 0x01;
             }

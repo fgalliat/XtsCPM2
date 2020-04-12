@@ -400,7 +400,7 @@ char _DeleteFile(int fcbaddr) {
 	//if (!_SelectDisk(F.dr)) {
 	if ( _SelectDisk(F.dr) == 0) {
 		if (!RW(F)) {
-			result = _SearchFirst(fcbaddr, FALSE);	// FALSE = Does not create a fake dir entry when finding the file
+			result = _SearchFirst(fcbaddr, (char)FALSE);	// FALSE = Does not create a fake dir entry when finding the file
 			while (result != 0xff) {
 // #ifdef USE_PUN
 // 				if (!strcmp((char*)T->fn, "PUN     TXT") && pun_open) {
@@ -417,7 +417,7 @@ char _DeleteFile(int fcbaddr) {
 				_FCBtoHostname(mem.tmpFCB, cpm.filename.reset());
 				if (_sys_deletefile(cpm.filename.reset()) != 0)
 					deleted = 0x00;
-				result = _SearchFirst(fcbaddr, FALSE);	// FALSE = Does not create a fake dir entry when finding the file
+				result = _SearchFirst(fcbaddr, (char)FALSE);	// FALSE = Does not create a fake dir entry when finding the file
 			}
 		} else {
 			_error(errWRITEPROT);

@@ -51,4 +51,15 @@ public class MEM {
         _RamWrite(address + 1, (char) ((value >> 8) & 0xff));
     }
 
+    // TODO: BEWARE w/ that
+    // return a subCOPY of mem
+    char[] _RamSysAddr(int address, int len) {
+        char[] result = new char[len];
+        for(int i=0; i < len; i++) {
+            result[i] = RAM[address+i];
+        }
+    return result;
+    }
+
+
 }
