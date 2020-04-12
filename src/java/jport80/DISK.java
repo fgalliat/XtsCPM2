@@ -595,7 +595,7 @@ void _SetUser(char user) {
 char _MakeDisk(int fcbaddr) {
 	//CPM_FCB *F = (CPM_FCB*)_RamSysAddr(fcbaddr);
 	CPM_FCB F = readFCBFromRamSysAddr(fcbaddr);
-	return(_sys_makedisk(F.dr));
+	return( (char)_sys_makedisk(F.dr));
 }
 
 char _CheckSUB() {

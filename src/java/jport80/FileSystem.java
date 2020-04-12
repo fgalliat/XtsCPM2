@@ -25,19 +25,46 @@ public abstract class FileSystem {
 
 
     long _sys_filesize(charP filename) {
-        // FIXME : TODO ...
-        return -1;
+        long l = -1;
+        SDFile f;
+
+        _driveLedOn();
+        if ( (f = SD.open(filename.reset().toString(), SD.O_RDONLY)) != null) {
+            l = f.size();
+            f.close();
+        }
+        _driveLedOff();
+        return(l);
     }
 
     int _sys_select(charP disk) {
-        // FIXME : TODO ...
-        return -1;
+        int result = FALSE;
+        SDFile f;
+
+        _driveLedOn();
+        if ((f = SD.open(disk.reset().toString(), SD.O_READ)) != null) {
+            if (f.isDirectory())
+                result = TRUE;
+            f.close();
+        }
+        _driveLedOff();
+        return(result);
     }
 
 
-    char _sys_makedisk(char drive) {
-        // FIXME : TODO ...
-        return 0x00;
+    int _sys_makedisk(char drive) {
+        SDFile f;
+        int result = 0;
+
+        _driveLedOn();
+        // FIXME : create a dir not a file ???
+        f = SD.open( cpm.filename.reset().toString(), SD.O_CREAT | SD.O_WRITE);
+        if (f != null) {
+            f.close();
+            result = 1;
+        }
+        _driveLedOff();
+        return(result);
     }
 
     abstract void _HostnameToFCBname(charP from, charP to);

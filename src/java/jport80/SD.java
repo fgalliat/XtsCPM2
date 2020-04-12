@@ -10,6 +10,7 @@ public class SD {
     public static final int O_CREAT = 4;
     public static final int O_READ = 8;
     public static final int O_RDWR = 32;
+    public static final int O_RDONLY = 64;
 
 
     static List<SDFile> ls(String path) {
@@ -56,6 +57,15 @@ public class SD {
     }
 
     static SDFile open(String filePath, int flags) {
+        if ( (flags & O_CREAT) == O_CREAT ) {
+            // if a dirname ???
+            // FIXME ....
+            try {
+                new File(filePath).createNewFile();
+            }catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         if ( (flags & O_WRITE) == O_WRITE ) {
             if ( (flags & O_APPEND) == O_APPEND ) {
                 // FIXME ....
@@ -66,6 +76,10 @@ public class SD {
                 }
             }
             // do not check if exists
+        } else if ( (flags & O_RDONLY) == O_RDONLY ) {
+            if ( !new File(filePath).exists() ) {
+                return null;
+            }
         }
         return new SDFile(filePath, flags);
     }
