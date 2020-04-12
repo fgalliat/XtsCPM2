@@ -2,6 +2,8 @@ import java.io.InputStream;
 
 public class Console {
 
+    char mask8bit = 0x7f;
+
     // Beware : LF blocking by default
     InputStream in = System.in; 
 

@@ -1,13 +1,31 @@
 public class CPM {
 
+    public static final int HostOS = 0x04; // TEENSY
+    public static final String VERSION = "3.7";
+    public static final int VersionBCD = 0x37;
+    
+    protected int XtsBdosCall(int reg, int value) {
+        // to redef
+        return 0;
+    }
+
+    // reg = 231
+    protected int hostbdos(int value) {
+        // FIXME
+        // see cpmhost.h
+        return 0;
+    }
+
     protected MEM mem;
     protected CPU cpu;
     protected Console console;
+    protected DISK disk;
 
-    public CPM(MEM mem, CPU cpu, Console console) {
+    public CPM(MEM mem, CPU cpu, Console console, DISK disk) {
         this.mem = mem;
         this.cpu = cpu;
         this.console = console;
+        this.disk = disk;
     }
 
     static final int TRUE = 1;
@@ -680,7 +698,7 @@ public class CPM {
                 loginVector = 0;
                 dmaAddr = 0x0080;
                 cDrive = 0; // userCode remains unchanged
-                cpu.HL.set(_CheckSUB()); // Checks if there's a $$$.SUB on the boot disk
+                cpu.HL.set( disk._CheckSUB() ); // Checks if there's a $$$.SUB on the boot disk
                 break;
             /*
              * C = 14 (0Eh) : Select Disk Returns: A=0x00 or 0xFF
@@ -688,7 +706,7 @@ public class CPM {
             case 14:
                 oDrive = cDrive;
                 cDrive = LOW_REGISTER(cpu.DE);
-                cpu.HL.set(_SelectDisk(LOW_REGISTER(cpu.DE) + 1)); // +1 here is to allow SelectDisk to be used directly
+                cpu.HL.set(disk._SelectDisk( (char) (LOW_REGISTER(cpu.DE) + 1) )); // +1 here is to allow SelectDisk to be used directly
                                                                    // by disk.h as well
                 if (cpu.HL.get() == 0) // (!HL)
                     oDrive = cDrive;
@@ -697,55 +715,55 @@ public class CPM {
              * C = 15 (0Fh) : Open file Returns: A=0x00 or 0xFF
              */
             case 15:
-                cpu.HL.set(_OpenFile(cpu.DE));
+                cpu.HL.set( disk._OpenFile(cpu.DE.get()));
                 break;
             /*
              * C = 16 (10h) : Close file
              */
             case 16:
-                cpu.HL.set(_CloseFile(cpu.DE));
+                cpu.HL.set( disk._CloseFile(cpu.DE.get()) );
                 break;
             /*
              * C = 17 (11h) : Search for first
              */
             case 17:
-                cpu.HL.set(_SearchFirst(cpu.DE, TRUE)); // TRUE = Creates a fake dir entry when finding the file
+                cpu.HL.set( disk._SearchFirst(cpu.DE.get(), (char)TRUE)); // TRUE = Creates a fake dir entry when finding the file
                 break;
             /*
              * C = 18 (12h) : Search for next
              */
             case 18:
-                cpu.HL.set(_SearchNext(cpu.DE, TRUE)); // TRUE = Creates a fake dir entry when finding the file
+                cpu.HL.set( disk._SearchNext(cpu.DE.get(), (char)TRUE)); // TRUE = Creates a fake dir entry when finding the file
                 break;
             /*
              * C = 19 (13h) : Delete file
              */
             case 19:
-                cpu.HL.set(_DeleteFile(cpu.DE));
+                cpu.HL.set( disk._DeleteFile(cpu.DE.get()) );
                 break;
             /*
              * C = 20 (14h) : Read sequential
              */
             case 20:
-                cpu.HL.set(_ReadSeq(cpu.DE));
+                cpu.HL.set( disk._ReadSeq(cpu.DE.get()));
                 break;
             /*
              * C = 21 (15h) : Write sequential
              */
             case 21:
-                cpu.HL.set(_WriteSeq(cpu.DE));
+                cpu.HL.set(disk._WriteSeq(cpu.DE.get()));
                 break;
             /*
              * C = 22 (16h) : Make file
              */
             case 22:
-                cpu.HL.set(_MakeFile(cpu.DE));
+                cpu.HL.set(disk._MakeFile(cpu.DE.get()));
                 break;
             /*
              * C = 23 (17h) : Rename file
              */
             case 23:
-                cpu.HL.set(_RenameFile(cpu.DE));
+                cpu.HL.set(disk._RenameFile(cpu.DE.get()));
                 break;
             /*
              * C = 24 (18h) : Return log-in vector (active drive map)
@@ -797,32 +815,32 @@ public class CPM {
                 if (LOW_REGISTER(cpu.DE) == 0xFF) {
                     cpu.HL.set(userCode);
                 } else {
-                    _SetUser(cpu.DE);
+                    disk._SetUser( (char) cpu.DE.get());
                 }
                 break;
             /*
              * C = 33 (21h) : Read random
              */
             case 33:
-                cpu.HL.set(_ReadRand(cpu.DE));
+                cpu.HL.set( disk._ReadRand(cpu.DE.get()));
                 break;
             /*
              * C = 34 (22h) : Write random
              */
             case 34:
-                cpu.HL.set(_WriteRand(cpu.DE));
+                cpu.HL.set( disk._WriteRand(cpu.DE.get()));
                 break;
             /*
              * C = 35 (23h) : Compute file size
              */
             case 35:
-                cpu.HL.set(_GetFileSize(cpu.DE));
+                cpu.HL.set( disk._GetFileSize(cpu.DE.get()));
                 break;
             /*
              * C = 36 (24h) : Set random record
              */
             case 36:
-                cpu.HL.set(_SetRandom(cpu.DE));
+                cpu.HL.set( disk._SetRandom(cpu.DE.get()));
                 break;
             /*
              * C = 37 (25h) : Reset drive
@@ -837,7 +855,7 @@ public class CPM {
              * write random)
              */
             case 40:
-                cpu.HL.set(_WriteRand(cpu.DE));
+                cpu.HL.set( disk._WriteRand(cpu.DE.get()));
                 break;
             // #if defined ARDUINO || defined CORE_TEENSY || defined ESP32
             /*
@@ -879,7 +897,7 @@ public class CPM {
             case 227:
             case 228:
             case 229:
-                cpu.HL.set(XtsBdosCall(ch, cpu.DE));
+                cpu.HL.set(XtsBdosCall(ch, cpu.DE.get()));
                 break;
             // #endif
             // #endif
@@ -887,13 +905,13 @@ public class CPM {
              * C = 230 (E6h) : Set 8 bit masking
              */
             case 230:
-                mask8bit = LOW_REGISTER(cpu.DE);
+                console.mask8bit = LOW_REGISTER(cpu.DE);
                 break;
             /*
              * C = 231 (E7h) : Host specific BDOS call
              */
             case 231:
-                cpu.HL.set(hostbdos(cpu.DE));
+                cpu.HL.set(hostbdos(cpu.DE.get()));
                 break;
             /*
              * C = 232 (E8h) : ESP32 specific BDOS call
@@ -912,7 +930,7 @@ public class CPM {
              * C = 249 (F9h) : MakeDisk Makes a disk directory if not existent.
              */
             case 249:
-                cpu.HL.set(_MakeDisk(cpu.DE));
+                cpu.HL.set( disk._MakeDisk(cpu.DE.get()) );
                 break;
             /*
              * C = 250 (FAh) : HostOS Returns: A = 0x00 - Windows / 0x01 - Arduino / 0x02 -
