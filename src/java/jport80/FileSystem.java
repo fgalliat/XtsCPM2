@@ -254,7 +254,7 @@ public abstract class FileSystem {
 
     char _sys_writeseq(charP filename, long fpos) {
         char result = 0xff;
-        SDFile f;
+        SDFile f = null;
     
         _driveLedOn();
         if (_sys_extendfile(filename.reset(), fpos))
@@ -266,6 +266,60 @@ public abstract class FileSystem {
                     result = 0x00;
             } else {
                 result = 0x01;
+            }
+            f.close();
+        } else {
+            result = 0x10;
+        }
+        _driveLedOff();
+        return(result);
+    }
+
+    char _sys_readrand(charP filename, long fpos) {
+        char result = 0xff;
+        SDFile f = null;
+        char bytesread;
+        char[] dmabuf = new char[128];
+        char i;
+    
+        _driveLedOn();
+        if (_sys_extendfile(filename.reset(), fpos))
+            f = SD.open(filename.reset().toString(), SD.O_READ);
+        if (f != null) {
+            if (f.seek(fpos)) {
+                for (i = 0; i < 128; ++i)
+                    dmabuf[i] = 0x1a;
+                bytesread = (char)f.read(dmabuf, 128);
+                if (bytesread != 0) {
+                    for (i = 0; i < 128; ++i)
+                        mem._RamWrite(cpm.dmaAddr + i, dmabuf[i]);
+                }
+                result = (char)( (bytesread != 0) ? 0x00 : 0x01);
+            } else {
+                result = 0x06;
+            }
+            f.close();
+        } else {
+            result = 0x10;
+        }
+        _driveLedOff();
+        return(result);
+    }
+
+    char _sys_writerand(charP filename, long fpos) {
+        char result = 0xff;
+        SDFile f = null;
+    
+        _driveLedOn();
+        if (_sys_extendfile( filename.reset(), fpos)) {
+            f = SD.open(filename.reset().toString(), SD.O_RDWR);
+        }
+        if (f != null) {
+            if (f.seek(fpos)) {
+                if (f.write( mem._RamSysAddr(cpm.dmaAddr, 128), 128) != 0)
+                    result = 0x00;
+            } else {
+                result = 0x06;
             }
             f.close();
         } else {
