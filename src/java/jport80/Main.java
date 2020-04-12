@@ -58,7 +58,7 @@ public class Main {
                 }
                 cpu.Z80reset();
 
-                cpu.SET_LOW_REGISTER(cpu.BC, cpu.mem._RamRead(0x0004));
+                DataUtils.SET_LOW_REGISTER(cpu.BC, cpu.mem._RamRead(0x0004));
 System.out.println("RAM(4): "+ (int)cpu.mem._RamRead(0x0004)); 
 
 
