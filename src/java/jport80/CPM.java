@@ -11,7 +11,6 @@ public class CPM {
 
     // reg = 231
     protected int hostbdos(int value) {
-        // FIXME
         // see cpmhost.h
         return 0;
     }
