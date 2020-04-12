@@ -233,37 +233,55 @@ public class SDFile {
         if (!seekSet(length)) {
           return(false);
         }
-        if (length == 0) {
-          // free all clusters
-          if (!m_vol->freeChain(m_firstCluster)) {
-            return false;
-          }
-          m_firstCluster = 0;
-        } else {
-          uint32_t toFree;
-          int8_t fg = m_vol->fatGet(m_curCluster, &toFree);
-          if (fg < 0) {
-            return false;
-          }
-          if (fg) {
-            // free extra clusters
-            if (!m_vol->freeChain(toFree)) {
-              return false;
-            }
-            // current cluster is end of chain
-            if (!m_vol->fatPutEOC(m_curCluster)) {
-              return false;
-            }
-          }
-        }
+
+        // =======================================
+try {
+        InputStream in = new FileInputStream(descr);
+        byte[] contentKept = new byte[length];
+        int read = in.read(contentKept, 0, length);
+        in.close();
+
+        OutputStream fout = new FileOutputStream(descr, false);
+        fout.write( contentKept );
+        fout.flush();
+        fout.close();
+} catch(Exception ex) {
+  ex.printStackTrace();
+  return false;
+}        
+        // =======================================
+
+        // if (length == 0) {
+        //   // free all clusters
+        //   if (!m_vol->freeChain(m_firstCluster)) {
+        //     return false;
+        //   }
+        //   m_firstCluster = 0;
+        // } else {
+        //   uint32_t toFree;
+        //   int8_t fg = m_vol->fatGet(m_curCluster, &toFree);
+        //   if (fg < 0) {
+        //     return false;
+        //   }
+        //   if (fg) {
+        //     // free extra clusters
+        //     if (!m_vol->freeChain(toFree)) {
+        //       return false;
+        //     }
+        //     // current cluster is end of chain
+        //     if (!m_vol->fatPutEOC(m_curCluster)) {
+        //       return false;
+        //     }
+        //   }
+        // }
         m_fileSize = length;
       
-        // need to update directory entry
-        m_flags |= F_FILE_DIR_DIRTY;
+        // // need to update directory entry
+        // m_flags |= F_FILE_DIR_DIRTY;
       
-        if (!sync()) {
-          return false;
-        }
+        // if (!sync()) {
+        //   return false;
+        // }
         // set file to correct position
         return seekSet(newPos);
       
