@@ -1673,7 +1673,7 @@ System.out.println("CPU > run");
 	// cf static : all values are not touched ... (acu, sum, cbits, op, adr)
 
 	/* main instruction fetch/decode loop */
-	
+
 	// while (!Status) {
 	while (Status==0) {	/* loop until Status != 0 */
 
@@ -1697,8 +1697,13 @@ System.out.println("CPU > run");
 // #endif
 
 		PCX = PC.get();
+// System.out.println("(DBG) PC:"+PC.get());
 
-		switch (RAM_PP(PC)) {
+
+		char opCode = RAM_PP(PC);
+System.out.println( "(DBG) OpCode "+Integer.toHexString(opCode) );
+
+		switch (op) {
 
 		case 0x00:      /* NOP */
 			break;

@@ -29,6 +29,7 @@ public class Console {
 
     // wait a char w/o echo
     public char _getch() {
+        System.out.println("<< getch()");
         try {
             int ch = in.read();
             // don't display it
@@ -53,6 +54,7 @@ public class Console {
 
     // FIXME : not certified
     public int _chready() {
+        System.out.println("<< chready()");
         try {
             return in.available();
         } catch(Exception ex) {
@@ -61,6 +63,7 @@ public class Console {
     }
 
     public int _kbhit() {
+        System.out.println("<< kbhit()");
         try {
             return in.available();
         } catch(Exception ex) {
