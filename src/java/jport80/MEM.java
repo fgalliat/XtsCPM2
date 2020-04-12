@@ -36,6 +36,7 @@ public class MEM {
 
     // uint8 _RamRead(uint16 address) {
     char _RamRead(int address) {
+// System.out.println("DBG RAM["+address+"] >= "+ (int)RAM[address]);
         return (RAM[address]);
     }
 
@@ -46,6 +47,7 @@ public class MEM {
     // void _RamWrite(uint16 address, uint8 value) {
     void _RamWrite(int address, char value) {
         RAM[address] = value;
+// System.out.println("DBG RAM["+address+"] <= "+ (int)RAM[address]);
     }
 
     // void _RamWrite16(uint16 address, uint16 value) {

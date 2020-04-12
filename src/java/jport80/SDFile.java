@@ -200,6 +200,7 @@ public class SDFile {
         byte[] buff = new byte[maxLen];
         in.skip(m_curPosition);
         int read = in.read(buff, 0, maxLen);
+        m_curPosition += read;
         in.close();
         for(int i=0; i < read; i++) {
           dest[i] = (char)(buff[i] < 0 ? 255+buff[i] : buff[i] );

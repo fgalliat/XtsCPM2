@@ -1701,7 +1701,7 @@ System.out.println("CPU > run");
 
 
 		char opCode = RAM_PP(PC);
-System.out.println( "(DBG) OpCode "+Integer.toHexString(opCode) );
+//System.out.println( "(DBG) OpCode "+Integer.toHexString(opCode) );
 
 		switch (op) {
 
