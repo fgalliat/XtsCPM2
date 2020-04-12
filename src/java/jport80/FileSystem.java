@@ -36,14 +36,14 @@ public abstract class FileSystem {
 
             long t = f.size();
             final int segLen = 512;
-            byte[] seg = new byte[segLen];
+            char[] seg = new char[segLen];
             for(long i=0; i < t; i+= segLen) {
-                // memset( seg, 0x00, segLen );
+                DataUtils.memset( seg, (char)0x00, segLen );
 
-                int m = min( segLen, f.available() );
+                int m = DataUtils.min( segLen, f.available() );
                 f.readBytes( seg, m );
                 for( int j=0; j < m; j++ ) {
-                    _RamWrite(address++, seg[j]);	
+                    mem._RamWrite(address++, seg[j]);	
                 }
             }
 

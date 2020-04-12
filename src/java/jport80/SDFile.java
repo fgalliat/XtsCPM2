@@ -49,6 +49,12 @@ public class SDFile {
       return m_fileSize;
     }
 
+    int available() {
+      return size() - m_curPosition;
+    }
+
+
+
     // FIXME : very slow !!!!
     char write(char c) {
       try {
@@ -155,7 +161,7 @@ public class SDFile {
         return (m_flags & F_WRITE) == F_WRITE;
     }
 
-    int min(int a, int b) { return a < b ? a : b; }
+    int min(int a, int b) { return DataUtils.min(a, b); }
 
     void getName(charP dest, int maxLen) {
       int len = min( maxLen, descr.getName().length() );
@@ -203,6 +209,10 @@ public class SDFile {
         ex.printStackTrace();
         return 0;
       }
+    }
+
+    int readBytes(char[] dest, int maxLen) {
+      return read(dest, maxLen);
     }
 
     boolean truncate(int length) {
