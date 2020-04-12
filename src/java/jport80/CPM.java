@@ -20,11 +20,16 @@ public class CPM {
     protected Console console;
     protected DISK disk;
 
-    public CPM(MEM mem, CPU cpu, Console console, DISK disk) {
-        this.mem = mem;
-        this.cpu = cpu;
+    public CPM(Console console) {
+        this.mem = new MEM();
+        this.cpu = new CPU(mem);
         this.console = console;
-        this.disk = disk;
+        this.disk = new DISK(this);
+
+        CCPname = "CCP-DR." + mem.TPASIZE + "K";
+        VersionCCP = 0x00; // Version to be used by INFO.COM
+        CCPaddr = (mem.BDOSjmppage - 0x0800); // CCP memory address
+        BatchFCB = (CCPaddr + 0x7AC); // Position of the $$$.SUB fcb on this CCP
     }
 
     static final int TRUE = 1;
@@ -56,13 +61,6 @@ public class CPM {
     char VersionCCP; // Version to be used by INFO.COM
     int BatchFCB; // Position of the $$$.SUB fcb on this CCP
     int CCPaddr; // CCP memory address
-
-    public CPM(CPU cpu, MEM mem) {
-        CCPname = "CCP-DR." + mem.TPASIZE + "K";
-        VersionCCP = 0x00; // Version to be used by INFO.COM
-        CCPaddr = (mem.BDOSjmppage - 0x0800); // CCP memory address
-        BatchFCB = (CCPaddr + 0x7AC); // Position of the $$$.SUB fcb on this CCP
-    }
 
     // ============ Console ==============
    

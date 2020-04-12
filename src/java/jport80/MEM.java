@@ -1,6 +1,10 @@
 
 public class MEM {
 
+    public MEM() {
+        
+    }
+
     // from globals.h => not ram.h
     public final int MEMSIZE = (64 * 1024); // RAM + ROM memseg
 
