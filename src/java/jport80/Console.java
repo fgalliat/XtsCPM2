@@ -23,6 +23,10 @@ public class Console {
         System.out.print(Integer.toHexString(ch));
     }
 
+    void _puthex16(int ch) {
+        System.out.print(Integer.toHexString(ch));
+    }
+
     // wait a char w/o echo
     public char _getch() {
         try {

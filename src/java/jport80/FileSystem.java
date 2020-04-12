@@ -24,6 +24,35 @@ public abstract class FileSystem {
     }
 
 
+    /* Memory abstraction functions */
+    /*===============================================================================*/
+    boolean _RamLoad(String filename, int address) {
+        SDFile f;
+        boolean result = false;
+
+        if ( (f = SD.open(filename, SD.FILE_READ)) != null) {
+            // while (f.available())
+            // 	_RamWrite(address++, f.read());
+
+            long t = f.size();
+            final int segLen = 512;
+            byte[] seg = new byte[segLen];
+            for(long i=0; i < t; i+= segLen) {
+                // memset( seg, 0x00, segLen );
+
+                int m = min( segLen, f.available() );
+                f.readBytes( seg, m );
+                for( int j=0; j < m; j++ ) {
+                    _RamWrite(address++, seg[j]);	
+                }
+            }
+
+            f.close();
+            result = true;
+        }
+        return(result);
+    }
+
     long _sys_filesize(charP filename) {
         long l = -1;
         SDFile f;

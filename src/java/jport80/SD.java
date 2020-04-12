@@ -11,7 +11,7 @@ public class SD {
     public static final int O_READ = 8;
     public static final int O_RDWR = 32;
     public static final int O_RDONLY = 64;
-
+    public static final int FILE_READ = O_READ; // not certified
 
     static List<SDFile> ls(String path) {
         File[] content = new File( new File("."), path ).listFiles();
