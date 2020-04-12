@@ -172,6 +172,7 @@ public class CPM {
     // #endif
 
     void _PatchCPM() {
+        System.out.println("PATCH CPM > in");
         // uint16 i;
         int i;
 
@@ -240,7 +241,7 @@ public class CPM {
                                * disk
                                */
         _RamWrite(i++, 0x00);
-
+        System.out.println("PATCH CPM < out");
     }
 
     // #ifdef DEBUGLOG

@@ -99,7 +99,10 @@ public class CPU {
     int Step = -1;
 	
 	public int getStatus() {return Status; }
-	public void setStatus(int status) { Status = status; }
+	public void setStatus(int status) { 
+		System.out.println("CPU > setStatus("+ status +")");
+		Status = status; 
+	}
 	public int getPCX() {return PCX; }
 
 
@@ -1379,6 +1382,7 @@ void INOUTFLAGS_NONZERO(int x) { INOUTFLAGS((HIGH_REGISTER(BC) & 0xa8) | ( ((HIG
 
 // static inline void Z80reset(void) {
 void Z80reset() {
+	System.out.println("RESET");
 	//PC = 0;
 	PC.reset();
 	//IFF = 0;
@@ -1663,12 +1667,15 @@ int temp = 0;
 
 //static inline void Z80run(void) {
 void  Z80run() {
+System.out.println("CPU > run");
 	// all : register uint32 xxx..;
 	temp = 0;
 	// cf static : all values are not touched ... (acu, sum, cbits, op, adr)
 
 	/* main instruction fetch/decode loop */
-	while (Status!=0) {	/* loop until Status != 0 */
+	
+	// while (!Status) {
+	while (Status==0) {	/* loop until Status != 0 */
 
 // #ifdef USE_XTS_HDL
 //         xts_handler();

@@ -29,8 +29,9 @@ public class Main {
 
     void setup() {
         console._clrscr();
-        console._puts("CP/M 2.2 Emulator v"+ CPM.VERSION +" by Marcelo Dantas\r\n");
+        console._puts("CP/M 2.2 Emulator v"+ CPM.VERSION +" by Xtase (based on Marcelo Dantas)\r\n");
         console._puts("Arduino read/write support by Krzysztof Klis\r\n");
+        console._puts("Java read/write support by Xtase - fgalliat\r\n");
         // console._puts("      Build " __DATE__ " - " __TIME__ "\r\n");
         console._puts("--------------------------------------------\r\n");
         console._puts("CCP: "+ cpm.CCPname +"    CCP Address: 0x");
@@ -61,6 +62,7 @@ public class Main {
                 cpu.PC.set( cpm.CCPaddr );
 
                 cpu.Z80run();
+                System.out.println( "CPU status : "+ cpu.getStatus() );
         // #else
         //         _ccp();
         // #endif
