@@ -1,0 +1,964 @@
+package j80.spectrum;
+
+import j80.*;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.util.HashMap;
+
+import java.io.*;
+
+
+/**
+ * ZX Spectrum main peripheral.
+ *
+ * @version $Id: Spectrum.org,v 1.1.1.1 2004/06/16 14:07:00 mviara Exp $
+ * @author  VM
+ */
+public class Spectrum extends JComponent implements Peripheral,OutPort,InPort,MMU,VDU,Polling,ActionListener,KeyListener,FocusListener,Snapshot
+{
+	/**
+	 * Memory map
+	 */
+	public static final int ROM_MEMORY_END		= 0x3FFF;
+	public static final int RAM_MEMORY_START	= 0x4000;
+	public static final int SCREEN_MEMORY_SIZE	= 0x1800;
+	public static final int SCREEN_MEMORY_START = 0x4000;
+	public static final int SCREEN_MEMORY_END	= 0x57FF;
+	public static final int SCREEN_ATTRIBUTE_START = 0x5800;
+	public static final int SCREEN_ATTRIBUTE_END = 0x5AFF;
+	public static final int SCREEN_ATTRIBUTE_SIZE = 0x0300;
+
+	/**
+	 * Screen definition
+	 */
+	public static final int pixelWidth	= 256;
+	public static final int pixelHeight = 192;
+	public static final int pixelScale	= 2;
+
+	/**
+	 * Memory attribute definition
+	 */
+	public static final byte ATTRIBUTE_FLASH = (byte)0x80;
+	public static final byte ATTRIBUTE_BRIGHT = (byte)0x40;
+
+	// R,G,B Value used for color
+	public static final int COLOR		= 0xcc;
+	
+	// R,G,B Value used for bright color
+	public static final int COLORBRIGHT = 0xff;
+
+	// Swing components
+	private JLabel label;
+	private JTextField perc;
+	private int percValue = 0;
+
+	// Flash state
+	private boolean flash = false;
+
+	// Sperimental speaker
+	//private j80.sound.Speaker spk;
+
+	// Z80 main memory
+	private byte memory[] = new byte[64 * 1024];
+
+	// Connected CPU
+	private J80 cpu;
+
+	// Screen size
+	private Dimension size = null;
+	private Image image = null;
+	private HashMap patterns = new HashMap();
+	private Color colors[] = new Color[16];
+	private int changed[] = new int[SCREEN_MEMORY_SIZE*4];
+	private int changedWrite = 0;
+	private boolean screenChanged = false;
+	private int interruptCount = 0;
+	private int lastFE = 0;
+	private int waveCount = 0;
+	private int waveCounter = 0;
+
+	/**
+	 * Spectrum key codes table
+	 */
+			
+	private int keyCodes[][]  = 
+	{
+		{KeyEvent.VK_SHIFT,KeyEvent.VK_Z,KeyEvent.VK_X,KeyEvent.VK_C,KeyEvent.VK_V},
+		{KeyEvent.VK_A,KeyEvent.VK_S,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_G},
+		{KeyEvent.VK_Q,KeyEvent.VK_W,KeyEvent.VK_E,KeyEvent.VK_R,KeyEvent.VK_T},
+		{KeyEvent.VK_1,KeyEvent.VK_2,KeyEvent.VK_3,KeyEvent.VK_4,KeyEvent.VK_5},
+		{KeyEvent.VK_0,KeyEvent.VK_9,KeyEvent.VK_8,KeyEvent.VK_7,KeyEvent.VK_6},
+		{KeyEvent.VK_P,KeyEvent.VK_O,KeyEvent.VK_I,KeyEvent.VK_U,KeyEvent.VK_Y},
+		{KeyEvent.VK_ENTER,KeyEvent.VK_L,KeyEvent.VK_K,KeyEvent.VK_J,KeyEvent.VK_H},
+		{KeyEvent.VK_SPACE,'\\',KeyEvent.VK_M,KeyEvent.VK_N,KeyEvent.VK_B},
+	};
+
+	int keyState[] = new int[8];
+	
+	/**
+	 * JComponent
+	 */
+
+	public Spectrum()
+	{
+		// Enable keyboard event
+		enableEvents(AWTEvent.KEY_EVENT_MASK);
+		enableEvents(AWTEvent.KEY_EVENT_MASK | AWTEvent.INPUT_METHOD_EVENT_MASK);
+		addKeyListener(this);
+
+		// Enable focus event
+		addFocusListener(this);
+
+		// Reset keyboard
+		keyboardReset();
+		
+		
+	}
+
+	/**
+	 * Reset the emulated keyboard (called when focus is gained)
+	 */
+	private void keyboardReset()
+	{
+		for (int i = 0 ; i < 8 ; i++)
+			keyState[i] = 0xff;
+	}
+
+	public boolean isFocusable()
+	{
+		return true;
+	}
+
+	public boolean hasFocus()
+	{
+		return true;
+	}
+	public void focusGained(FocusEvent e)
+	{
+		keyboardReset();
+	}
+	
+	public void focusLost(FocusEvent e)
+	{
+	}
+
+
+	public Dimension getPreferredSize()
+	{
+		if (size == null)
+		{
+			size = new Dimension(pixelWidth*pixelScale,pixelHeight*pixelScale);
+		}
+
+		return size;
+	}
+
+	public Dimension getMinimumSize()
+	{
+		return getPreferredSize();
+	}
+
+	public Dimension getMaximumSize()
+	{
+		return getPreferredSize();
+	}
+
+	/**
+	 * Process a keyboard event
+	 *
+	 * @param code - Code key
+	 * @param pressed - True if key is pressed
+	 */
+	private void doKey(int code,boolean pressed)
+	{
+		for (int i = 0 ; i < 8 ; i++)
+			for (int j = 0 ; j < 5 ; j++)
+				if (keyCodes[i][j] == code)
+				{
+					int mask = 1 << j;
+					if (pressed)
+						keyState[i] &= ~mask;
+					else
+						keyState[i] |= mask;
+					break;
+				}
+	}
+	
+	public void keyPressed(KeyEvent e)
+	{
+		doKey(e.getKeyCode(),true);
+		e.consume();
+
+	}
+
+	public void keyReleased(KeyEvent e)
+	{
+		doKey(e.getKeyCode(),false);
+		e.consume();
+
+	}
+
+
+	public void keyTyped(KeyEvent e)
+	{
+	}
+
+	private Image getImage(JComponent comp ,int pixel,int color)
+	{
+		if (flash & (color & ATTRIBUTE_FLASH) != 0)
+		{
+			int c1 = color & 7;
+			int c2 = (color >> 3) & 7;
+			color &= 0xC0;
+			color |= c1 << 3 | c2;
+		}
+			
+		color &= 0x7f;
+		
+		int hashValue = pixel << 8 | color;
+		Integer keyImage = new Integer(hashValue);
+		Image img = (Image)patterns.get(keyImage);
+
+
+		if (img == null)
+		{
+			int base = 0;
+			Color bg;
+			Color fg;
+			
+			if ((color & ATTRIBUTE_BRIGHT) != 0)
+				base = 8;
+
+
+			// Get color
+			bg = colors[base+((color >> 3) & 7)];
+			fg = colors[base+(color & 7)];
+
+			// Create one image
+			img = comp.createImage(8*pixelScale,1*pixelScale);
+			Graphics g = img.getGraphics();
+
+			// Draw the pattern
+			for (int c = 0 ; c < 8 ; c++)
+			{
+				Color clr = bg;
+
+				if ((pixel & (0x80 >> c)) != 0)
+					clr = fg;
+				g.setColor(clr);
+				g.fillRect(c*pixelScale,0,pixelScale,1*pixelScale);
+
+			}
+			
+			patterns.put(keyImage,img);
+		}
+
+		return img;
+	}
+
+
+	private void drawByte(int addr,Graphics g)
+	{
+		int pixel = memory[addr + SCREEN_MEMORY_START] & 0xff;
+		int x = ((addr&0x1f) << 3);
+		int y = (((int)(addr&0x00e0))>>2) + 
+				(((int)(addr&0x0700))>>8) +
+				(((int)(addr&0x1800))>>5);
+		int X = (x*pixelScale);
+		int Y = (y*pixelScale);
+
+		int attr = memory[ SCREEN_ATTRIBUTE_START + (addr&0x1f) + ((y>>3)*32) ] & 0xff;
+		Image chars = getImage(this,pixel,attr);
+		g.drawImage(chars,X,Y,null);
+
+	}
+	
+	private void drawScreen()
+	{
+		if (!screenChanged)
+			return;
+
+		
+		Graphics g = image.getGraphics();
+		
+		synchronized(changed)
+		{
+			
+			for (int i = 0 ; i < changedWrite ; i++)
+			{
+				drawByte(changed[i],g);
+			}
+
+			screenChanged = false;
+			changedWrite = 0;
+		}
+	}
+	public void paint(Graphics g)
+	{
+		if (image == null)
+		{
+			image = createImage(size.width, size.height);
+
+		}
+
+		drawScreen();
+		
+		g.drawImage(image, 0, 0, this);
+
+	}
+
+
+	public void disconnectCPU(J80 cpu)
+	{
+	}
+
+	public void connectCPU(J80 cpu) throws Exception
+	{
+		// VDU Initialization
+		
+		this.cpu = cpu;
+		cpu.addOutPort(254,this);
+		cpu.addInPort(254,this);
+
+		// Speaker initialization
+		//spk = new j80.sound.Speaker();
+		//spk.setEnabled(true);
+		
+		// Spectrum display initialization
+		
+		colors[0] = new Color(0,0,0);
+		colors[1] = new Color(0,0,COLOR);
+		colors[2] = new Color(COLOR,0,0);
+		colors[3] = new Color(COLOR,0,COLOR);
+		colors[4] = new Color(0,COLOR,0);
+		colors[5] = new Color(0,COLOR,COLOR);
+		colors[6] = new Color(COLOR,COLOR,0);
+		colors[7] = new Color(COLOR,COLOR,COLOR);
+		for (int i = 0 ; i < 8 ; i++)
+			colors[8+i] = new Color(colors[i].getRed()		!= 0 ? COLORBRIGHT : 0,
+									colors[i].getGreen()	!= 0 ? COLORBRIGHT : 0,
+									colors[i].getBlue()		!= 0 ? COLORBRIGHT : 0);
+		
+		JFrame f = new JFrame(j80.J80.version);
+		
+		JPanel p = new JPanel(new GridBagLayout());
+		GridBagConstraints g = new GridBagConstraints();
+		perc = new JTextField("  100%");
+		perc.setEditable(false);
+		perc.setHorizontalAlignment(perc.RIGHT);
+		label = new JLabel("Z80  at "+cpu.getMhz()+" Mhz");
+		g.fill = g.NONE;g.insets = new Insets(2,2,2,2);
+		g.gridx = 0;g.gridy = 0; g.gridheight = 1;g.gridwidth = 2;g.anchor = g.CENTER;
+		p.add(this,g);
+		g.gridwidth = 1;g.gridy++;g.anchor = g.SOUTHEAST;
+		p.add(label,g);
+		g.gridx++;
+		p.add(perc,g);
+		f.setContentPane(p);
+		f.pack();
+		f.show();
+
+		requestFocus();;
+
+		javax.swing.Timer timer = new javax.swing.Timer(20,this);
+
+		timer.setRepeats(true);
+		timer.start();
+
+	
+		cpu.addPolling(this,20);
+
+	}
+
+	/**
+	 * Polling called every 20 ms
+	 */
+	public void polling(J80 cpu)
+	{
+		if (waveCounter++ >= 2)
+		{
+			//if (spk != null)
+				//spk.setFrequency((waveCount*50)/waveCounter);
+			waveCount = 0;
+			waveCounter = 0;
+		}
+
+		// Screen flash handling
+		if (++interruptCount > 16)
+		{
+			interruptCount = 0;
+			
+			// Reverse flash attribute
+			flash = ! flash;
+			for (int i = SCREEN_ATTRIBUTE_START ; i <= SCREEN_ATTRIBUTE_END ; i++)
+			{
+
+				if ((peekb(i) & ATTRIBUTE_FLASH) != 0)
+				{
+					repaintAttribute(i - SCREEN_ATTRIBUTE_START);
+				}
+			}
+		}
+
+		// Call the IRQ (keyboard scan etc.)
+		cpu.irq();
+
+
+	}
+
+	private void repaintAttribute(int addr)
+	{
+		int        scrAddr   = ((addr & 0x300) << 3) | (addr & 0xff);
+		
+		for (int i = 0 ; i < 8 ; i++)
+		{
+			repaintScreen(scrAddr);
+
+			// Next address in memory
+			scrAddr += 256;
+		}
+	}
+	
+	private void repaintScreen(int add)
+	{
+		synchronized (changed)
+		{
+			screenChanged = true;
+			if (changedWrite < changed.length)
+				changed[changedWrite++] = add;
+		}
+	}
+			
+	public void actionPerformed(ActionEvent e)
+	{
+		if (screenChanged)
+		{
+			repaint();
+		}
+	}
+
+	/**
+	 * j80.OutPort
+	 */
+	public void outb( int port, int value, int tstates )
+	{
+		value &= 0x10;
+		
+		if ((value ^ lastFE) != 0)
+		{
+			waveCount++;
+			lastFE = value;
+		}
+
+		//System.out.println("spectrum outb "+port+" = "+bite);
+	}
+
+	/**
+	 * j80.InPort
+	 */
+	public int inb(int port,int hi)
+	{
+		int result = 0xff;
+
+		port &= 0xff;
+		port |= (hi & 0xff) << 8;
+
+		
+		for (int i = 0 ; i < 8 ; i++)
+			if ((port & (0x100 << i)) == 0)
+			{
+				result &= keyState[i];
+			}
+		///System.out.println("in "+Integer.toHexString(port));
+		//System.out.println("inb "+port);
+
+		
+		//System.out.println("port "+Integer.toHexString(port)+" = "+Integer.toHexString(result)+" rows "+rows);
+		return result;
+	}
+
+	/**
+	 * j80.MMU
+	 */
+	public void pokeb(int add,int value)
+	{
+		value &= 0xff;
+		
+		if (add <= ROM_MEMORY_END)
+		{
+			if (cpu.isRunning())
+			{
+				//cpu.Error("Write ROM");
+				return;
+			}
+		}
+		
+		if (add >= SCREEN_MEMORY_START && add <= SCREEN_MEMORY_END)
+		{
+			memory[add] = (byte)value;
+			repaintScreen(add - SCREEN_MEMORY_START);
+			return;
+		}
+
+		if (add >= SCREEN_ATTRIBUTE_START && add <= SCREEN_ATTRIBUTE_END)
+		{
+			memory[add] = (byte)value;
+			repaintAttribute(add - SCREEN_ATTRIBUTE_START);
+			return;
+		}
+
+		//System.out.println("poke "+add);
+		memory[add & 0xffff] = (byte)value;
+							   
+	}
+
+	public int peekb(int add)
+	{
+		return memory[add & 0xffff] & 0xff;
+	}
+
+	/**
+	 * j80.VDU Implementation
+	 */
+	public void putchar(char c)
+	{
+		System.out.print(c);
+	}
+
+	public void print(String s)
+	{
+		System.out.print(s);
+	}
+
+	public void println(String s)
+	{
+		System.out.println(s);
+	}
+
+
+	public void showIdle(boolean mode)
+	{
+	}
+
+	public void showUtilization(int value)
+	{
+		percValue = value;
+
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				perc.setText(percValue+"%");
+			}
+		});
+	}
+	
+	public int getNumCol()
+	{
+		return 79;
+	}
+
+	public void setNumCol(int col)
+	{
+	}
+
+	public void setNumRow(int row)
+	{
+	}
+
+	public int getNumRow()
+	{
+		return 25;
+	}
+
+	public void setCRT(CRT crt)
+	{
+	}
+
+	/**
+	 * Load snap shot in memory
+	 */
+	public void loadSnapshot( String name ) throws Exception
+	{
+		File file = new File(name);
+		int snapshotLength = (int)file.length();
+
+		System.out.println("snapshot "+name+" length "+snapshotLength);
+		FileInputStream is = new FileInputStream(file);
+
+		// Crude check but it'll work (SNA is a fixed size)
+		if ( (snapshotLength == 49179) ) {
+			loadSNA( name, is );
+		}
+		else {
+			loadZ80( name, is, snapshotLength );
+		}
+
+		is.close();
+	}
+
+	public int readBytes(InputStream is,int mem[],int len) throws Exception
+	{
+		for (int i = 0 ; i < len ; i++)
+		{
+			int c = is.read();
+			if (c < 0)
+				return i;
+
+			mem[i] = c & 0xff;
+		}
+
+		return len;
+	}
+
+	public void loadSNA( String name, InputStream is ) throws Exception
+	{
+		System.out.println("loadSNA "+name);
+		int        header[] = new int[27];
+
+		readBytes(is,header,27);
+		cpu.load(is,RAM_MEMORY_START,49152);
+
+		cpu.I( header[0] );
+
+		cpu.HL( header[1] | (header[2]<<8) );
+		cpu.DE( header[3] | (header[4]<<8) );
+		cpu.BC( header[5] | (header[6]<<8) );
+		cpu.AF( header[7] | (header[8]<<8) );
+
+		cpu.exx();
+		cpu.ex_AF_AF();
+
+		cpu.HL( header[9]  | (header[10]<<8) );
+		cpu.DE( header[11] | (header[12]<<8) );
+		cpu.BC( header[13] | (header[14]<<8) );
+
+		cpu.IY( header[15] | (header[16]<<8) );
+		cpu.IX( header[17] | (header[18]<<8) );
+
+		if ( (header[19] & 0x04)!= 0 ) {
+			cpu.IFF1 =  true ;
+		}
+		else {
+			cpu.IFF1 =  false;
+		}
+
+		cpu.R( header[20] );
+
+		cpu.AF( header[21] | (header[22]<<8) );
+		cpu.SP( header[23] | (header[24]<<8) );
+
+		switch( header[25] ) {
+			case 0:
+				cpu.IM( cpu.IM0 );
+				break;
+			case 1:
+				cpu.IM( cpu.IM1 );
+				break;
+			default:
+				cpu.IM( cpu.IM2 );
+				break;
+		}
+
+		outb( 254, header[26], 0 ); // border
+
+		/* Emulate RETN to start */
+		cpu.IFF0 = cpu.IFF1;
+		//REFRESH( 2 );
+		cpu.poppc();
+
+	}
+
+
+	public void loadZ80( String name, InputStream is, int bytesLeft ) throws Exception
+	{
+		System.out.println("LoadZ80 "+name);
+
+		int        header[] = new int[30];
+		boolean    compressed = false;
+
+		bytesLeft -= readBytes( is, header, 30 );
+
+		cpu.A( header[0] );
+		cpu.F( header[1] );
+
+		cpu.C( header[2] );
+		cpu.B( header[3] );
+		cpu.L( header[4] );
+		cpu.H( header[5] );
+
+		cpu.PC( header[6] | (header[7]<<8) );
+		cpu.SP( header[8] | (header[9]<<8) );
+
+		cpu.I( header[10] );
+		cpu.R( header[11] );
+
+		int tbyte = header[12];
+		if ( tbyte == 255 ) {
+			tbyte = 1;
+		}
+
+		outb( 254, ((tbyte >> 1) & 0x07), 0 ); // border
+
+		if ( (tbyte & 0x01) != 0 ) {
+			cpu.R( cpu.R | 0x80 );
+		}
+		compressed = ((tbyte & 0x20) != 0);
+
+		cpu.E( header[13] );
+		cpu.D( header[14] );
+
+		cpu.ex_AF_AF();
+		cpu.exx();
+
+		cpu.C( header[15] );
+		cpu.B( header[16] );
+		cpu.E( header[17] );
+		cpu.D( header[18] );
+		cpu.L( header[19] );
+		cpu.H( header[20] );
+
+		cpu.A( header[21] );
+		cpu.F( header[22] );
+
+		cpu.ex_AF_AF();
+		cpu.exx();
+
+		cpu.IY( header[23] | (header[24]<<8) );
+		cpu.IX( header[25] | (header[26]<<8) );
+
+		cpu.IFF0 =  header[27] != 0;
+		cpu.IFF1 =  header[28] != 0 ;
+
+		switch ( header[29] & 0x03 ) {
+			case 0:
+				cpu.IM( cpu.IM0 );
+				break;
+			case 1:
+				cpu.IM( cpu.IM1 );
+				break;
+			default:
+				cpu.IM( cpu.IM2 );
+				break;
+		}
+
+		if ( cpu.PC == 0 )
+		{
+			loadZ80_extended( is, bytesLeft );
+
+			return;
+		}
+		/* Old format Z80 snapshot */
+
+		if ( compressed ) {
+			int data[] = new int[ bytesLeft ];
+			int addr   = RAM_MEMORY_START;
+
+			int size = readBytes( is, data, bytesLeft );
+			System.out.println("Byte "+size+" at "+addr);
+			int i    = 0;
+
+			while ( (addr < 65536) && (i < size) ) {
+				tbyte = data[i++];
+				if ( tbyte != 0xed ) {
+					pokeb( addr, tbyte );
+					addr++;
+				}
+				else {
+					tbyte = data[i++];
+					if ( tbyte != 0xed ) {
+						pokeb( addr, 0xed );
+						i--;
+						addr++;
+					}
+					else {
+						int        count;
+						count = data[i++];
+						tbyte = data[i++];
+						while ( (count--) != 0 ) {
+							pokeb( addr, tbyte );
+							addr++;
+						}
+					}
+				}
+			}
+		}
+		else {
+			cpu.load(is,RAM_MEMORY_START,49152 );
+		}
+
+	}
+
+	private void loadZ80_extended( InputStream is, int bytesLeft ) throws Exception {
+		int header[] = new int[2];
+		bytesLeft -= readBytes( is, header, header.length );
+
+		System.out.println("Loadz80_extended");
+		int type = header[0] | (header[1] << 8);
+
+		switch( type ) {
+			case 23: /* V2.01 */
+				loadZ80_v201( is, bytesLeft );
+				break;
+			case 54: /* V3.00 */
+				loadZ80_v300( is, bytesLeft );
+				break;
+			case 58: /* V3.01 */
+				loadZ80_v301( is, bytesLeft );
+				break;
+			default:
+				throw new Exception( "Z80 (extended): unsupported type " + type );
+		}
+	}
+
+	private void loadZ80_v201( InputStream is, int bytesLeft ) throws Exception {
+		int header[] = new int[23];
+		bytesLeft -= readBytes( is, header, header.length );
+
+		cpu.PC( header[0] | (header[1]<<8) );
+
+		/* 0 - 48K
+		 * 1 - 48K + IF1
+		 * 2 - SamRam
+		 * 3 - 128K
+		 * 4 - 128K + IF1
+		 */
+		int type = header[2];
+
+		if ( type > 1 ) {
+			throw new Exception( "Z80 (v201): unsupported type " + type );
+		}
+
+		int data[] = new int[ bytesLeft ];
+		readBytes( is, data, bytesLeft );
+
+		for ( int offset = 0, j = 0; j < 3; j++ ) {
+			offset = loadZ80_page( data, offset );
+		}
+	}
+
+	private void loadZ80_v300( InputStream is, int bytesLeft ) throws Exception {
+		int        header[] = new int[54];
+		bytesLeft -= readBytes( is, header, header.length );
+
+		cpu.PC( header[0] | (header[1]<<8) );
+
+		/* 0 - 48K
+		 * 1 - 48K + IF1
+		 * 2 - 48K + MGT
+		 * 3 - SamRam
+		 * 4 - 128K
+		 * 5 - 128K + IF1
+		 * 6 - 128K + MGT
+		 */
+		int type = header[2];
+
+		if ( type > 6 ) {
+			throw new Exception( "Z80 (v300): unsupported type " + type );
+		}
+
+		int data[] = new int[ bytesLeft ];
+		readBytes( is, data,  bytesLeft );
+
+		for ( int offset = 0, j = 0; j < 3; j++ ) {
+			offset = loadZ80_page( data, offset );
+		}
+	}
+
+	private void loadZ80_v301( InputStream is, int bytesLeft ) throws Exception {
+		int        header[] = new int[58];
+		bytesLeft -= readBytes( is, header,  header.length );
+
+		cpu.PC( header[0] | (header[1]<<8) );
+
+		/* 0 - 48K
+		 * 1 - 48K + IF1
+		 * 2 - 48K + MGT
+		 * 3 - SamRam
+		 * 4 - 128K
+		 * 5 - 128K + IF1
+		 * 6 - 128K + MGT
+		 * 7 - +3
+		 */
+		int type = header[2];
+
+		if ( type > 7 ) {
+			throw new Exception( "Z80 (v301): unsupported type " + type );
+		}
+
+		int data[] = new int[ bytesLeft ];
+		readBytes( is, data, bytesLeft );
+
+		for ( int offset = 0, j = 0; j < 3; j++ ) {
+			offset = loadZ80_page( data, offset );
+		}
+	}
+
+	private int loadZ80_page( int data[], int i ) throws Exception {
+		int blocklen;
+		int page;
+
+		blocklen  = data[i++];
+		blocklen |= (data[i++]) << 8;
+		page = data[i++];
+
+		int addr;
+		switch(page) {
+			case 4:
+				addr = 32768;
+				break;
+			case 5:
+				addr = 49152;
+				break;
+			case 8:
+				addr = 16384;
+				break;
+			default:
+				throw new Exception( "Z80 (page): out of range " + page );
+		}
+
+		int        k = 0;
+		while (k < blocklen) {
+			int        tbyte = data[i++]; k++;
+			if ( tbyte != 0xed ) {
+				pokeb(addr, ~tbyte);
+				pokeb(addr, tbyte);
+				addr++;
+			}
+			else {
+				tbyte = data[i++]; k++;
+				if ( tbyte != 0xed ) {
+					pokeb(addr, 0);
+					pokeb(addr, 0xed);
+					addr++;
+					i--; k--;
+				}
+				else {
+					int        count;
+					count = data[i++]; k++;
+					tbyte = data[i++]; k++;
+					while ( count-- > 0 ) {
+						pokeb(addr, ~tbyte);
+						pokeb(addr, tbyte);
+						addr++;
+					}
+				}
+			}
+		}
+
+		if ((addr & 16383) != 0) {
+			throw new Exception( "Z80 (page): overrun" );
+		}
+
+		return i;
+	}
+
+
+	public String toString()
+	{
+		return "Spectrum 48K";
+	}
+	
+}
