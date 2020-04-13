@@ -56,6 +56,12 @@ public class Main {
                   console._puts("Unable to load the CCP [0x01].\r\nCPU halted.\r\n");
                   break;
                 }
+
+// 128 bytes
+cpm.disk._RamLoad("diskboot.rom", 0);
+cpu.mem.DBUG( 0, 128 );
+System.out.println("================================");
+
                 cpu.Z80reset();
 
                 DataUtils.SET_LOW_REGISTER(cpu.BC, cpu.mem._RamRead(0x0004));

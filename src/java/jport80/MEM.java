@@ -67,11 +67,23 @@ public class MEM {
     return result;
     }
 
+
+    String dispAddr(int addr) {
+        String result = ""+addr;
+        while(result.length() < 5) {
+            result = " "+result;
+        }
+        return result;
+    }
+
     void DBUG(int addr, int addrMax) {
         int i;
         String strChr = "";
 
-        System.out.print( addr +" | ");
+        int colSize = 16;
+        colSize = 32;
+
+        System.out.print( dispAddr(addr) +" | ");
 
         for(i=addr; i <=addrMax; i++) {
             String str = Integer.toHexString(RAM[i]);
@@ -81,13 +93,13 @@ public class MEM {
             else { strChr += RAM[i]; }
 
             System.out.print( str +" ");
-            if( i % 16 == 15 ) {
+            if( i % colSize == colSize-1 ) {
                 System.out.println("  "+strChr);
                 strChr = "";
-                System.out.print( i +" | ");
+                System.out.print( dispAddr(i) +" | ");
             }
         }
-        if( i % 16 != 15 ) {
+        if( i % colSize != colSize-1 ) {
             System.out.println("  "+strChr);
         }
     }

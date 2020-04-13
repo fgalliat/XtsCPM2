@@ -17,10 +17,12 @@ public abstract class FileSystem {
 
     void _driveLedOn() {
         // emulates DRIVE-UNIT led
+        System.out.println("DRIVE : [#]");
     }
 
     void _driveLedOff() {
         // emulates DRIVE-UNIT led
+        System.out.println("DRIVE : [ ]");
     }
 
 

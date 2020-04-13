@@ -22,7 +22,7 @@ public class CPM {
 
     public CPM(Console console) {
         this.mem = new MEM();
-        this.cpu = new CPU(mem);
+        this.cpu = new CPU(this.mem);
         this.console = console;
         this.disk = new DISK(this);
 
