@@ -240,7 +240,8 @@ public class J80 extends j80.cpu.Z80
 	public int inb( int port,int hi )
 	{
 		int result = 0;
-
+// System.out.println(")INB ("+port+", "+ hi +")");
+// System.out.println(")INB portClass : "+ inport[port].getClass().getSimpleName() );
 		if (hi > 0)
 		{
 			int portHi = port + hi * 256;
@@ -248,7 +249,18 @@ public class J80 extends j80.cpu.Z80
 			if (inport[portHi] != null)
 				port = portHi;
 		}
-		
+
+String deviceName = inport[port].getClass().getSimpleName();
+boolean display = true;
+if ( deviceName.equals("Hazeltine1500") ) {
+	display = false;
+}
+
+
+if ( display ) {
+	System.out.println(")INB ("+port+", "+ hi +")");
+	System.out.println("(INB portClass : "+ deviceName );
+}
 		try
 		{
 			if (inport[port] == null)
