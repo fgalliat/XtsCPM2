@@ -85,7 +85,7 @@ public class MEM {
 
         System.out.print( dispAddr(addr) +" | ");
 
-        for(i=addr; i <=addrMax; i++) {
+        for(i=addr; i <= addrMax; i++) {
             String str = Integer.toHexString(RAM[i]);
             if ( str.length() < 2 ) { str = "0"+str; }
 

@@ -127,7 +127,7 @@ public class CPU {
 
 void Z80reset() {
 	System.out.println("RESET");
-	z80.DEBUG = true;
+	// z80.DEBUG = true;
 	z80.reset();
 }
 
@@ -135,8 +135,8 @@ void Z80reset() {
 boolean DBUG = !false;
 
 void  Z80run() {
-	System.out.println("CPU > run");
-	int cycles = 1;
+	System.out.println("CPU > run (*)");
+	int cycles = 4 * 1000; // 4MHz
 	while( z80.state_HALT == false ) {
 		z80.exec(cycles);
 		// System.out.print('.');

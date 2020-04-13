@@ -48,7 +48,7 @@ public class Main {
         if (cpm.VersionCCP >= 0x10 || SD.exists(ccpFileName)) {
             while (true) {
                 // _puts(cpm.CCPHEAD);
-                cpm._PatchCPM();
+//                cpm._PatchCPM();
             cpu.setStatus(0);
         // #ifndef CCP_INTERNAL
                 // if (!_RamLoad((char *)CCPname, CCPaddr)) {
@@ -56,23 +56,21 @@ public class Main {
                   console._puts("Unable to load the CCP [0x01].\r\nCPU halted.\r\n");
                   break;
                 }
-
+if( false ) {
 // 128 bytes
 cpm.disk._RamLoad("diskboot.rom", 0);
 cpu.mem.DBUG( 0, 128 );
 System.out.println("================================");
-
+}
                 cpu.Z80reset();
 
+if ( !false ) {
                 DataUtils.SET_LOW_REGISTER(cpu.BC, cpu.mem._RamRead(0x0004));
 System.out.println("RAM(4): "+ (int)cpu.mem._RamRead(0x0004)); 
-
-
 System.out.println("CCPaddr: "+cpm.CCPaddr); 
-
                 cpu.PC.set( cpm.CCPaddr );
                 cpu.mem.DBUG( cpm.CCPaddr );
-
+}
 // System.exit(0);
 
                 cpu.Z80run();
