@@ -65,6 +65,7 @@ System.out.println("RAM(4): "+ (int)cpu.mem._RamRead(0x0004));
 System.out.println("CCPaddr: "+cpm.CCPaddr); 
 
                 cpu.PC.set( cpm.CCPaddr );
+                cpu.mem.DBUG( cpm.CCPaddr );
 
 // System.exit(0);
 

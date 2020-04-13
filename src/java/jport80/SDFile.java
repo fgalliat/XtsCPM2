@@ -127,6 +127,7 @@ public class SDFile {
 
     void close() {
       m_fileSize = length();
+      m_curPosition = 0;
     }
 
 
@@ -197,6 +198,7 @@ public class SDFile {
 
     int read(char[] dest, int maxLen) {
       try {
+        System.out.println("DBG: File '"+descr.getName()+"' @"+m_curPosition);
         InputStream in = new FileInputStream(descr);
         byte[] buff = new byte[maxLen];
         in.skip(m_curPosition);
@@ -204,7 +206,7 @@ public class SDFile {
         m_curPosition += read;
         in.close();
         for(int i=0; i < read; i++) {
-          dest[i] = (char)(buff[i] < 0 ? 255+buff[i] : buff[i] );
+          dest[i] = (char)(buff[i] < 0 ? 255+(int)buff[i] : (int)buff[i] );
         }
         return read;
       } catch(Exception ex) {

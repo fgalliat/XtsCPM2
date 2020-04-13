@@ -67,5 +67,33 @@ public class MEM {
     return result;
     }
 
+    void DBUG(int addr, int addrMax) {
+        int i;
+        String strChr = "";
+
+        System.out.print( addr +" | ");
+
+        for(i=addr; i <=addrMax; i++) {
+            String str = Integer.toHexString(RAM[i]);
+            if ( str.length() < 2 ) { str = "0"+str; }
+
+            if ( RAM[i] < 32 || RAM[i] > 127 ) { strChr += ' '; }
+            else { strChr += RAM[i]; }
+
+            System.out.print( str +" ");
+            if( i % 16 == 15 ) {
+                System.out.println("  "+strChr);
+                strChr = "";
+                System.out.print( i +" | ");
+            }
+        }
+        if( i % 16 != 15 ) {
+            System.out.println("  "+strChr);
+        }
+    }
+
+    void DBUG(int addr) {
+        DBUG(addr, RAM.length-1);
+    }
 
 }
