@@ -854,6 +854,11 @@ public class Z80 implements  Z80debug
 		   case 0xda:	jp_C_nn(); break; 	// JP C,nn		ok
 		   case 0xdb:	//in_A_n(); break;	// IN A,(n)		ok
 				cycle -= 11;
+// Xts
+// int reg = C; // LOW_REG(BC)
+// if ( reg >= 225 && reg <= 229 ) {
+// 	System.out.println( ")Bdos(  reg:"+reg+" D:"+D+",E:"+E+" " );
+// }
 				A = in(peekb(PC++),A);
 				break;
 		   case 0xdc:	call_C_nn(); break; // CALL C,nn	ok
