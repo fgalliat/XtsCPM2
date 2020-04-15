@@ -64,6 +64,9 @@ public class J80 extends j80.cpu.Z80
 	private boolean trapOutput = false;
 	private boolean trapInput = false;
 
+	protected VDU getVDU() { return vdu; }
+	protected CRT getCRT() { return crt; }
+
 	/**
 	 * Helper class to track Polling
 	 */
@@ -238,85 +241,20 @@ public class J80 extends j80.cpu.Z80
 	}
 
 
-// Xts
-int XtsBdosCall(int reg, int value) {
-	int HI = value / 256;
-	int LO = value % 256;
-
-	if ( reg == 225 ) {
-		System.out.println(" Bdos draw");
-		return 0;
-	} else if ( reg == 226 ) {
-		System.out.println(" Bdos console ["+HI+", "+LO+"]");
-		return 0;
-	} else if ( reg == 227 ) {
-		System.out.println(" Bdos mp3 ["+HI+", "+LO+"]");
-		if (HI == 6) return 1;
-		return 0;
-	} else if ( reg == 228 ) {
-		System.out.println(" Bdos subSystem ["+HI+", "+LO+"]");
-		return 0;
-	} else if ( reg == 229 ) {
-		System.out.println(" Bdos setSystemExchangeAddr("+value+")");
-		return 1;
-	}
-	return 0;
-}
-
 	public int inb( int port,int hi )
 	{
 		int result = 0;
-// System.out.println(")INB ("+port+", "+ hi +")");
-// System.out.println(")INB portClass : "+ inport[port].getClass().getSimpleName() );
 
-String deviceName = inport[port].getClass().getSimpleName();
-boolean display = true;
-if ( deviceName.equals("Hazeltine1500") ) {
-	display = false;
-}
+		// String deviceName = inport[port].getClass().getSimpleName();
+		// boolean display = true;
+		// if ( deviceName.equals("Hazeltine1500") ) {
+		// 	display = false;
+		// }
 
-// Xts
-int reg = C; // LOW_REG(BC)
-int value = (D*256)+E; // HIGH REG is D / LOW REG is E
-
-display = false;
-
-if ( reg >= 220 && reg < 225) {
-	System.out.println("Bdos Arduino("+reg+")");
-	return 0;
-} else
-if ( reg >= 225 && reg <= 229) {
-  // System.out.println("Bdos("+reg+", "+value+" ["+D+","+E+"] )");
-  // display = true;
-
-//   HL = 0x0000;	// HL is reset by the BDOS
-//   SET_LOW_REGISTER(BC, LOW_REGISTER(DE)); // C ends up equal to E
-  C = E;
-
-
-  int DE = (D*256)+E;
-  int HL;
-
-  HL = XtsBdosCall(reg, DE);
-
-  H = HL / 256;
-  L = HL % 256;
-
-  // // CP/M BDOS does this before returning
-  // SET_HIGH_REGISTER(BC, HIGH_REGISTER(HL));
-  // SET_HIGH_REGISTER(AF, LOW_REGISTER(HL));
-  B = H;
-  A = L;
-
-  return A;
-}
-
-
-
-if ( display ) {
-	System.out.println(")INB ("+port+", "+ hi +")");
-	System.out.println("(INB portClass : "+ deviceName );
-}
+		// if ( display ) {
+		// 	System.out.println(")INB ("+port+", "+ hi +")");
+		// 	System.out.println("(INB portClass : "+ deviceName );
+		// }
 
 
 		if (hi > 0)
@@ -745,7 +683,7 @@ if ( display ) {
 	}
 	
 
-	private void config(String name) throws Exception
+	protected void config(String name) throws Exception
 	{
 		BufferedReader rd = new BufferedReader(new InputStreamReader(new FileInputStream(name)));
 		String s;
