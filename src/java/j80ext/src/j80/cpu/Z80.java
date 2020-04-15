@@ -3098,11 +3098,11 @@ public class Z80 implements  Z80debug
  */
  private final int in(int port, int hi) {
 
-// Xts
-int reg = C; // LOW_REG(BC)
-if ( reg >= 225 && reg <= 229 ) {
-	System.out.println( "->)Bdos(  reg:"+reg+" D:"+D+",E:"+E+" " );
-}
+// // Xts
+// int reg = C; // LOW_REG(BC)
+// if ( reg >= 225 && reg <= 229 ) {
+// 	System.out.println( "->)Bdos(  reg:"+reg+" D:"+D+",E:"+E+" " );
+// }
 
 	int in=inb(port,hi);
 	F = (F & 1) | SZP[A];

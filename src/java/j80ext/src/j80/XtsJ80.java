@@ -109,6 +109,12 @@ if ( !str.equals(lastStr) ) {
         return super.inb(port, hi);
     }
 
+    @Override
+    public void outb(int port, int bite, int tstates) {
+        System.out.println("] OUT "+port);
+        super.outb(port, bite, tstates);
+    }
+
     public static void main(String argv[]) {
         System.out.println("XtsJ80 starts");
         XtsJ80 cpu = null;
