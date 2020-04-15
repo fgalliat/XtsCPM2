@@ -51,20 +51,24 @@ public class Main {
 //                cpm._PatchCPM();
             cpu.setStatus(0);
         // #ifndef CCP_INTERNAL
+if ( false ) {
                 // if (!_RamLoad((char *)CCPname, CCPaddr)) {
                 if (!cpm.disk._RamLoad(ccpFileName, cpm.CCPaddr)) {
                   console._puts("Unable to load the CCP [0x01].\r\nCPU halted.\r\n");
                   break;
                 }
-if( false ) {
+}
+if( !false ) {
 // 128 bytes
 cpm.disk._RamLoad("diskboot.rom", 0);
 cpu.mem.DBUG( 0, 128 );
 System.out.println("================================");
+
+cpu.PC.set(0);
 }
                 cpu.Z80reset();
 
-if ( !false ) {
+if ( false ) {
 
     System.out.println("B " + cpu.z80.getRegB() );
     System.out.println("C " + cpu.z80.getRegC() );
