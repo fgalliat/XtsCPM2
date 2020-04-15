@@ -9,3 +9,4 @@ echo ". crt"
 javac -d bin -cp src src/j80/CharDevice.java
 javac -d bin -cp src src/j80/vdu/Hazeltine1500.java
 javac -d bin -cp src src/j80/vdu/GraphicsCRT.java
+javac -d bin -cp src src/j80/vdu/XtsGraphicsCRT.java
