@@ -69,7 +69,7 @@ public class XtsJ80 extends J80 {
             System.out.println("Bdos Arduino(" + reg + ")");
             return 0;
         } else if (reg >= 225 && reg <= 229) {
-            // System.out.println("Bdos("+reg+", "+value+" ["+D+","+E+"] )");
+            System.out.println("Bdos("+reg+", ["+D+","+E+"] )");
             // display = true;
 
             // HL = 0x0000; // HL is reset by the BDOS
