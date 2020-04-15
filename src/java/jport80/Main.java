@@ -65,11 +65,19 @@ System.out.println("================================");
                 cpu.Z80reset();
 
 if ( !false ) {
+
+    System.out.println("B " + cpu.z80.getRegB() );
+    System.out.println("C " + cpu.z80.getRegC() );
+
                 DataUtils.SET_LOW_REGISTER(cpu.BC, cpu.mem._RamRead(0x0004));
+
+                System.out.println("B " + cpu.z80.getRegB() );
+                System.out.println("C " + cpu.z80.getRegC() );
+
 System.out.println("RAM(4): "+ (int)cpu.mem._RamRead(0x0004)); 
 System.out.println("CCPaddr: "+cpm.CCPaddr); 
                 cpu.PC.set( cpm.CCPaddr );
-                cpu.mem.DBUG( cpm.CCPaddr );
+                // cpu.mem.DBUG( cpm.CCPaddr );
 }
 // System.exit(0);
 
