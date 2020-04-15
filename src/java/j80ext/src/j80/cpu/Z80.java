@@ -854,11 +854,6 @@ public class Z80 implements  Z80debug
 		   case 0xda:	jp_C_nn(); break; 	// JP C,nn		ok
 		   case 0xdb:	//in_A_n(); break;	// IN A,(n)		ok
 				cycle -= 11;
-// Xts
-// int reg = C; // LOW_REG(BC)
-// if ( reg >= 225 && reg <= 229 ) {
-// 	System.out.println( ")Bdos(  reg:"+reg+" D:"+D+",E:"+E+" " );
-// }
 				A = in(peekb(PC++),A);
 				break;
 		   case 0xdc:	call_C_nn(); break; // CALL C,nn	ok
@@ -969,6 +964,11 @@ public class Z80 implements  Z80debug
 	  case 0x6e: 	cycle-=8; IM = 0; break; 				// IM 0
 	  case 0x6f:	cycle-=18; A=rld_A(A,H,L); break; 		// RLD
 
+// Xts
+	  case 0x70:    cycle-=12; C=in(C,B); break;			// IN C,(C)		ok
+	  case 0x71:    cycle-=12; out(C,0); break; 			// OUT (C),0
+// Xts
+
 	  case 0x72:	cycle-=15; sbcHL(SP); break; 			// SBC HL,SP	ok
 	  case 0x73:	cycle-=20; pokew(peekw(PC),SP); PC+=2; break; 		// LD (nn),SP
 
@@ -1042,6 +1042,21 @@ public class Z80 implements  Z80debug
 					F=(F&0xfe)|tmp2;
 					if ( (tmp1 != 0) && (F&0x40) == 0 ) { PC-=2; F|=4; cycle -= 21; } else { F&=0xfb; cycle -= 16; }
 					break;
+// Xts
+	  case 0xb2: cycle-=16; //INIR
+				 int tmpX = B;
+				 if (tmpX == 0) tmpX = 0x100;
+				 do {
+					int acu = in( B, A );
+					pokeb( HL(), acu );
+					inc_HL();
+				 } while( --tmpX != 0 );
+				 tmpX = B;
+				 B = 0;
+				 // INOUTFLAGS_ZERO((LOW_REGISTER(BC) + 1) & 0xff);
+				 F |= 2; // ???
+				 break;
+// Xts
 	  case 0xb3:	cycle=cycle-(5+16*B);					// OTIR
 					while (B > 0) {
 						tmp1 = HL();
@@ -2603,10 +2618,10 @@ public class Z80 implements  Z80debug
  private final int BC() {
 	 return (B<<8)|C;
  }
- private final int DE() {
+ protected final int DE() {
 	 return (D<<8)|E;
  }
- private final int HL() {
+ protected final int HL() {
 	 return (H<<8)|L;
  }
  private final int HLi() {
@@ -3082,6 +3097,13 @@ public class Z80 implements  Z80debug
  * IN
  */
  private final int in(int port, int hi) {
+
+// Xts
+int reg = C; // LOW_REG(BC)
+if ( reg >= 225 && reg <= 229 ) {
+	System.out.println( "->)Bdos(  reg:"+reg+" D:"+D+",E:"+E+" " );
+}
+
 	int in=inb(port,hi);
 	F = (F & 1) | SZP[A];
 	return in;

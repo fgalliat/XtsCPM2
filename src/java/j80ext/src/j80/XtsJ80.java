@@ -59,39 +59,52 @@ public class XtsJ80 extends J80 {
         return 0;
     }
 
+String lastStr = null;
+
     public int inb(int port, int hi) {
 
         // Xts
         int reg = C; // LOW_REG(BC)
         // int value = (D*256)+E; // HIGH REG is D / LOW REG is E
 
-        if (reg >= 220 && reg < 225) {
-            System.out.println("Bdos Arduino(" + reg + ")");
-            return 0;
-        } else if (reg >= 225 && reg <= 229) {
-            System.out.println("Bdos("+reg+", ["+D+","+E+"] )");
-            // display = true;
+// if (reg > 130) {
+//     System.out.println(reg);
+// }
 
-            // HL = 0x0000; // HL is reset by the BDOS
-            // SET_LOW_REGISTER(BC, LOW_REGISTER(DE)); // C ends up equal to E
-            C = E;
+String str = "B:"+B+" C:"+C+" D:"+D+" E:"+E+" H:"+H+" L:"+L+" / "+port+" | "+hi;
 
-            int DE = (D * 256) + E;
-            int HL;
+if ( !str.equals(lastStr) ) {
+    if (str.contains("225")) System.out.println( str );
+    lastStr = str;
+}
 
-            HL = XtsBdosCall(reg, DE);
+//         /*if (reg >= 220 && reg < 225) {
+//             System.out.println("Bdos Arduino(" + reg + ")");
+//             return 0;
+//         } else*/ if (reg >= 225 && reg <= 229) {
+//             System.out.println("Bdos("+reg+", ["+D+","+E+"] ) => "+B+"->("+H+","+L+") "+port+">"+hi);
+//             // HL = 0x0000; // HL is reset by the BDOS
+//             // SET_LOW_REGISTER(BC, LOW_REGISTER(DE)); // C ends up equal to E
 
-            H = HL / 256;
-            L = HL % 256;
+// if (false) {
+//             C = E;
+//             HL(0x0000);
+// }
+//             int DE = DE();
+//             int _HL = XtsBdosCall(reg, DE); 
+// if (false) {
+//             HL( _HL );
 
-            // // CP/M BDOS does this before returning
-            // SET_HIGH_REGISTER(BC, HIGH_REGISTER(HL));
-            // SET_HIGH_REGISTER(AF, LOW_REGISTER(HL));
-            B = H;
-            A = L;
+//             // // CP/M BDOS does this before returning
+//             // SET_HIGH_REGISTER(BC, HIGH_REGISTER(HL));
+//             // SET_HIGH_REGISTER(AF, LOW_REGISTER(HL));
 
-            return A;
-        }
+//             B = H;
+//             A = L;
+// }
+//             // return A;
+//             return 0x00;
+//         }
 
         return super.inb(port, hi);
     }
