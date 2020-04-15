@@ -25,6 +25,19 @@ public class XtsGraphicsCRT extends AbstractCRT implements KeyListener,ActionLis
 	private JCRT jcrt;
 	private char line[];
 	
+	JLabel ledComp = new JLabel();
+
+	public class RGBLed {
+		public void rgb(int r, int g, int b) {
+			ledComp.setBackground(new Color(r,g,b));
+		}
+	}
+
+	RGBLed led = new RGBLed();
+
+	public RGBLed getLed() {
+		return led;
+	}
 	
 	class JCRT extends JComponent
 	{
@@ -234,8 +247,23 @@ public class XtsGraphicsCRT extends AbstractCRT implements KeyListener,ActionLis
 		line = new char[NCOL];
 		
 		JFrame f = new JFrame("Xtase mod#"+j80.J80.version);
+
+		// ------ Xts RGB LED ------------
+		// JLabel led = new JLabel();
+		ledComp.setOpaque(true);
+		ledComp.setSize(32,32);
+		ledComp.setText("M");
+		ledComp.setBackground(Color.BLACK);
+		
+		JPanel ledPanel = new JPanel();
+		ledPanel.add(ledComp);
+		// --------------------------------
+
 		JPanel p = new JPanel();
 		p.add(jcrt);
+		// default is HFlowLayout
+		p.add(ledPanel);
+
 		f.setContentPane(p);
 		f.pack();
 		f.setVisible(true);
