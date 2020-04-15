@@ -4,6 +4,34 @@ import j80.vdu.XtsGraphicsCRT;
 
 public class XtsJ80 extends J80 {
 
+
+    int subSystemBdosCall(int value) {
+        int HI = value / 256;
+        int LO = value % 256;
+
+        System.out.println(" Bdos subSystem [" + HI + ", " + LO + "]");
+
+        if ( HI == 3 ) {
+            int r=0;
+            int g=0;
+            int b=0;
+
+            if ( (LO & 4) == 4 ) { r = 0xFF; }
+            if ( (LO & 2) == 2 ) { g = 0xFF; }
+            if ( (LO & 1) == 1 ) { b = 0xFF; }
+
+            if ( this.getCRT() instanceof XtsGraphicsCRT ) {
+                // System.out.println("Yeah, I've got a LED !");
+                ((XtsGraphicsCRT)this.getCRT()).getLed().rgb(r, g, b);
+                System.out.println("RGBLed( "+r+", "+g+", "+b+")");
+            } else {
+                System.out.println("RGBLed( "+r+", "+g+", "+b+")");
+            }
+        }
+
+        return 0;
+    }
+
     // Xts
     int XtsBdosCall(int reg, int value) {
         int HI = value / 256;
@@ -21,8 +49,9 @@ public class XtsJ80 extends J80 {
                 return 1;
             return 0;
         } else if (reg == 228) {
-            System.out.println(" Bdos subSystem [" + HI + ", " + LO + "]");
-            return 0;
+            return subSystemBdosCall(value);
+            // System.out.println(" Bdos subSystem [" + HI + ", " + LO + "]");
+            // return 0;
         } else if (reg == 229) {
             System.out.println(" Bdos setSystemExchangeAddr(" + value + ")");
             return 1;
