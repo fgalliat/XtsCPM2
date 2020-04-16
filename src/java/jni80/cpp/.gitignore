@@ -1,0 +1,4 @@
+distro
+*.o
+cpm80
+a.out
