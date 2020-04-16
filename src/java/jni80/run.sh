@@ -1,1 +1,1 @@
-java -cp bin JavaRunCPM
+java -cp bin -Djava.library.path=. JavaRunCPM
