@@ -8,12 +8,8 @@ static jmethodID midStr;
 static bool xtsBdosCallMeth_inited = false;
 
 // for a Java .xxx(String, int, String) -> void
-//static const char * sigStr = "(Ljava/lang/String;ILjava/lang/String;)V";
-
-
-
-
-
+// static const char * sigStr = "(Ljava/lang/String;ILjava/lang/String;)V";
+//
 // sample for Java :
 // void javaDefineString(String name, int index, String value)
 // 
