@@ -19,6 +19,7 @@ public class JavaRunCPM {
     // ======================================
 
     public int XtsBdosCall(int reg, int value) {
+        System.out.println("called XtsBdosCall from C++ ("+reg+", "+value+")");
         return 0xFF;
     }
 

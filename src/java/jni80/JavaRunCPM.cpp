@@ -25,10 +25,16 @@ static void javaDefineString(JNIEnv * env, jobject o,  jint reg, jint value) {
 
   jclass _class = (env)->GetObjectClass( o );
   // Init - One time to initialize the method id, (use an init() function)
-  midStr = (env)->GetMethodID( _class, "test_XtsBdosCall", sigStr);
+  // midStr = (env)->GetMethodID( _class, "test_XtsBdosCall", sigStr);
+
+  // public int XtsBdosCall(int reg, int value)
+  midStr = (env)->GetMethodID( _class, "XtsBdosCall", "(II)I");
 
   // jstring string = (*env)->NewStringUTF(env, name);
-  (env)->CallVoidMethod( o, midStr, reg, value);
+  // (env)->CallVoidMethod( o, midStr, reg, value);
+  jint result = (env)->CallIntMethod( o, midStr, reg, value);
+
+  printf("result of call [%d]\n", result);
 }
 
 
