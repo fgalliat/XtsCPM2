@@ -59,4 +59,9 @@ JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
     result = XtsBdosCall(env, _this,   225, 0x1F);
     printf("result of call [%d]\n", result);
 
+    int _reg = 228;
+    int _value = 0x08;
+    int _result = XtsBdosCall(env, _this,   _reg, _value);
+    printf("result of call [%d]  (native int version)\n", _result);
+
 }
