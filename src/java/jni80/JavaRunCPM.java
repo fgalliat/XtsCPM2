@@ -23,10 +23,6 @@ public class JavaRunCPM {
         return 0xFF;
     }
 
-    public void test_XtsBdosCall(int reg, int value) {
-        System.out.println("called from C++ ("+reg+", "+value+")");
-    }
-
     public native void startCPM();
 
     // ======================================
@@ -35,13 +31,9 @@ public class JavaRunCPM {
         if ( !libraryLoaded ) {
             System.exit(1);
         }
-        DBUG("Hello World");
-
         JavaRunCPM emul = new JavaRunCPM();
 
         emul.startCPM();
-
-        DBUG("GoodBye World");
     }
 
 }
