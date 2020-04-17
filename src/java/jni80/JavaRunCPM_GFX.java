@@ -20,10 +20,18 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
     protected static final int FONT_HEIGHT = 8 * zoom;
     protected static final int FONT_WIDTH = 6 * zoom;
 
+    protected static final int TTY_COLS = 80;
+    protected static final int TTY_ROWS = 40;
+
     protected Video vid = new Video();
 
     protected class Video extends JLabel {
         protected Font monospaced;
+
+        protected char[][] tty = new char[TTY_ROWS][TTY_COLS];
+        protected int ttyCursorX = 0;
+        protected int ttyCursorY = 0;
+
 
         public Video() {
             super("");
@@ -40,6 +48,9 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
             g.setFont(monospaced);
 
             g.drawString("= XtsJ80 =", 10, FONT_HEIGHT+10);
+        }
+
+        public void put_ch(char ch) {
 
         }
 
@@ -64,6 +75,23 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
         } );
 
         frm.setVisible(true);
+
+        new Thread() {
+            public void run() {
+                boolean inRun = true;
+                while( inRun ) {
+                    vid.repaint();
+                    Zzz(100);
+                }
+            }
+        }.start();
+
+
+    }
+
+    public static void Zzz(long millis) {
+        try { Thread.sleep(millis); }
+        catch(Exception ex) {}
     }
 
 
