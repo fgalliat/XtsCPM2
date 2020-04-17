@@ -6,6 +6,7 @@ public class JavaRunCPM {
         try {
             System.loadLibrary("cpm80");
             libraryLoaded = true;
+            DBUG("Loaded CPM lib");
         } catch (UnsatisfiedLinkError ex) {
             // ex.printStackTrace();
             DBUG("Could not load CPM lib");
