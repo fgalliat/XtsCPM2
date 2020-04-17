@@ -47,13 +47,55 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
   typedef unsigned char uint8;
 
   // TEMP dirty impl
-  int _ext_kbhit(void) { return 0; }
-  uint8 _ext_getch(void) { return 0; }
-  void _ext_putch(uint8 ch) { printf("%c", ch); }
+  // int   _ext_kbhit(void) { return 0; }
+  // uint8 _ext_getch(void) { return 0; }
+  // void  _ext_putch(uint8 ch) { printf("%c", ch); }
 
-  void _ext_coninit(void)    { printf("Init the console.\n"); }
-  void _ext_conrelease(void) { printf("Release the console.\n"); }
-  void _ext_clrscr(void) { printf("-CLS-\n"); }
+  // void _ext_coninit(void)    { printf("Init the console.\n"); }
+  // void _ext_conrelease(void) { printf("Release the console.\n"); }
+  // void _ext_clrscr(void) { printf("-CLS-\n"); }
+
+  static jmethodID midKbHit;
+  static jmethodID midGetCh;
+  static jmethodID midPutCh;
+  static jmethodID midConInit;
+  static jmethodID midConRelease;
+  static jmethodID midClrScr;
+
+  static bool XtsInitMethods(JNIEnv * env, jobject o) {
+      printf("looking for Java Console methods ...\n");
+
+      jclass _class = (env)->GetObjectClass( o );
+
+      midKbHit = (env)->GetMethodID( _class, "_ext_kbhit", "()I");
+      if ( midKbHit == nullptr ) { printf("kbhit failed \n"); return false; }
+      midGetCh = (env)->GetMethodID( _class, "_ext_getch", "()C");
+      if ( midGetCh == nullptr ) { printf("getch failed \n"); return false; }
+      midPutCh = (env)->GetMethodID( _class, "_ext_putch", "(C)V");
+      if ( midPutCh == nullptr ) { printf("putch failed \n"); return false; }
+
+      midConInit    = (env)->GetMethodID( _class, "_ext_coninit",    "()V");
+      if ( midConInit == nullptr ) { printf("conint failed \n"); return false; }
+      midConRelease = (env)->GetMethodID( _class, "_ext_conrelease", "()V");
+      if ( midConRelease == nullptr ) { printf("conrel failed \n"); return false; }
+      midClrScr     = (env)->GetMethodID( _class, "_ext_clrscr",     "()V");
+      if ( midClrScr == nullptr ) { printf("cls failed \n"); return false; }
+
+      return true;
+  }
+
+  static JNIEnv * _env;
+  static jobject instance;
+
+
+  int   _ext_kbhit(void)     { return (_env)->CallIntMethod( instance, midKbHit); }
+  uint8 _ext_getch(void)     { return (_env)->CallCharMethod( instance, midGetCh); }
+  void  _ext_putch(uint8 ch) { (_env)->CallVoidMethod( instance, midPutCh, ch); }
+
+  void _ext_coninit(void)    { (_env)->CallVoidMethod( instance, midConInit); }
+  void _ext_conrelease(void) { (_env)->CallVoidMethod( instance, midConRelease); }
+  void _ext_clrscr(void)     { (_env)->CallVoidMethod( instance, midClrScr); }
+
 
 // =========================================
 
@@ -87,6 +129,16 @@ JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
     int _value = 0x08;
     int _result = XtsBdosCall(env, _this,   _reg, _value);
     printf("result of call [%d]  (native int version)\n", _result);
+
+    if ( ! XtsInitMethods(env, _this) ) {
+      printf("some methods failed\n");
+      return;
+    } 
+
+    printf("all methods are OK\n");
+
+    _env = env;
+    instance = _this;
 
     startCPM();
 }
