@@ -32,6 +32,9 @@ lua_State *L;
   extern int _ext_kbhit(void);
   extern uint8 _ext_getch(void);
   extern void _ext_putch(uint8 ch);
+  extern void _ext_coninit(void);
+  extern void _ext_conrelease(void);
+  extern void _ext_clrscr(void);
 #endif
 
 glob_t	pglob;
@@ -87,6 +90,10 @@ uint8 _findfirst(uint8 isdir) {
 static struct termios _old_term, _new_term;
 
 void _console_init(void) {
+	#ifdef USE_EXTERNAL_CONSOLE
+	  _ext_coninit();
+	  return;
+	#endif
 	tcgetattr(0, &_old_term);
 
 	_new_term = _old_term;
@@ -102,6 +109,10 @@ void _console_init(void) {
 }
 
 void _console_reset(void) {
+	#ifdef USE_EXTERNAL_CONSOLE
+	  _ext_conrelease();
+	  return;
+	#endif
 	tcsetattr(0, TCSANOW, &_old_term);
 }
 
@@ -153,6 +164,11 @@ uint8 _getche(void) {
 bool firstCls = true;
 
 void _clrscr(void) {
+	#ifdef USE_EXTERNAL_CONSOLE
+	  _ext_clrscr();
+	  return;
+	#endif
+
 	#ifdef NO_TTY_ECHO
 	  if ( firstCls ) {
 	    system("clear");

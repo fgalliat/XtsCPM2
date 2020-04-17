@@ -42,6 +42,34 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
   return result;
 }
 
+// ========== External console Hook ========
+
+  typedef unsigned char uint8;
+
+  // TEMP dirty impl
+  int _ext_kbhit(void) { return 0; }
+  uint8 _ext_getch(void) { return 0; }
+  void _ext_putch(uint8 ch) { printf("%c", ch); }
+
+  void _ext_coninit(void)    { printf("Init the console.\n"); }
+  void _ext_conrelease(void) { printf("Release the console.\n"); }
+  void _ext_clrscr(void) { printf("-CLS-\n"); }
+
+// =========================================
+
+  // from main.cpp
+  extern void _console_init();
+  extern void setup();
+  extern void _console_reset();
+
+  void startCPM() {
+    _console_init();
+
+    setup();
+
+    _console_reset();
+  }
+
 
 JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
   (JNIEnv * env, jobject _this) {
@@ -60,4 +88,5 @@ JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
     int _result = XtsBdosCall(env, _this,   _reg, _value);
     printf("result of call [%d]  (native int version)\n", _result);
 
+    startCPM();
 }

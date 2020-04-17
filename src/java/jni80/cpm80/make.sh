@@ -6,7 +6,7 @@ echo "Compile deps"
 g++ -c xts_string.cpp
 echo "Compile core"
 g++ -c main.cpp
-#g++ -D USE_EXTERNAL_CONSOLE -c main.cpp
+#g++ -DUSE_EXTERNAL_CONSOLE -c main.cpp
 
 echo "Link"
 g++ xts_string.o main.o
