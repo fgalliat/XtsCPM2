@@ -1,4 +1,5 @@
 bin
+distro
 *.class
 *.so
 *.o
