@@ -27,7 +27,12 @@ lua_State *L;
   #define NO_TTY_ECHO 1
 #endif
 
-
+#ifdef USE_EXTERNAL_CONSOLE
+  // for Hooked console use
+  extern int _ext_kbhit(void);
+  extern uint8 _ext_getch(void);
+  extern void _ext_putch(uint8 ch);
+#endif
 
 glob_t	pglob;
 int	dirPos;
@@ -101,6 +106,11 @@ void _console_reset(void) {
 }
 
 int _kbhit(void) {
+	#ifdef USE_EXTERNAL_CONSOLE
+	  return _ext_kbhit();
+	#endif
+
+
 	struct pollfd pfds[1];
 
 	pfds[0].fd = STDIN_FILENO;
@@ -110,10 +120,17 @@ int _kbhit(void) {
 }
 
 uint8 _getch(void) {
+	#ifdef USE_EXTERNAL_CONSOLE
+	  return _ext_getch();
+	#endif
 	return getchar();
 }
 
 void _putch(uint8 ch) {
+	#ifdef USE_EXTERNAL_CONSOLE
+	  _ext_putch(ch);
+	  return;
+	#endif
 
 	#ifdef NO_TTY_ECHO
 	#else
