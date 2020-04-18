@@ -8,7 +8,7 @@ public class JavaRunCPM {
             libraryLoaded = true;
             DBUG("Loaded CPM lib");
         } catch (UnsatisfiedLinkError ex) {
-            // ex.printStackTrace();
+             ex.printStackTrace();
             DBUG("Could not load CPM lib");
         }
     }
@@ -35,6 +35,12 @@ public class JavaRunCPM {
     }
 
     public native void startCPM();
+
+    /** returns 8bit value */
+    public native int readRAM(int addr);
+
+    /** takes 8bit value */
+    public native void writeRAM(int addr, int value);
 
     // ======================================
 

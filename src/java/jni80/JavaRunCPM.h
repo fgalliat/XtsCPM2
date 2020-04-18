@@ -15,6 +15,22 @@ extern "C" {
 JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
   (JNIEnv *, jobject);
 
+/*
+ * Class:     JavaRunCPM
+ * Method:    readRAM
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_JavaRunCPM_readRAM
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     JavaRunCPM
+ * Method:    writeRAM
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_JavaRunCPM_writeRAM
+  (JNIEnv *, jobject, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

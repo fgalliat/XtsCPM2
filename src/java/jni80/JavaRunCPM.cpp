@@ -153,3 +153,20 @@ JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
 
     startCPM();
 }
+
+#define MEMSIZE 64 * 1024
+extern uint8 RAM[MEMSIZE];
+
+JNIEXPORT jint JNICALL Java_JavaRunCPM_readRAM
+  (JNIEnv * env, jobject _this, jint address) {
+    address &= 0xffff;
+    return RAM[address];
+}
+
+JNIEXPORT void JNICALL Java_JavaRunCPM_writeRAM
+  (JNIEnv * env, jobject _this, jint address, jint value) {
+    address &= 0xffff;
+    value &= 0xff;
+
+    RAM[address] = value;
+}

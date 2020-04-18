@@ -149,7 +149,7 @@ typedef unsigned int    uint32;
 #define MEMSIZE 64 * 1024	// RAM(plus ROM) needs to be 64K to avoid compatibility issues
 
 #ifdef RAM_FAST		// Makes all function calls to memory access into direct RAM access (less calls / less code)
-static uint8 RAM[MEMSIZE];
+/*static*/ uint8 RAM[MEMSIZE];
 #define _RamSysAddr(a)		&RAM[a]
 #define _RamRead(a)			RAM[a]
 #define _RamRead16(a)		((RAM[(a & 0xffff) + 1] << 8) | RAM[a & 0xffff])
