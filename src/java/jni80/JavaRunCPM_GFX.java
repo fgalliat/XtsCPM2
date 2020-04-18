@@ -94,6 +94,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
                 tty[i - 1] = tty[i];
             }
             tty[TTY_ROWS - 1] = new char[TTY_COLS];
+            ttyCursorY = TTY_ROWS - 1;
             ttyDirty = true;
         }
 
@@ -106,7 +107,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
             ttyDirty = true;
         }
 
-        public void put_ch(char ch) {
+        public synchronized void put_ch(char ch) {
 
             if (ch == '\r') {
                 _br();
