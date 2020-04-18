@@ -1,5 +1,7 @@
 public class XtsJ80Keyb {
 
+    public static final char EOL = '\r';
+
     String buffer;
 
     public XtsJ80Keyb() {
