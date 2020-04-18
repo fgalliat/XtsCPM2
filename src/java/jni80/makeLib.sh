@@ -9,3 +9,5 @@ g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux cpm80/xts_strin
 g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux cpm80/main.cpp -o main.o -DUSE_EXTERNAL_CONSOLE
 g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux JavaRunCPM.cpp -o JavaRunCPM.o
 g++ -shared -fPIC -o libcpm80.so JavaRunCPM.o xts_string.o main.o -lc
+
+rm *.o
