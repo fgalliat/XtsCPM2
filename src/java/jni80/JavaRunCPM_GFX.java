@@ -13,11 +13,11 @@ import java.awt.event.KeyAdapter;
  * <br/>
  */
 
-public class JavaRunCPM_GFX extends JavaRunCPM {
+public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
     // ========= Devices =============
-    protected XtsJ80Video vid = new XtsJ80Video();
-    protected XtsJ80Keyb keyb = new XtsJ80Keyb();
+    protected XtsJ80Video vid;
+    protected XtsJ80Keyb keyb;
     // ===============================
 
     protected void initGUI() {
@@ -141,6 +141,18 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
 
     // ============================================
 
+    @Override
+    public XtsJ80Keyb getKeyb() {
+        return keyb;
+    }
+
+    @Override
+    public XtsJ80Video getVideo() {
+        return vid;
+    }
+
+    // ============================================
+
     public static void Zzz(long millis) {
         try {
             Thread.sleep(millis);
@@ -149,6 +161,12 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
     }
 
     public JavaRunCPM_GFX() {
+
+        // == init devices ==
+        vid = new XtsJ80Video( this );
+        keyb = new XtsJ80Keyb( this );
+        // ==================
+
         initGUI();
 
         vid.put_str("Hello World from Xtase !");

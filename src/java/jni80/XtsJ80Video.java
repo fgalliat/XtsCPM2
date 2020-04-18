@@ -27,7 +27,7 @@ public class XtsJ80Video extends JLabel {
     protected boolean ttyDirty = false;
     protected boolean bufDirty = false;
 
-    public XtsJ80Video() {
+    public XtsJ80Video(XtsJ80System system) {
         super("");
         setOpaque(true);
         setBackground(Color.BLACK);

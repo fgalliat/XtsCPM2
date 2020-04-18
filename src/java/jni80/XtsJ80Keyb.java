@@ -4,7 +4,7 @@ public class XtsJ80Keyb {
 
     String buffer;
 
-    public XtsJ80Keyb() {
+    public XtsJ80Keyb(XtsJ80System system) {
         reset();
     }
 
