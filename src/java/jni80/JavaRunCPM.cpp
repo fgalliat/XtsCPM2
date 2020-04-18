@@ -37,6 +37,11 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
 
   // jstring string = (*env)->NewStringUTF(env, name);
   // (env)->CallVoidMethod( o, midStr, reg, value);
+
+  // if (reg < 0) { reg = 256+reg; }
+  reg &= 0xff;
+  value &= 0xffff;
+
   jint result = (env)->CallIntMethod( o, midStr, reg, value);
 
   return result;
@@ -95,6 +100,12 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
   void _ext_coninit(void)    { (_env)->CallVoidMethod( instance, midConInit); }
   void _ext_conrelease(void) { (_env)->CallVoidMethod( instance, midConRelease); }
   void _ext_clrscr(void)     { (_env)->CallVoidMethod( instance, midClrScr); }
+
+// ==========
+
+  int XtsBdosCall(char reg, int value) {
+    return XtsBdosCall( _env, instance, reg, value);
+  }
 
 
 // =========================================

@@ -2,6 +2,10 @@
 
 #include "xts_string.h"
 
+#ifdef USE_EXTERNAL_BDOS
+ extern int XtsBdosCall(char reg, int value);
+#endif
+
 // =============================================================
 #include "cpm_abstraction_posix.h"
 

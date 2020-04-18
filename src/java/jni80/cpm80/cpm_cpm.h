@@ -745,6 +745,18 @@ void _Bdos(void) {
 		break;
 #endif
 #endif
+
+#ifdef USE_EXTERNAL_BDOS
+	case 225:
+	case 226:
+	case 227:
+	case 228:
+	case 229:
+	  	HL = XtsBdosCall(ch, DE);
+		break;
+#endif
+
+
 		/*
 		C = 230 (E6h) : Set 8 bit masking
 		*/
