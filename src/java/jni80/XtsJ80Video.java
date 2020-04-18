@@ -19,6 +19,8 @@ public class XtsJ80Video extends JLabel {
     protected static final int TTY_COLS = 80;
     protected static final int TTY_ROWS = 40;
 
+    protected XtsJ80System system;
+
     protected Font monospaced;
 
     protected char[][] tty = new char[TTY_ROWS][TTY_COLS];
@@ -29,6 +31,8 @@ public class XtsJ80Video extends JLabel {
 
     public XtsJ80Video(XtsJ80System system) {
         super("");
+        this.system = system;
+
         setOpaque(true);
         setBackground(Color.BLACK);
         setForeground(Color.BLUE);
@@ -103,20 +107,22 @@ public class XtsJ80Video extends JLabel {
         if (ch == '\r') {
             _br();
             return;
-        } else if (ch == (char)26) {
+        } else if (ch == (char) 26) {
             cls();
             return;
         } else if (ch == '\b') {
             ttyCursorX--;
-            if ( ttyCursorX < 0 ) {
-                ttyCursorX = TTY_COLS-1;
+            if (ttyCursorX < 0) {
+                ttyCursorX = TTY_COLS - 1;
                 ttyCursorY--;
-                if ( ttyCursorY < 0 ) {
+                if (ttyCursorY < 0) {
                     ttyCursorY = 0;
                     ttyCursorX = 0;
                 }
             }
             return;
+        } else if ( ch == (char)7 ) {
+            system.bell();
         }
 
         tty[ttyCursorY][ttyCursorX] = ch;

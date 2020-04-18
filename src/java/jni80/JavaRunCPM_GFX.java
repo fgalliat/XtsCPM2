@@ -125,6 +125,16 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         System.out.println("-REBOOT- NYI !!");
     }
 
+    public void delay(long millis) {
+        Zzz(millis);
+    }
+
+    public void bell() {
+        System.out.println("!! BELL !!");
+    }
+
+    // .....
+
     protected void ISR_1stKeyReq() {
         System.out.println("Got my 1st Keyb REQUEST !!!!");
 
@@ -163,8 +173,8 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     public JavaRunCPM_GFX() {
 
         // == init devices ==
-        vid = new XtsJ80Video( this );
-        keyb = new XtsJ80Keyb( this );
+        vid = new XtsJ80Video(this);
+        keyb = new XtsJ80Keyb(this);
         // ==================
 
         initGUI();
