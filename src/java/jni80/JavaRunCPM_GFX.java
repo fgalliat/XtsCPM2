@@ -9,6 +9,8 @@ import java.awt.Font;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
 
 public class JavaRunCPM_GFX extends JavaRunCPM {
 
@@ -151,6 +153,22 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
         });
 
         frm.setVisible(true);
+
+        // don't remember if Linux support KeyListener on whole JFrame...
+        // Yes : not on the JLabel itself
+        frm.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                // FIXME : Handler Esc key ...
+                char ch = e.getKeyChar();
+                // System.out.println(ch);
+
+                if (ch == '\n') {
+                    ch = '\r';
+                }
+
+                keyb.injectChar(ch);
+            }
+        });
 
         new Thread() {
             public void run() {
