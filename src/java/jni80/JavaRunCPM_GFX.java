@@ -251,6 +251,9 @@ public class JavaRunCPM_GFX extends JavaRunCPM {
         JavaRunCPM_GFX emul = new JavaRunCPM_GFX();
 
         emul.startCPM();
+
+        // FIXME : halt all devices
+        System.exit(0);
     }
 
 }
