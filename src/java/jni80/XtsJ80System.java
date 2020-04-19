@@ -15,4 +15,10 @@ public interface XtsJ80System {
 
     int XtsBdosCall(int reg, int value);
 
+    /** returns 8bit value */
+    int readRAM(int addr);
+
+    /** takes 8bit value */
+    void writeRAM(int addr, int value);
+
 }

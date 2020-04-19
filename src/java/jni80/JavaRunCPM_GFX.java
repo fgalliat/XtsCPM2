@@ -19,6 +19,8 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     protected XtsJ80Video vid;
     protected XtsJ80Keyb keyb;
     protected XtsJ80RgbLed led;
+
+    protected XtsJ80BdosHandler bdosHdl;
     // ===============================
 
     protected void initGUI() {
@@ -153,28 +155,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
     @Override
     public int XtsBdosCall(int reg, int value) {
-
-        if (reg == 228) {
-            int HI = value / 256;
-            int LO = value % 256;
-
-            if (HI == 3) {
-                int r = 0, g = 0, b = 0;
-                if ((LO & 1) == 1) {
-                    r = 0xFF;
-                }
-                if ((LO & 2) == 2) {
-                    g = 0xFF;
-                }
-                if ((LO & 4) == 4) {
-                    b = 0xFF;
-                }
-
-                getLed().rgb(r, g, b);
-            }
-        }
-
-        return 0;
+        return bdosHdl.XtsBdosCall(reg, value);
     }
 
     // ============================================
@@ -211,6 +192,8 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
         led = new XtsJ80RgbLed(this);
         led.setup();
+
+        bdosHdl = new XtsJ80BdosHandler(this);
         // ==================
 
         initGUI();
