@@ -18,6 +18,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     // ========= Devices =============
     protected XtsJ80Video vid;
     protected XtsJ80Keyb keyb;
+    protected XtsJ80RgbLed led;
     // ===============================
 
     protected void initGUI() {
@@ -25,6 +26,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
         JPanel mainPanel = new JPanel();
         mainPanel.add(vid);
+        mainPanel.add(led);
 
         frm.setContentPane(mainPanel);
 
@@ -149,6 +151,32 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         return "DIR" + XtsJ80Keyb.EOL;
     }
 
+    @Override
+    public int XtsBdosCall(int reg, int value) {
+
+        if (reg == 228) {
+            int HI = value / 256;
+            int LO = value % 256;
+
+            if (HI == 3) {
+                int r = 0, g = 0, b = 0;
+                if ((LO & 1) == 1) {
+                    r = 0xFF;
+                }
+                if ((LO & 2) == 2) {
+                    g = 0xFF;
+                }
+                if ((LO & 4) == 4) {
+                    b = 0xFF;
+                }
+
+                getLed().rgb(r, g, b);
+            }
+        }
+
+        return 0;
+    }
+
     // ============================================
 
     @Override
@@ -159,6 +187,11 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     @Override
     public XtsJ80Video getVideo() {
         return vid;
+    }
+
+    @Override
+    public XtsJ80RgbLed getLed() {
+        return led;
     }
 
     // ============================================
@@ -175,6 +208,9 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         // == init devices ==
         vid = new XtsJ80Video(this);
         keyb = new XtsJ80Keyb(this);
+
+        led = new XtsJ80RgbLed(this);
+        led.setup();
         // ==================
 
         initGUI();
