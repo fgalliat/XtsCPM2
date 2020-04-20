@@ -30,33 +30,93 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     protected List<String> cmdBuffer = new ArrayList<String>();
 
     void ISR_AnotherKeyReq() {
-        if ( cmdBuffer.isEmpty() ) { return; }
-        keyb.injectString( cmdBuffer.get(0) );
+        if (cmdBuffer.isEmpty()) {
+            return;
+        }
+
+        keyb.injectString(cmdBuffer.get(0));
         cmdBuffer.remove(0);
+
+        keyBuffCounter++;
     }
 
+    // ====================================
+    boolean inCompiller = false;
+    boolean atCompileTime = false;
+    int keyBuffCounter = 0;
+    // ====================================
+
+    void ISR_gotLine(String prevLine) {
+
+        // System.out.println("$$ "+ prevLine +" $$");
+
+        if (!inCompiller) {
+            if ( prevLine.contains("TURBO Pascal system") ) {
+            // if (prevLine.startsWith(">")) {
+                System.out.println("$$ "+ "ENTERED IN TP3" +" $$");
+                inCompiller = true;
+                atCompileTime = false;
+                // return;
+            }
+        }
+
+
+        if (inCompiller) {
+
+            if (!atCompileTime) {
+                cmdBuffer.add("c");
+
+                // the Program to compile
+                cmdBuffer.add("BMP.PAS" + XtsJ80Keyb.EOL);
+
+                atCompileTime = true;
+            } else {
+                if (prevLine.contains("<ESC>")) { // that doesn't work for now
+                // if (prevLine.contains(" lines")) {
+                    cmdBuffer.add("" + ((char) 27));
+
+                    cmdBuffer.add("" + ((char) 11)); // Ctrl + 'k'
+
+                    cmdBuffer.add("" + ('d')); // to Exit from Editor
+
+                    atCompileTime = false;
+
+                    cmdBuffer.add("" + ('q')); // to Exit from TP3
+                    inCompiller = false;
+                    cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
+
+                } else if (prevLine.startsWith(">")) {
+                    atCompileTime = false;
+                    cmdBuffer.add("q");// to Exit from TP3
+                    inCompiller = false;
+                    cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
+                }
+            }
+
+        }
+    }
 
     // blocking char read
     protected char _ext_getch() {
         if (firstKeybRequest) {
             ISR_1stKeyReq();
 
-            cmdBuffer.add("DIR c:"+XtsJ80Keyb.EOL);
+            // cmdBuffer.add("DIR c:"+XtsJ80Keyb.EOL);
 
-            cmdBuffer.add("c:"+XtsJ80Keyb.EOL);
-            cmdBuffer.add("b:turbo"+XtsJ80Keyb.EOL);
+            inCompiller = false;
+            cmdBuffer.add("c:" + XtsJ80Keyb.EOL);
+            cmdBuffer.add("b:turbo" + XtsJ80Keyb.EOL);
             cmdBuffer.add("y");
-            cmdBuffer.add("q");
+            // cmdBuffer.add("q");
 
-            cmdBuffer.add("a:EXIT"+XtsJ80Keyb.EOL);
+            // cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
 
             firstKeybRequest = false;
         }
 
-        if ( keyb.available() == 0 ) {
+        if (keyb.available() == 0) {
             ISR_AnotherKeyReq();
         }
-        
 
         while (keyb.available() <= 0) {
             Zzz(5);
@@ -65,16 +125,28 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         return res;
     }
 
+    String lastLine = "";
+    String curLine = "";
+
+    static final char EOL = '\r';
+
     protected void _ext_putch(char ch) {
+        if (ch == EOL) {
+            lastLine = "" + curLine.trim();
+            curLine = "";
+            ISR_gotLine(lastLine);
+        } else {
+            curLine += ch;
+        }
         console.getVtExtHandler().put_ch(ch);
     }
 
     protected void _ext_coninit() {
-        System.out.println("J> Init the console.\n");
+        // System.out.println("J> Init the console.\n");
     }
 
     protected void _ext_conrelease() {
-        System.out.println("J> Release the console.\n");
+        // System.out.println("J> Release the console.\n");
     }
 
     protected void _ext_clrscr() {
@@ -119,7 +191,8 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
 
     // the autorun sequence
     protected String AUTORUN() {
-        return "DIR"+XtsJ80Keyb.EOL;
+        // return "DIR"+XtsJ80Keyb.EOL;
+        return null;
     }
 
     @Override
