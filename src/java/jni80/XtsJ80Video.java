@@ -6,7 +6,7 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Dimension;
 
-public class XtsJ80Video extends JLabel {
+public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     protected static final int zoom = 2;
 
@@ -20,6 +20,7 @@ public class XtsJ80Video extends JLabel {
     protected static final int TTY_ROWS = 40;
 
     protected XtsJ80System system;
+    protected XtsJ80VTExtHandler consoleEmulator;
 
     protected Font monospaced;
 
@@ -33,12 +34,26 @@ public class XtsJ80Video extends JLabel {
         super("");
         this.system = system;
 
+        consoleEmulator = new XtsJ80VTExtHandler(this);
+
         setOpaque(true);
         setBackground(Color.BLACK);
         setForeground(Color.BLUE);
         setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         monospaced = new Font("Monospaced", Font.BOLD, 8 * zoom);
     }
+
+    // ==========================
+    @Override
+    public void reset() {
+        cls();
+    }
+
+    @Override
+    public void setup() {
+        cls();
+    }
+    // ==========================
 
     @Override
     public void paint(Graphics g) {
@@ -102,35 +117,73 @@ public class XtsJ80Video extends JLabel {
         ttyDirty = true;
     }
 
-    public synchronized void put_ch(char ch) {
+    // =======================
+    @Override
+    public XtsJ80VTExtHandler getVtExtHandler() {
+        return consoleEmulator;
+    }
 
-        if (ch == '\r') {
-            _br();
-            return;
-        } else if (ch == (char) 26) {
-            cls();
-            return;
-        } else if (ch == '\b') {
-            ttyCursorX--;
-            if (ttyCursorX < 0) {
-                ttyCursorX = TTY_COLS - 1;
-                ttyCursorY--;
-                if (ttyCursorY < 0) {
-                    ttyCursorY = 0;
-                    ttyCursorX = 0;
-                }
+    @Override
+    public void br() {
+        _br();
+    }
+
+    @Override
+    public void bell() {
+        system.bell();
+    }
+
+    @Override
+    public void backspace() {
+        ttyCursorX--;
+        if (ttyCursorX < 0) {
+            ttyCursorX = TTY_COLS - 1;
+            ttyCursorY--;
+            if (ttyCursorY < 0) {
+                ttyCursorY = 0;
+                ttyCursorX = 0;
             }
-            return;
-        } else if ( ch == (char)7 ) {
-            system.bell();
         }
+    }
 
+    @Override
+    public void write(char ch) {
         tty[ttyCursorY][ttyCursorX] = ch;
         ttyCursorX++;
         if (ttyCursorX >= TTY_COLS) {
             _br();
         }
         ttyDirty = true;
+    }
+
+    @Override
+    public void cursor(int col, int row) {
+        ttyCursorX = col-1;
+        if ( ttyCursorX < 0 ) { ttyCursorX = 0; }
+        if ( ttyCursorX >= TTY_COLS ) { ttyCursorX = TTY_COLS-1; }
+        ttyCursorY = row-1;
+        if ( ttyCursorY < 0 ) { ttyCursorY = 0; }
+        if ( ttyCursorY >= TTY_ROWS ) { ttyCursorY = TTY_ROWS-1; }
+    }
+
+    @Override
+    public void charAttr(int attrValue) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void eraseUntilEOL() {
+        for(int i=0; i < TTY_COLS; i++) {
+            tty[ttyCursorY][i] = 0x00;
+        }
+        ttyDirty = true;
+    }
+
+    // =======================
+
+
+    public synchronized void put_ch(char ch) {
+        consoleEmulator.put_ch(ch);
     }
 
     public void put_str(String str) {

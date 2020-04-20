@@ -16,7 +16,8 @@ import java.awt.event.KeyAdapter;
 public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
     // ========= Devices =============
-    protected XtsJ80Video vid;
+    // protected XtsJ80Video vid;
+    protected XtsJ80GenericOutputConsole console;
     protected XtsJ80Keyb keyb;
     protected XtsJ80RgbLed led;
 
@@ -27,7 +28,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         JFrame frm = new JFrame("GUI JavaRunCPM (Xtase - fgalliat Apr2020)");
 
         JPanel mainPanel = new JPanel();
-        mainPanel.add(vid);
+        mainPanel.add((XtsJ80Video)console);
         mainPanel.add(led);
 
         frm.setContentPane(mainPanel);
@@ -66,7 +67,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
             public void run() {
                 boolean inRun = true;
                 while (inRun) {
-                    vid.refresh();
+                    ((XtsJ80Video)console).refresh();
                     Zzz(100);
                 }
             }
@@ -97,7 +98,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     }
 
     protected void _ext_putch(char ch) {
-        vid.put_ch(ch);
+        console.getVtExtHandler().put_ch(ch);
     }
 
     protected void _ext_coninit() {
@@ -109,7 +110,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     }
 
     protected void _ext_clrscr() {
-        vid.cls();
+        console.cls();
     }
 
     // ============================================
@@ -167,7 +168,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
     @Override
     public XtsJ80Video getVideo() {
-        return vid;
+        return (XtsJ80Video)console;
     }
 
     @Override
@@ -187,7 +188,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     public JavaRunCPM_GFX() {
 
         // == init devices ==
-        vid = new XtsJ80Video(this);
+        console = new XtsJ80Video(this);
         keyb = new XtsJ80Keyb(this);
 
         led = new XtsJ80RgbLed(this);
@@ -198,7 +199,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
         initGUI();
 
-        vid.put_str("Hello World from Xtase !");
+        //vid.put_str("Hello World from Xtase !");
     }
 
     public static void main(String[] args) {
