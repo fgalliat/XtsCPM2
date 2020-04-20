@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JNI 80 - CPM Emulator ~headless(inMem) frontend <br/>
@@ -25,12 +27,37 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         return res;
     }
 
+    protected List<String> cmdBuffer = new ArrayList<String>();
+
+    void ISR_AnotherKeyReq() {
+        if ( cmdBuffer.isEmpty() ) { return; }
+        keyb.injectString( cmdBuffer.get(0) );
+        cmdBuffer.remove(0);
+    }
+
+
     // blocking char read
     protected char _ext_getch() {
         if (firstKeybRequest) {
             ISR_1stKeyReq();
+
+            cmdBuffer.add("DIR c:"+XtsJ80Keyb.EOL);
+
+            cmdBuffer.add("c:"+XtsJ80Keyb.EOL);
+            cmdBuffer.add("b:turbo"+XtsJ80Keyb.EOL);
+            cmdBuffer.add("y");
+            cmdBuffer.add("q");
+
+            cmdBuffer.add("a:EXIT"+XtsJ80Keyb.EOL);
+
             firstKeybRequest = false;
         }
+
+        if ( keyb.available() == 0 ) {
+            ISR_AnotherKeyReq();
+        }
+        
+
         while (keyb.available() <= 0) {
             Zzz(5);
         }
@@ -92,9 +119,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
 
     // the autorun sequence
     protected String AUTORUN() {
-        //return "DIR" + XtsJ80Keyb.EOL+"     "+"EXIT"+XtsJ80Keyb.EOL;
-        // find way to add some Pauses in KeybFeed
-        return "EXIT"+XtsJ80Keyb.EOL;
+        return "DIR"+XtsJ80Keyb.EOL;
     }
 
     @Override

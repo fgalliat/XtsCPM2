@@ -84,12 +84,19 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         return res;
     }
 
+
+
     // blocking char read
     protected char _ext_getch() {
         if (firstKeybRequest) {
             ISR_1stKeyReq();
             firstKeybRequest = false;
         }
+
+if ( keyb.available() == 0 ) {
+    // System.out.println("GET_CH request");
+}
+
         while (keyb.available() <= 0) {
             Zzz(5);
         }
