@@ -1,3 +1,10 @@
+/**
+ * 
+ * GFX(Swing) Output Console renderer
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
+
 import java.awt.Color;
 import java.awt.Graphics;
 

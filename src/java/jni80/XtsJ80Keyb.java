@@ -1,3 +1,11 @@
+/**
+ * 
+ * Generic Input Console class
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
+
+
 public class XtsJ80Keyb {
 
     public static final char EOL = '\r';

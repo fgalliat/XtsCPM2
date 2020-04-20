@@ -28,7 +28,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         JFrame frm = new JFrame("GUI JavaRunCPM (Xtase - fgalliat Apr2020)");
 
         JPanel mainPanel = new JPanel();
-        mainPanel.add((XtsJ80Video)console);
+        mainPanel.add((XtsJ80Video) console);
         mainPanel.add(led);
 
         frm.setContentPane(mainPanel);
@@ -67,7 +67,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
             public void run() {
                 boolean inRun = true;
                 while (inRun) {
-                    ((XtsJ80Video)console).refresh();
+                    ((XtsJ80Video) console).refresh();
                     Zzz(100);
                 }
             }
@@ -166,9 +166,14 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         return keyb;
     }
 
+    // @Override
+    // public XtsJ80Video getVideo() {
+    // return (XtsJ80Video)console;
+    // }
+
     @Override
-    public XtsJ80Video getVideo() {
-        return (XtsJ80Video)console;
+    public XtsJ80GenericOutputConsole getConsole() {
+        return console;
     }
 
     @Override
@@ -199,7 +204,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
         initGUI();
 
-        //vid.put_str("Hello World from Xtase !");
+        // vid.put_str("Hello World from Xtase !");
     }
 
     public static void main(String[] args) {

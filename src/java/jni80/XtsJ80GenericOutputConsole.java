@@ -1,3 +1,10 @@
+/**
+ * 
+ * Generic Output Console interface
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
+
 public interface XtsJ80GenericOutputConsole extends XtsJ80Device {
 
 

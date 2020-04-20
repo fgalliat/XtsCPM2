@@ -1,3 +1,10 @@
+/**
+ * 
+ * XtsYATxx specific Bdos Calls Handler
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
+
 public class XtsJ80BdosHandler {
 
     protected XtsJ80System system;

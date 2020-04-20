@@ -1,3 +1,10 @@
+/**
+ * 
+ * RGB Led device
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
+
 import javax.swing.*;
 import java.awt.*;
 

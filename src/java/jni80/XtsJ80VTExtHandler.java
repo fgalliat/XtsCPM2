@@ -1,3 +1,9 @@
+/**
+ * 
+ * Console Emulator (from VtExt to GenericOutputConsole)
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
 public class XtsJ80VTExtHandler {
 
     protected XtsJ80GenericOutputConsole renderer;

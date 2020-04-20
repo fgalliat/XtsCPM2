@@ -1,6 +1,14 @@
+/**
+ * 
+ * Generic XtsJ80 System interface
+ * 
+ * Xtase-fgalliat @Apr2020
+ */
+
 public interface XtsJ80System {
 
-    XtsJ80Video getVideo();
+    // XtsJ80Video getVideo();
+    XtsJ80GenericOutputConsole getConsole();
 
     XtsJ80Keyb getKeyb();
 
