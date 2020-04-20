@@ -14,7 +14,9 @@ public class XtsJ80VTExtHandler {
 
 
     public void put_ch(char ch) {
-        if (ch == '\r') {
+        if (ch == '\n') {
+            return;
+        } if (ch == '\r') {
             renderer.br();
             return;
         } else if (ch == (char) 26) {

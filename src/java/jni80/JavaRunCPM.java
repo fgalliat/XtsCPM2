@@ -42,6 +42,11 @@ public class JavaRunCPM {
     /** takes 8bit value */
     public native void writeRAM(int addr, int value);
 
+    public void halt() {
+        // FIXME : Dirty ...
+        System.exit(0);
+    }
+
     // ======================================
 
     public static void main(String[] args) {
