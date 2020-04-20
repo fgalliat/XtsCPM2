@@ -4,7 +4,10 @@ import java.util.List;
 /**
  * JNI 80 - CPM Emulator ~headless(inMem) frontend <br/>
  * by Xtase - fgalliat @Apr2020 <br/>
- * cpp code from Xtase-fgalliat (XtsCPM/XtsCPM2) (based on MockbaTheBorg RunCPM)
+ * cpp code from Xtase-fgalliat (XtsCPM/XtsCPM2) (based on MockbaTheBorg RunCPM)<br/>
+ * <br/>
+ * Used as a TurboPascal3 compiler (inMem / not on disk) backend<br/>
+ * <br/>
  * <br/>
  */
 
@@ -30,11 +33,64 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     protected List<String> cmdBuffer = new ArrayList<String>();
 
     void ISR_AnotherKeyReq() {
+
+        // System.out.println("===)"+ curLine +"(<<<["+ inCompiller +"]-["+ atCompileTime +"]");
+
+        if ( inCompiller ) {
+
+            if ( !compileStarted ) {
+                if ( curLine.startsWith(">") ) {
+                    cmdBuffer.add("c");
+
+                    // the Program to compile
+                    cmdBuffer.add("BMP.PAS" + XtsJ80Keyb.EOL);
+
+                    atCompileTime = true;
+
+                    compileStarted = true;
+                }
+            } else
+ 
+            if ( compileStarted ) {
+                if ( atCompileTime ) {
+
+                    // System.out.println("---)"+ curLine +"(<<<");
+
+                    if ( curLine.contains("<ESC>") ) {
+                        // Error case
+                        cmdBuffer.add("" + ((char) 27));
+
+                        cmdBuffer.add("" + ((char) 11)); // Ctrl + 'k'
+
+                        cmdBuffer.add("" + ('d')); // to Exit from Editor
+
+                        atCompileTime = false;
+
+                        cmdBuffer.add("" + ('q')); // to Exit from TP3
+                        inCompiller = false;
+
+                        compilerErrorFound = true;
+
+                        cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
+                    } else if ( curLine.startsWith(">") ) {
+                        // Success case
+                        atCompileTime = false;
+                        cmdBuffer.add("q");// to Exit from TP3
+                        inCompiller = false;
+                        cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
+                    }
+                }
+            }
+        }
+
+
         if (cmdBuffer.isEmpty()) {
             return;
         }
 
-        keyb.injectString(cmdBuffer.get(0));
+        String toInject = cmdBuffer.get(0);
+        // System.out.println("[["+ toInject +"]]");
+        keyb.injectString(toInject);
         cmdBuffer.remove(0);
 
         keyBuffCounter++;
@@ -43,6 +99,9 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     // ====================================
     boolean inCompiller = false;
     boolean atCompileTime = false;
+    boolean compileStarted = false;
+    boolean compilerErrorFound = false;
+    String compilerErrorMsg = "No Error";
     int keyBuffCounter = 0;
     // ====================================
 
@@ -56,44 +115,36 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
                 System.out.println("$$ "+ "ENTERED IN TP3" +" $$");
                 inCompiller = true;
                 atCompileTime = false;
+                compileStarted = false;
                 // return;
             }
+        } 
+        
+        // BEWARE w/ these flags
+        if ( compilerErrorFound ) {
+            if (prevLine.contains("Error")) {
+                System.out.println("##)");
+                System.out.println("##) --- Compiler Output --");
+                // System.out.println("##) "+prevLine );
+                System.out.println("##)");
+                System.out.println("##)");
+                compilerErrorMsg = ""+prevLine.substring(0, prevLine.indexOf("Press "))+"\n";
+
+                compileStarted = false;
+                // int lineMarker = prevLine.indexOf("Line");
+                // compilerErrorMsg += prevLine.substring( lineMarker, prevLine.indexOf("Insert", lineMarker) );
+
+                int lineMarker = prevLine.indexOf("Col");
+                String colError = prevLine.substring( lineMarker, prevLine.indexOf("Insert", lineMarker) );
+
+                lineMarker = prevLine.indexOf("Indent");
+                lineMarker = prevLine.indexOf("+", lineMarker);
+                compilerErrorMsg += "Line "+prevLine.substring( lineMarker, prevLine.indexOf(" ", lineMarker) );
+                compilerErrorMsg += " "+colError;
+
+            } 
         }
 
-
-        if (inCompiller) {
-
-            if (!atCompileTime) {
-                cmdBuffer.add("c");
-
-                // the Program to compile
-                cmdBuffer.add("BMP.PAS" + XtsJ80Keyb.EOL);
-
-                atCompileTime = true;
-            } else {
-                if (prevLine.contains("<ESC>")) { // that doesn't work for now
-                // if (prevLine.contains(" lines")) {
-                    cmdBuffer.add("" + ((char) 27));
-
-                    cmdBuffer.add("" + ((char) 11)); // Ctrl + 'k'
-
-                    cmdBuffer.add("" + ('d')); // to Exit from Editor
-
-                    atCompileTime = false;
-
-                    cmdBuffer.add("" + ('q')); // to Exit from TP3
-                    inCompiller = false;
-                    cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
-
-                } else if (prevLine.startsWith(">")) {
-                    atCompileTime = false;
-                    cmdBuffer.add("q");// to Exit from TP3
-                    inCompiller = false;
-                    cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
-                }
-            }
-
-        }
     }
 
     // blocking char read
@@ -101,15 +152,10 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         if (firstKeybRequest) {
             ISR_1stKeyReq();
 
-            // cmdBuffer.add("DIR c:"+XtsJ80Keyb.EOL);
-
             inCompiller = false;
             cmdBuffer.add("c:" + XtsJ80Keyb.EOL);
             cmdBuffer.add("b:turbo" + XtsJ80Keyb.EOL);
             cmdBuffer.add("y");
-            // cmdBuffer.add("q");
-
-            // cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
 
             firstKeybRequest = false;
         }
@@ -129,16 +175,23 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     String curLine = "";
 
     static final char EOL = '\r';
+    static final char silentEOL = '\n';
+
+    boolean silentOutput = false;
 
     protected void _ext_putch(char ch) {
+        if (ch == silentEOL) {
+        } else
         if (ch == EOL) {
-            lastLine = "" + curLine.trim();
+            lastLine = "" + curLine;
             curLine = "";
             ISR_gotLine(lastLine);
         } else {
             curLine += ch;
         }
-        console.getVtExtHandler().put_ch(ch);
+        if ( !silentOutput ) {
+            console.getVtExtHandler().put_ch(ch);
+        }
     }
 
     protected void _ext_coninit() {
@@ -246,9 +299,18 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         }
         JavaRunCPM emul = new JavaRunCPM_inMEM();
 
+        ((JavaRunCPM_inMEM)emul).silentOutput = true;
+
         emul.startCPM();
 
         // todo : detect reboot code
+
+        if( ((JavaRunCPM_inMEM)emul).compilerErrorFound ) {
+            System.out.println("Compilation Failed");
+            System.out.println(((JavaRunCPM_inMEM)emul).compilerErrorMsg);
+        } else {
+            System.out.println("Compilation Succeeded");
+        }
 
         emul.halt();
     }
