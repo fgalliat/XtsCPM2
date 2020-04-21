@@ -4,7 +4,10 @@ public class JavaRunCPM {
 
     static {
         try {
-            System.loadLibrary("cpm80");
+            // System.loadLibrary("cpm80");
+            // to load systemLib even in a jar
+            XtsJ80InJarSysLibLoader.loadNativeLib( /*JavaRunCPM.class, */"cpm80");
+
             libraryLoaded = true;
             DBUG("Loaded CPM lib");
         } catch (UnsatisfiedLinkError ex) {

@@ -11,3 +11,5 @@ g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux JavaRunCPM.cpp 
 g++ -shared -fPIC -o libcpm80.so JavaRunCPM.o xts_string.o main.o -lc
 
 rm *.o
+
+mv *.so bin/
