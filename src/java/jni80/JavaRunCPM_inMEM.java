@@ -280,6 +280,29 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     }
 
     public JavaRunCPM_inMEM() {
+        XtsJ80FileSystem fs = new XtsJ80FileSystem();
+        boolean fsValid = true;
+
+        if ( !fs.existsCPMPath("a:exit.com") ) {
+            System.out.println("(EE) Missing A: System disk");
+            fsValid = false;
+        }
+
+        if ( !fs.existsCPMPath("b:turbo.com") ) {
+            System.out.println("(EE) Missing B: TP3 disk");
+            fsValid = false;
+        }
+
+        String fileToCompile = "c:bmp.pas";
+
+        if ( !fs.existsCPMPath(fileToCompile) ) {
+            System.out.println("(EE) Missing file to compile ("+ fileToCompile +")");
+            fsValid = false;
+        }
+
+        if ( !fsValid ) {
+            throw new IllegalArgumentException("Some System files are missing");
+        }
 
         // == init devices ==
         console = new XtsJ80TextOnlyOutputConsole(this);
