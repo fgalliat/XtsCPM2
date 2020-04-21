@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -282,6 +283,12 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     public JavaRunCPM_inMEM() {
         XtsJ80FileSystem fs = new XtsJ80FileSystem();
         boolean fsValid = true;
+
+        // FIXME : do better
+        if ( ! new File("./CCP-DR.60K").exists() ) {
+            System.out.println("(EE) Missing CCP (CCP-DR.60K)");
+            fsValid = false;
+        }
 
         if ( !fs.existsCPMPath("a:exit.com") ) {
             System.out.println("(EE) Missing A: System disk");
