@@ -214,7 +214,7 @@ if ( keyb.available() == 0 ) {
         // vid.put_str("Hello World from Xtase !");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         DBUG("Starting Gfx version");
         if (!libraryLoaded) {
             System.exit(1);

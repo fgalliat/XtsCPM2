@@ -49,7 +49,7 @@ public class JavaRunCPM {
 
     // ======================================
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if ( !libraryLoaded ) {
             System.exit(1);
         }

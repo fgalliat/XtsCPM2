@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
                     String prgmFile = fileToCompile.substring(2);
 
                     // cmdBuffer.add("BMP.PAS" + XtsJ80Keyb.EOL);
-                    cmdBuffer.add( prgmFile + XtsJ80Keyb.EOL);
+                    cmdBuffer.add(prgmFile + XtsJ80Keyb.EOL);
 
                     atCompileTime = true;
                     compileStarted = true;
@@ -140,9 +141,9 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
                 // prevLine.indexOf("Insert", lineMarker) );
 
                 int lineMarker = prevLine.indexOf("Line");
-                String fileError = prevLine.substring(lineMarker-18, lineMarker-1).trim();
-                if ( fileError.contains(":") ) {
-                    fileError = fileError.substring( fileError.indexOf(":")-1 ); // looks for "C:filename"
+                String fileError = prevLine.substring(lineMarker - 18, lineMarker - 1).trim();
+                if (fileError.contains(":")) {
+                    fileError = fileError.substring(fileError.indexOf(":") - 1); // looks for "C:filename"
                 }
 
                 lineMarker = prevLine.indexOf("Col");
@@ -150,8 +151,9 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
 
                 lineMarker = prevLine.indexOf("Indent");
                 lineMarker = prevLine.indexOf("+", lineMarker);
-                compilerErrorMsg += "(EE) "+"Line " + prevLine.substring(lineMarker, prevLine.indexOf(" ", lineMarker));
-                compilerErrorMsg += " " + colError + " (in "+ fileError +")";
+                compilerErrorMsg += "(EE) " + "Line "
+                        + prevLine.substring(lineMarker, prevLine.indexOf(" ", lineMarker));
+                compilerErrorMsg += " " + colError + " (in " + fileError + ")";
 
             }
         }
@@ -346,18 +348,12 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         // ==================
     }
 
-    public static void main(String[] args) {
-        DBUG("Starting inMem version");
+    public static boolean compilePascalPrg(String cpmPasFile) throws IOException {
         if (!libraryLoaded) {
-            System.exit(1);
+            throw new IOException("Could not load jni80 system lib.");
         }
 
-        String fileToCompile = null;
-        if (args.length < 1) {
-            fileToCompile = "C:BMP.PAS";
-        } else {
-            fileToCompile = args[0];
-        }
+        String fileToCompile = cpmPasFile;
 
         JavaRunCPM emul = new JavaRunCPM_inMEM(fileToCompile);
 
@@ -370,11 +366,25 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         if (((JavaRunCPM_inMEM) emul).compilerErrorFound) {
             System.out.println("(EE) Compilation Failed");
             System.out.println(((JavaRunCPM_inMEM) emul).compilerErrorMsg);
+            throw new IOException(((JavaRunCPM_inMEM) emul).compilerErrorMsg);
         } else {
             System.out.println("(ii) Compilation Succeeded");
         }
 
         emul.halt();
+        return true;
+    }
+
+    public static void main(String[] args) throws Exception {
+        DBUG("Starting inMem version");
+        String fileToCompile = null;
+        if (args.length < 1) {
+            fileToCompile = "C:BMP.PAS";
+        } else {
+            fileToCompile = args[0];
+        }
+
+        JavaRunCPM_inMEM.compilePascalPrg(fileToCompile);
     }
 
 }
