@@ -5,7 +5,8 @@ import java.util.List;
 /**
  * JNI 80 - CPM Emulator ~headless(inMem) frontend <br/>
  * by Xtase - fgalliat @Apr2020 <br/>
- * cpp code from Xtase-fgalliat (XtsCPM/XtsCPM2) (based on MockbaTheBorg RunCPM)<br/>
+ * cpp code from Xtase-fgalliat (XtsCPM/XtsCPM2) (based on MockbaTheBorg
+ * RunCPM)<br/>
  * <br/>
  * Used as a TurboPascal3 compiler (inMem / not on disk) backend<br/>
  * <br/>
@@ -35,29 +36,32 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
 
     void ISR_AnotherKeyReq() {
 
-        // System.out.println("===)"+ curLine +"(<<<["+ inCompiller +"]-["+ atCompileTime +"]");
+        // System.out.println("===)"+ curLine +"(<<<["+ inCompiller +"]-["+
+        // atCompileTime +"]");
 
-        if ( inCompiller ) {
+        if (inCompiller) {
 
-            if ( !compileStarted ) {
-                if ( curLine.startsWith(">") ) {
-                    cmdBuffer.add("c");
+            if (!compileStarted) {
+                if (curLine.startsWith(">")) {
+                    cmdBuffer.add("c"); // compile (default in Mem)
 
-                    // the Program to compile
-                    cmdBuffer.add("BMP.PAS" + XtsJ80Keyb.EOL);
+                    // the Program to compile (C:BMP.PAS -> BMP.PAS)
+                    String prgmFile = fileToCompile.substring(2);
+
+                    // cmdBuffer.add("BMP.PAS" + XtsJ80Keyb.EOL);
+                    cmdBuffer.add( prgmFile + XtsJ80Keyb.EOL);
 
                     atCompileTime = true;
-
                     compileStarted = true;
                 }
             } else
- 
-            if ( compileStarted ) {
-                if ( atCompileTime ) {
+
+            if (compileStarted) {
+                if (atCompileTime) {
 
                     // System.out.println("---)"+ curLine +"(<<<");
 
-                    if ( curLine.contains("<ESC>") ) {
+                    if (curLine.contains("<ESC>")) {
                         // Error case
                         cmdBuffer.add("" + ((char) 27));
 
@@ -73,7 +77,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
                         compilerErrorFound = true;
 
                         cmdBuffer.add("a:EXIT" + XtsJ80Keyb.EOL);
-                    } else if ( curLine.startsWith(">") ) {
+                    } else if (curLine.startsWith(">")) {
                         // Success case
                         atCompileTime = false;
                         cmdBuffer.add("q");// to Exit from TP3
@@ -83,7 +87,6 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
                 }
             }
         }
-
 
         if (cmdBuffer.isEmpty()) {
             return;
@@ -111,39 +114,46 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         // System.out.println("$$ "+ prevLine +" $$");
 
         if (!inCompiller) {
-            if ( prevLine.contains("TURBO Pascal system") ) {
-            // if (prevLine.startsWith(">")) {
-                System.out.println("$$ "+ "ENTERED IN TP3" +" $$");
+            if (prevLine.contains("TURBO Pascal system")) {
+                // if (prevLine.startsWith(">")) {
+                // System.out.println("$$ " + "ENTERED IN TP3" + " $$");
                 inCompiller = true;
                 atCompileTime = false;
                 compileStarted = false;
                 // return;
             }
-        } 
-        
+        }
+
         // BEWARE w/ these flags
-        if ( compilerErrorFound ) {
+        if (compilerErrorFound) {
             if (prevLine.contains("Error")) {
-                System.out.println("##)");
-                System.out.println("##) --- Compiler Output --");
-                // System.out.println("##) "+prevLine );
-                System.out.println("##)");
-                System.out.println("##)");
-                compilerErrorMsg = ""+prevLine.substring(0, prevLine.indexOf("Press "))+"\n";
+                // System.out.println("##)");
+                // System.out.println("##) --- Compiler Output --");
+                // // System.out.println("##) "+prevLine );
+                // // System.out.println("##)");
+                // System.out.println("##)");
+                compilerErrorMsg = "(EE) " + prevLine.substring(0, prevLine.indexOf("Press ")) + "\n";
 
                 compileStarted = false;
                 // int lineMarker = prevLine.indexOf("Line");
-                // compilerErrorMsg += prevLine.substring( lineMarker, prevLine.indexOf("Insert", lineMarker) );
+                // compilerErrorMsg += prevLine.substring( lineMarker,
+                // prevLine.indexOf("Insert", lineMarker) );
 
-                int lineMarker = prevLine.indexOf("Col");
-                String colError = prevLine.substring( lineMarker, prevLine.indexOf("Insert", lineMarker) );
+                int lineMarker = prevLine.indexOf("Line");
+                String fileError = prevLine.substring(lineMarker-18, lineMarker-1).trim();
+                if ( fileError.contains(":") ) {
+                    fileError = fileError.substring( fileError.indexOf(":")-1 ); // looks for "C:filename"
+                }
+
+                lineMarker = prevLine.indexOf("Col");
+                String colError = prevLine.substring(lineMarker, prevLine.indexOf("Insert", lineMarker));
 
                 lineMarker = prevLine.indexOf("Indent");
                 lineMarker = prevLine.indexOf("+", lineMarker);
-                compilerErrorMsg += "Line "+prevLine.substring( lineMarker, prevLine.indexOf(" ", lineMarker) );
-                compilerErrorMsg += " "+colError;
+                compilerErrorMsg += "(EE) "+"Line " + prevLine.substring(lineMarker, prevLine.indexOf(" ", lineMarker));
+                compilerErrorMsg += " " + colError + " (in "+ fileError +")";
 
-            } 
+            }
         }
 
     }
@@ -182,15 +192,14 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
 
     protected void _ext_putch(char ch) {
         if (ch == silentEOL) {
-        } else
-        if (ch == EOL) {
+        } else if (ch == EOL) {
             lastLine = "" + curLine;
             curLine = "";
             ISR_gotLine(lastLine);
         } else {
             curLine += ch;
         }
-        if ( !silentOutput ) {
+        if (!silentOutput) {
             console.getVtExtHandler().put_ch(ch);
         }
     }
@@ -235,7 +244,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     // .....
 
     protected void ISR_1stKeyReq() {
-        System.out.println("Got my 1st Keyb REQUEST !!!!");
+        // System.out.println("Got my 1st Keyb REQUEST !!!!");
 
         String autorun = AUTORUN();
         if (autorun != null) {
@@ -280,34 +289,49 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         }
     }
 
-    public JavaRunCPM_inMEM() {
+    protected String fileToCompile = null;
+
+    public JavaRunCPM_inMEM(String fileToCompile) {
         XtsJ80FileSystem fs = new XtsJ80FileSystem();
         boolean fsValid = true;
 
+        this.fileToCompile = fileToCompile;
+
+        if (!fileToCompile.toUpperCase().endsWith(".PAS")) {
+            System.out.println("(EE) Wrong file to compile (" + fileToCompile + ") should be .PAS");
+            fsValid = false;
+        }
+
+        if (!fs.existsCPMPath(fileToCompile)) {
+            System.out.println("(EE) Missing file to compile (" + fileToCompile + ")");
+            fsValid = false;
+        }
+
         // FIXME : do better
-        if ( ! new File("./CCP-DR.60K").exists() ) {
+        if (!new File("./CCP-DR.60K").exists()) {
             System.out.println("(EE) Missing CCP (CCP-DR.60K)");
             fsValid = false;
         }
 
-        if ( !fs.existsCPMPath("a:exit.com") ) {
+        if (!fs.existsCPMPath("a:exit.com")) {
             System.out.println("(EE) Missing A: System disk");
             fsValid = false;
         }
 
-        if ( !fs.existsCPMPath("b:turbo.com") ) {
+        if (!fs.existsCPMPath("b:turbo.com")) {
             System.out.println("(EE) Missing B: TP3 disk");
             fsValid = false;
         }
 
-        String fileToCompile = "c:bmp.pas";
+        // upper ensures that the path is CPM valid
+        String drive = ("" + fileToCompile.charAt(0)).toUpperCase();
 
-        if ( !fs.existsCPMPath(fileToCompile) ) {
-            System.out.println("(EE) Missing file to compile ("+ fileToCompile +")");
+        if (!fs.existsCPMPath(drive + ":" + "TURBO.MSG")) {
+            System.out.println("(EE) Missing TP3 .MSG file (" + drive + ":" + "TURBO.MSG" + ")");
             fsValid = false;
         }
 
-        if ( !fsValid ) {
+        if (!fsValid) {
             throw new IllegalArgumentException("Some System files are missing");
         }
 
@@ -327,19 +351,27 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         if (!libraryLoaded) {
             System.exit(1);
         }
-        JavaRunCPM emul = new JavaRunCPM_inMEM();
 
-        ((JavaRunCPM_inMEM)emul).silentOutput = true;
+        String fileToCompile = null;
+        if (args.length < 1) {
+            fileToCompile = "C:BMP.PAS";
+        } else {
+            fileToCompile = args[0];
+        }
+
+        JavaRunCPM emul = new JavaRunCPM_inMEM(fileToCompile);
+
+        ((JavaRunCPM_inMEM) emul).silentOutput = true;
 
         emul.startCPM();
 
         // todo : detect reboot code
 
-        if( ((JavaRunCPM_inMEM)emul).compilerErrorFound ) {
-            System.out.println("Compilation Failed");
-            System.out.println(((JavaRunCPM_inMEM)emul).compilerErrorMsg);
+        if (((JavaRunCPM_inMEM) emul).compilerErrorFound) {
+            System.out.println("(EE) Compilation Failed");
+            System.out.println(((JavaRunCPM_inMEM) emul).compilerErrorMsg);
         } else {
-            System.out.println("Compilation Succeeded");
+            System.out.println("(ii) Compilation Succeeded");
         }
 
         emul.halt();

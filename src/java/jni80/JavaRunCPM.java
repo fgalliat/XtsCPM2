@@ -44,7 +44,7 @@ public class JavaRunCPM {
 
     public void halt() {
         // FIXME : Dirty ...
-        System.exit(0);
+        // System.exit(0);
     }
 
     // ======================================
