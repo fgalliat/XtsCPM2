@@ -1,4 +1,9 @@
-/*
+/* Copyright xtase - fgalliat @Apr2020
+ *
+ * Modified code for TurboPascal3 edition
+ * 
+ * ----------------------------------------
+ *
  * Copyright 2006-2008 Kees de Kooter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,8 +22,10 @@
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -47,44 +54,44 @@ import javax.swing.text.Utilities;
 public class PascalView extends PlainView {
 
     private static HashMap<Pattern, Color> patternColors;
-    private static String GENERIC_XML_NAME = "[A-Za-z]+[A-Za-z0-9\\-_]*(:[A-Za-z]+[A-Za-z0-9\\-_]+)?";
-    private static String TAG_PATTERN = "(</?" + GENERIC_XML_NAME + ")";
-    private static String TAG_END_PATTERN = "(>|/>)";
-    private static String TAG_ATTRIBUTE_PATTERN = "(" + GENERIC_XML_NAME + ")\\w*\\=";
-    private static String TAG_ATTRIBUTE_VALUE = "\\w*\\=\\w*(\"[^\"]*\")";
+    // private static String GENERIC_XML_NAME = "[A-Za-z]+[A-Za-z0-9\\-_]*(:[A-Za-z]+[A-Za-z0-9\\-_]+)?";
+    // private static String TAG_PATTERN = "(</?" + GENERIC_XML_NAME + ")";
+    // private static String TAG_END_PATTERN = "(>|/>)";
+    // private static String TAG_ATTRIBUTE_PATTERN = "(" + GENERIC_XML_NAME + ")\\w*\\=";
+    // private static String TAG_ATTRIBUTE_VALUE = "\\w*\\=\\w*(\"[^\"]*\")";
     
-    private static String TAG_CDATA = "(<\\!\\[CDATA\\[.*\\]\\]>)";
+    // private static String TAG_CDATA = "(<\\!\\[CDATA\\[.*\\]\\]>)";
     // =========================================>
-    // private static String commonText = "[\\w 0-9\\.\\-_,;/\\t]*";
     private static String commonText = "[^\\}]*"; // all except '}'
 
     private static String TAG_INCLUDE = "(\\{(\\$I )"+commonText+"\\})";
     private static String TAG_COMMENT = "(\\{"+commonText+"\\})";
-    private static String TYPE_DATA = "(integer|char|byte|short|real|boolean)";
-    private static String TYPE_FCTPRC = "(function|procedure)";
+    private static String TYPE_DATA = "(integer|char|byte|short|real|boolean|string)";
+    private static String TYPE_FCTPRC = "(function|procedure|program)";
     private static String TYPE_BEGEND = "(begin|end)";
     private static String TYPE_COND = "(if|else|then)";
-    private static String TYPE_FLOW = "(while|do|repeat|until)";
-    // private static String TYPE_NUM = "([\\-0-9\\.]+)";
+    private static String TYPE_FLOW = "(while| do |repeat|until)";
+    private static String TYPE_NUM = "[ ,=\\(\\*+\\-\\/)]([0-9\\.]+)";
+
+    // protected Color FOREGROUND_COLOR = Color.black;
+    protected Color FOREGROUND_COLOR = new Color( 150, 150, 150 );
+
 
     static {
         // NOTE: the order is important!
         patternColors = new LinkedHashMap<Pattern, Color>();
 
-        //patternColors.put(Pattern.compile(TAG_COMMENT), Color.BLUE);
-        // patternColors.put(Pattern.compile(TAG_INCLUDE), Color.RED);
-        patternColors.put(Pattern.compile(TAG_COMMENT), Color.BLUE);
+        patternColors.put(Pattern.compile(TAG_INCLUDE), new Color(200, 75, 60) ); // redish
+        patternColors.put(Pattern.compile(TAG_COMMENT), new Color(75, 120, 75) ); // greenish dark
 
-        patternColors.put(Pattern.compile(TYPE_DATA), Color.PINK);
-        patternColors.put(Pattern.compile(TYPE_FCTPRC), Color.ORANGE);
-        patternColors.put(Pattern.compile(TYPE_BEGEND), Color.CYAN);
-        patternColors.put(Pattern.compile(TYPE_COND), Color.GREEN);
-        patternColors.put(Pattern.compile(TYPE_FLOW), Color.GREEN);
+        patternColors.put(Pattern.compile(TYPE_DATA, Pattern.CASE_INSENSITIVE), new Color(75, 190, 160) ); // greenish
+        patternColors.put(Pattern.compile(TYPE_FCTPRC, Pattern.CASE_INSENSITIVE), new Color(80, 135, 140) ); // blueish dark
+        patternColors.put(Pattern.compile(TYPE_BEGEND, Pattern.CASE_INSENSITIVE), new Color(130, 125, 85) ); // greenish light
 
-        // patternColors.put(Pattern.compile(TYPE_NUM), Color.GREEN);
+        patternColors.put(Pattern.compile(TYPE_COND, Pattern.CASE_INSENSITIVE), new Color(130, 100, 140) ); // pinkish
+        patternColors.put(Pattern.compile(TYPE_FLOW, Pattern.CASE_INSENSITIVE), new Color(130, 100, 140) ); // pinkish
 
-        //patternColors.put(Pattern.compile(TAG_INCLUDE), Color.RED);
-        //patternColors.put(Pattern.compile(TAG_COMMENT), Color.BLUE);
+        patternColors.put(Pattern.compile(TYPE_NUM), new Color(130, 125, 85) ); // greenish light
 
 
         // patternColors
@@ -96,20 +103,41 @@ public class PascalView extends PlainView {
         //         127));
         // patternColors.put(Pattern.compile(TAG_ATTRIBUTE_VALUE), new Color(42,
         //         0, 255));
-
-
-
-
-                
     }
 
     public PascalView(Element element) {
-
         super(element);
 
         // Set tabsize to 4 (instead of the default 8)
         getDocument().putProperty(PlainDocument.tabSizeAttribute, 4);
     }
+
+    // Xts : Overlap detection
+    protected class Interval {
+        int start;
+        int end;
+        public Interval(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+
+        public boolean overlaps(Interval intv) {
+            return intv.start >= this.start && intv.start <= this.end; 
+        }
+    }
+
+    protected List<Interval> intervals = new ArrayList<>();
+
+    protected boolean hasOverlap(Interval intv) {
+        for(Interval interval : intervals) {
+            if ( interval.overlaps(intv) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Xts : END
 
     @Override
     protected int drawUnselectedText(Graphics graphics, int x, int y, int p0,
@@ -123,16 +151,23 @@ public class PascalView extends PlainView {
         SortedMap<Integer, Integer> startMap = new TreeMap<Integer, Integer>();
         SortedMap<Integer, Color> colorMap = new TreeMap<Integer, Color>();
 
+        intervals.clear();
+
         // Match all regexes on this snippet, store positions
         for (Map.Entry<Pattern, Color> entry : patternColors.entrySet()) {
 
             Matcher matcher = entry.getKey().matcher(text);
 
-            boolean foundOneMatcher = false;
             while (matcher.find()) {
+                
+                // Xts : Overlap detection
+                Interval intv = new Interval(matcher.start(1), matcher.end());
+                if ( hasOverlap(intv) ) { continue; }
+                intervals.add(intv);
+                // Xts : END
+
                 startMap.put(matcher.start(1), matcher.end());
                 colorMap.put(matcher.start(1), entry.getValue());
-                foundOneMatcher = true;
             }
             
         }
@@ -147,7 +182,7 @@ public class PascalView extends PlainView {
             int end = entry.getValue();
 
             if (i < start) {
-                graphics.setColor(Color.black);
+                graphics.setColor(FOREGROUND_COLOR);
                 doc.getText(p0 + i, start - i, segment);
                 x = Utilities.drawTabbedText(segment, x, y, graphics, this, i);
             }
@@ -160,7 +195,7 @@ public class PascalView extends PlainView {
 
         // Paint possible remaining text black
         if (i < text.length()) {
-            graphics.setColor(Color.black);
+            graphics.setColor(FOREGROUND_COLOR);
             doc.getText(p0 + i, text.length() - i, segment);
             x = Utilities.drawTabbedText(segment, x, y, graphics, this, i);
         }

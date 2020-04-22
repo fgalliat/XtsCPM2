@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
+
+import java.awt.Color;
 import java.awt.Font;
 
 // import net.boplicity.xmleditor.XmlEditorKit;
@@ -47,6 +49,8 @@ public class PascalTextPane extends JTextPane {
         this.setContentType("text/pascal");
 		
 		this.setFont( new Font( "Monospaced", Font.BOLD, 12 ) );
+		int luminance = 30;
+		this.setBackground( new Color(luminance, luminance, luminance) );
 
         addKeyListener(new IndentKeyListener());
     }
