@@ -1,1 +1,1 @@
-java -cp bin Ide80Frame
+java -cp bin IDE80
