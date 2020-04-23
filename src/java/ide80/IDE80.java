@@ -40,37 +40,18 @@ public class IDE80 extends JFrame {
 
     public static void main(String[] args) {
 
+        File fileToEdit = null;
+
         try {
 
+            String fileToCompile = "c:bmp.pas";
+            fileToCompile = "c:juke.pas";
 
-            File file = (File)invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath", "c:bmp.pas");
+            File file = (File)invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath", fileToCompile);
             System.out.println( "CPM File : "+ file.getPath() );
+            fileToEdit = file;
 
-            invokeMethodOnClass("JavaPascalCompiler", "compile", "c:bmp.pas");
-
-            
-
-
-            // Class clazz = Class.forName("JavaPascalCompiler");
-
-            // // needs a no-params constructor
-            // Object instance = clazz.newInstance();
-
-            // Method foundMeth = null;
-            // Method[] meths = clazz.getDeclaredMethods();
-            // for(Method meth : meths) {
-            //     if ( meth.getName().equals("compile") ) {
-            //         foundMeth = meth;
-            //         break;
-            //     }
-            // }
-
-            // System.out.println( foundMeth.getName() +" => "+ foundMeth.toString() );
-
-            // System.out.println("JavaPascalCompiler is available ;-) ");
-            // System.out.println("try to compile ");
-
-            // foundMeth.invoke(instance, new Object[] { "c:bmp.pas" } );
+            invokeMethodOnClass("JavaPascalCompiler", "compile", fileToCompile);
 
             System.out.println("JavaPascalCompiler is available ;-) ");
         } catch(ClassNotFoundException ex) {
@@ -85,11 +66,11 @@ public class IDE80 extends JFrame {
 
 
 
-        IDE80 xmlEditor = new IDE80();
+        IDE80 xmlEditor = new IDE80(fileToEdit);
         xmlEditor.setVisible(true);
     }
 
-    public IDE80() {
+    public IDE80(File fileToEdit) {
 
         super("Xtase Turbo Pascal Editor (IDE80)");
         setSize(800, 600);
@@ -110,8 +91,9 @@ public class IDE80 extends JFrame {
             String text = "";
 
             String path = "../jni80/distro/C/0/JUKE.PAS";
-            if ( ! new File( path ).exists() ) {
-                path = "./C/0/JUKE.PAS";
+            if ( fileToEdit != null && fileToEdit.exists() ) {
+                //path = "./C/0/JUKE.PAS";
+                path = fileToEdit.getPath();
             }
 
 
