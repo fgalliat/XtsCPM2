@@ -12,8 +12,8 @@ import javax.swing.JScrollPane;
 
 public class IDE80 extends JFrame {
 
-
-    /** assumes that class has a noArg constructor<br/>
+    /**
+     * assumes that class has a noArg constructor<br/>
      * assumes that method is not overloaded ...<br/>
      * and requires one String arg
      */
@@ -25,46 +25,47 @@ public class IDE80 extends JFrame {
 
         Method foundMeth = null;
         Method[] meths = clazz.getDeclaredMethods();
-        for(Method meth : meths) {
-            if ( meth.getName().equals(methodName) ) {
+        for (Method meth : meths) {
+            if (meth.getName().equals(methodName)) {
                 foundMeth = meth;
                 break;
             }
         }
 
-        return foundMeth.invoke(instance, new Object[] { value } );
+        return foundMeth.invoke(instance, new Object[] { value });
     }
 
-
-
-
     public static void main(String[] args) {
+
+        String fileToCompile = "c:bmp.pas";
+        fileToCompile = "c:juke.pas";
+
+        if (args != null && args.length > 0) {
+            fileToCompile = args[0];
+            if (fileToCompile.charAt(1) != ':') {
+                fileToCompile = "c:" + fileToCompile;
+            }
+        }
 
         File fileToEdit = null;
 
         try {
-
-            String fileToCompile = "c:bmp.pas";
-            fileToCompile = "c:juke.pas";
-
-            File file = (File)invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath", fileToCompile);
-            System.out.println( "CPM File : "+ file.getPath() );
+            File file = (File) invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath", fileToCompile);
+            System.out.println("CPM File : " + file.getPath());
             fileToEdit = file;
 
             invokeMethodOnClass("JavaPascalCompiler", "compile", fileToCompile);
 
             System.out.println("JavaPascalCompiler is available ;-) ");
-        } catch(ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             System.out.println("JavaPascalCompiler is not available :-( ");
-        } catch(InstantiationException | IllegalAccessException ex) {
+        } catch (InstantiationException | IllegalAccessException ex) {
             System.out.println("JavaPascalCompiler is not instanciable :-( ");
-        } catch(InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             System.out.println("JavaPascalCompiler.compile() is not invokable :-( ");
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             System.out.println("JavaPascalCompiler.compile() failed ");
         }
-
-
 
         IDE80 xmlEditor = new IDE80(fileToEdit);
         xmlEditor.setVisible(true);
@@ -91,25 +92,23 @@ public class IDE80 extends JFrame {
             String text = "";
 
             String path = "../jni80/distro/C/0/JUKE.PAS";
-            if ( fileToEdit != null && fileToEdit.exists() ) {
-                //path = "./C/0/JUKE.PAS";
+            if (fileToEdit != null && fileToEdit.exists()) {
+                // path = "./C/0/JUKE.PAS";
                 path = fileToEdit.getPath();
             }
 
-
             BufferedReader reader = new BufferedReader(new FileReader(path));
             String line;
-            while( (line = reader.readLine()) != null ) {
+            while ((line = reader.readLine()) != null) {
                 // text += line+"\r";
-                text += line+"\n"; // BEWARE @ SAVE !!!!!
+                text += line + "\n"; // BEWARE @ SAVE !!!!!
             }
             reader.close();
-            if ( text.length() > 1 ) {
-                text = text.substring(0, text.length()-1);
+            if (text.length() > 1) {
+                text = text.substring(0, text.length() - 1);
             }
 
             // System.out.println(text.substring(0, 250));
-
 
             textPane.setText(text);
         } catch (Exception exp) {
