@@ -1,6 +1,7 @@
 
 import java.awt.GridLayout;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -66,7 +67,14 @@ public class IDE80 extends JFrame {
 
         try {
             String text = "";
-            BufferedReader reader = new BufferedReader(new FileReader("../jni80/distro/C/0/JUKE.PAS"));
+
+            String path = "../jni80/distro/C/0/JUKE.PAS";
+            if ( ! new File( path ).exists() ) {
+                path = "./C/0/JUKE.PAS";
+            }
+
+
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             String line;
             while( (line = reader.readLine()) != null ) {
                 // text += line+"\r";
