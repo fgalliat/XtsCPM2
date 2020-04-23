@@ -31,6 +31,9 @@ public class IDE80 extends JFrame {
 
             System.out.println( foundMeth.getName() +" => "+ foundMeth.toString() );
 
+            System.out.println("JavaPascalCompiler is available ;-) ");
+            System.out.println("try to compile ");
+
             foundMeth.invoke(instance, new Object[] { "c:bmp.pas" } );
 
             System.out.println("JavaPascalCompiler is available ;-) ");

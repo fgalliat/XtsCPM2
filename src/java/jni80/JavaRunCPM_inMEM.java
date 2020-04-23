@@ -223,6 +223,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     public void halt(boolean kill) {
         if (!kill) {
             // FIXME : nice C++ code shutdown !
+            return;
         }
         System.exit(0);
     }
