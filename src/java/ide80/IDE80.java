@@ -12,29 +12,65 @@ import javax.swing.JScrollPane;
 
 public class IDE80 extends JFrame {
 
+
+    /** assumes that class has a noArg constructor<br/>
+     * assumes that method is not overloaded ...<br/>
+     * and requires one String arg
+     */
+    protected static Object invokeMethodOnClass(String className, String methodName, String value) throws Exception {
+        Class clazz = Class.forName(className);
+
+        // needs a no-params constructor
+        Object instance = clazz.newInstance();
+
+        Method foundMeth = null;
+        Method[] meths = clazz.getDeclaredMethods();
+        for(Method meth : meths) {
+            if ( meth.getName().equals(methodName) ) {
+                foundMeth = meth;
+                break;
+            }
+        }
+
+        return foundMeth.invoke(instance, new Object[] { value } );
+    }
+
+
+
+
     public static void main(String[] args) {
 
         try {
-            Class clazz = Class.forName("JavaPascalCompiler");
 
-            // needs a no-params constructor
-            Object instance = clazz.newInstance();
 
-            Method foundMeth = null;
-            Method[] meths = clazz.getDeclaredMethods();
-            for(Method meth : meths) {
-                if ( meth.getName().equals("compile") ) {
-                    foundMeth = meth;
-                    break;
-                }
-            }
+            File file = (File)invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath", "c:bmp.pas");
+            System.out.println( "CPM File : "+ file.getPath() );
 
-            System.out.println( foundMeth.getName() +" => "+ foundMeth.toString() );
+            invokeMethodOnClass("JavaPascalCompiler", "compile", "c:bmp.pas");
 
-            System.out.println("JavaPascalCompiler is available ;-) ");
-            System.out.println("try to compile ");
+            
 
-            foundMeth.invoke(instance, new Object[] { "c:bmp.pas" } );
+
+            // Class clazz = Class.forName("JavaPascalCompiler");
+
+            // // needs a no-params constructor
+            // Object instance = clazz.newInstance();
+
+            // Method foundMeth = null;
+            // Method[] meths = clazz.getDeclaredMethods();
+            // for(Method meth : meths) {
+            //     if ( meth.getName().equals("compile") ) {
+            //         foundMeth = meth;
+            //         break;
+            //     }
+            // }
+
+            // System.out.println( foundMeth.getName() +" => "+ foundMeth.toString() );
+
+            // System.out.println("JavaPascalCompiler is available ;-) ");
+            // System.out.println("try to compile ");
+
+            // foundMeth.invoke(instance, new Object[] { "c:bmp.pas" } );
 
             System.out.println("JavaPascalCompiler is available ;-) ");
         } catch(ClassNotFoundException ex) {
@@ -43,6 +79,8 @@ public class IDE80 extends JFrame {
             System.out.println("JavaPascalCompiler is not instanciable :-( ");
         } catch(InvocationTargetException ex) {
             System.out.println("JavaPascalCompiler.compile() is not invokable :-( ");
+        } catch(Exception ex) {
+            System.out.println("JavaPascalCompiler.compile() failed ");
         }
 
 
