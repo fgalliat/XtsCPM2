@@ -22,6 +22,15 @@
         <version>0.32</version>
     </dependency>
 
+    <!-- JNI80 -->
+    <dependency>
+        <groupId>com.xtase</groupId>
+        <artifactId>jni80</artifactId>
+        <version>1.0</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/libs/jni80.jar</systemPath>
+    </dependency>
+
  </dependencies>
 
  <build>
