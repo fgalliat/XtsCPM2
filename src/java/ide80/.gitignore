@@ -1,3 +1,4 @@
-bin
-*.class
-distro
+target
+.settings
+.classpath
+.project

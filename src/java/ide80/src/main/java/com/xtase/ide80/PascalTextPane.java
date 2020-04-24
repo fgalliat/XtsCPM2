@@ -1,3 +1,5 @@
+package com.xtase.ide80;
+
 /*
  * Copyright 2006-2008 Kees de Kooter
  *

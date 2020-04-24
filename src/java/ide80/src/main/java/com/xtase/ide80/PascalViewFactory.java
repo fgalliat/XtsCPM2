@@ -1,3 +1,5 @@
+package com.xtase.ide80;
+
 /*
  * Copyright 2006-2008 Kees de Kooter
  *
@@ -15,33 +17,24 @@
  */
 // package net.boplicity.xmleditor;
 
-import javax.swing.text.StyledEditorKit;
+import javax.swing.text.Element;
+import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
 
 /**
  * @author kees
- * @date 12-jan-2006
+ * @date 13-jan-2006
  *
  */
-public class PascalEditorKit extends StyledEditorKit {
+public class PascalViewFactory extends Object implements ViewFactory {
 
-    private static final long serialVersionUID = 2969169649596107757L;
-    private ViewFactory viewFactory;
+    /**
+     * @see javax.swing.text.ViewFactory#create(javax.swing.text.Element)
+     */
+    public View create(Element element) {
 
-    public PascalEditorKit() {
-        viewFactory = new PascalViewFactory();
-    }
-    
-    @Override
-    public ViewFactory getViewFactory() {
-        return viewFactory;
+        return new PascalView(element);
     }
 
-    @Override
-    public String getContentType() {
-        return "text/xml";
-    }
-
-    
 }

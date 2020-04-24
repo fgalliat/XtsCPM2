@@ -1,3 +1,5 @@
+package com.xtase.ide80;
+
 /* Copyright xtase - fgalliat @Apr2020
  *
  * Modified code for TurboPascal3 edition
