@@ -15,7 +15,6 @@ import java.awt.Image;
 
 import javax.swing.JLabel;
 
-
 public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     protected static final int zoom = 2;
@@ -38,6 +37,8 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     protected Font monospaced;
 
     protected char[][] tty = new char[TTY_ROWS][TTY_COLS];
+    protected char[][] ttyAttrs = new char[TTY_ROWS][TTY_COLS];
+
     protected int ttyCursorX = 0;
     protected int ttyCursorY = 0;
     protected boolean ttyDirty = false;
@@ -45,8 +46,6 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     protected Graphics dblBuff = null;
     protected Image dblBuffSupport = null;
-
-
 
     public XtsJ80Video(XtsJ80System system) {
         super("");
@@ -72,48 +71,71 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     public void setup() {
         cls();
     }
+
     // ==========================
+    protected Color BGCOLOR = Color.BLACK;
+    protected Color FGCOLOR = Color.BLUE;
+    protected Color ACCCOLOR = Color.PINK;
+
+    protected boolean dblbuffReady() {
+        return dblBuff != null;
+    }
+
+    protected void buffCls() {
+        dblBuff.setColor(BGCOLOR);
+        dblBuff.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 
     @Override
     public void paint(Graphics g) {
-        if ( dblBuffSupport == null) {
+        if (dblBuffSupport == null) {
             dblBuffSupport = createImage(SCREEN_WIDTH, SCREEN_HEIGHT);
             dblBuff = dblBuffSupport.getGraphics();
+            dblBuff.setFont(monospaced);
+
+            buffCls();
+            render(); // for the 1st time
         }
 
-        render();
-
+        g.setColor(BGCOLOR);
+        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         g.drawImage(dblBuffSupport, 0, 0, zoomed_SCREEN_WIDTH, zoomed_SCREEN_HEIGHT, null);
-
     }
 
+    protected char[] _chs = { 0x00 };
+    protected void drawOneChar(int x, int y, char ch, int attr) {
+        if ( ch == ' ' ) {
+            dblBuff.setColor(BGCOLOR);
+            dblBuff.fillRect( x * FONT_WIDTH, (y * FONT_HEIGHT), FONT_WIDTH, FONT_HEIGHT);
+        } //else {
+            if ( attr == 0x00 ) {
+                dblBuff.setColor(FGCOLOR);
+            } else if ( attr == 0x01 ) {
+                dblBuff.setColor(ACCCOLOR);
+            } else {
+                dblBuff.setColor(Color.RED);
+            }
+            // (!!) beware w/ accent color
+            _chs[0] = ch;
+            dblBuff.drawChars( _chs, 0, 1, x * FONT_WIDTH, FONT_HEIGHT + (y * FONT_HEIGHT));
+        //}
+    }
+
+
     public void render() {
-        dblBuff.setColor(Color.BLUE);
-        dblBuff.setFont(monospaced);
-
-        // g.drawString("= XtsJ80 =", 10, FONT_HEIGHT+10);
-
-        // TODO : use a dblBuff
-
-        dblBuff.setColor(Color.BLACK);
-        dblBuff.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
+        buffCls();
         if (true || ttyDirty) {
-            dblBuff.setColor(Color.BLUE);
             for (int y = 0; y < TTY_ROWS; y++) {
-                // for(int x=0; x < TTY_COLS; x++) {
-                // char ch = tty[y][x];
-                // if ( ch != 0 ) {
-                // g.drawChars(data, offset, length, x, y);
-                // }
-                // }
-                // FIXME : escapes char ....
-                dblBuff.drawChars(tty[y], 0, TTY_COLS, 0, FONT_HEIGHT + (y * FONT_HEIGHT));
+                for (int x = 0; x < TTY_COLS; x++) {
+                    char ch = tty[y][x];
+                    if (ch != 0) {
+                        drawOneChar(x, y, ch, ttyAttrs[y][x]);
+                    }
+                }
             }
             ttyDirty = false;
         }
-    } 
-
+    }
 
     public void cls() {
         for (int y = 0; y < TTY_ROWS; y++) {
@@ -121,13 +143,17 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
                 tty[y][x] = 0x00;
             }
         }
-        // dblBuff.erase
+        ttyCursorY = 0;
+        ttyCursorX = 0;
+
         ttyDirty = true;
         // ttyDirty = false; // to speed up
         bufDirty = true;
 
-        ttyCursorY = 0;
-        ttyCursorX = 0;
+        if (dblbuffReady()) {
+            buffCls();
+        }
+
     }
 
     protected void _scrollUp() {
@@ -137,6 +163,8 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
         tty[TTY_ROWS - 1] = new char[TTY_COLS];
         ttyCursorY = TTY_ROWS - 1;
         ttyDirty = true;
+
+        render();
     }
 
     protected void _br() {
@@ -180,6 +208,11 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     @Override
     public void write(char ch) {
         tty[ttyCursorY][ttyCursorX] = ch;
+
+        if ( dblbuffReady() ) {
+            drawOneChar(ttyCursorX, ttyCursorY, ch, ttyAttrs[ttyCursorY][ttyCursorX]);
+        }
+
         ttyCursorX++;
         if (ttyCursorX >= TTY_COLS) {
             _br();
@@ -189,29 +222,36 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     @Override
     public void cursor(int col, int row) {
-        ttyCursorX = col-1;
-        if ( ttyCursorX < 0 ) { ttyCursorX = 0; }
-        if ( ttyCursorX >= TTY_COLS ) { ttyCursorX = TTY_COLS-1; }
-        ttyCursorY = row-1;
-        if ( ttyCursorY < 0 ) { ttyCursorY = 0; }
-        if ( ttyCursorY >= TTY_ROWS ) { ttyCursorY = TTY_ROWS-1; }
+        ttyCursorX = col - 1;
+        if (ttyCursorX < 0) {
+            ttyCursorX = 0;
+        }
+        if (ttyCursorX >= TTY_COLS) {
+            ttyCursorX = TTY_COLS - 1;
+        }
+        ttyCursorY = row - 1;
+        if (ttyCursorY < 0) {
+            ttyCursorY = 0;
+        }
+        if (ttyCursorY >= TTY_ROWS) {
+            ttyCursorY = TTY_ROWS - 1;
+        }
     }
 
     @Override
     public void charAttr(int attrValue) {
-        // TODO Auto-generated method stub
+        ttyAttrs[ttyCursorY][ttyCursorX] = (char)attrValue;
     }
 
     @Override
     public void eraseUntilEOL() {
-        for(int i=0; i < TTY_COLS; i++) {
+        for (int i = 0; i < TTY_COLS; i++) {
             tty[ttyCursorY][i] = 0x00;
         }
         ttyDirty = true;
     }
 
     // =======================
-
 
     public synchronized void put_ch(char ch) {
         consoleEmulator.put_ch(ch);
