@@ -112,8 +112,10 @@ public class Main extends JFrame {
 
         File fileToEdit = null;
 
+        // new com.xtase.jni80.XtsJ80FileSystem().resolveCPMPath("c:test.pas");
+
         try {
-            File file = (File) invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath", cpmPath);
+            File file = (File) invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath", cpmPath);
             status("CPM File : " + file.getPath());
             fileToEdit = file;
         } catch (Exception ex) {
