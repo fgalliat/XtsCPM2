@@ -9,6 +9,8 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultCaret;
 
+import com.xtase.jni80.JavaRunCPM_GFX;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -23,6 +25,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main extends JFrame {
 
@@ -78,6 +82,30 @@ public class Main extends JFrame {
         System.setOut(curOut);
     }
 
+    public void runCpm(String cpmPath) {
+        PrintStream curOut = System.out;
+        // System.setOut( consoleStream );
+        try {
+            System.out.println("will exec : "+cpmPath);
+            new Thread() {
+                public void run() {
+                    try {
+                        // TODO : avoid System.exit(x)
+                        // TODO : set AUTORUN() value
+                        JavaRunCPM_GFX.main( new String[] { cpmPath } );
+                    } catch(Exception ex) {
+                        //status(ex.toString());
+                        System.out.println( ex.toString() );
+                    }
+                }
+            }.start();
+        } catch(Exception ex) {
+            //status(ex.toString());
+            System.out.println( ex.toString() );
+        }
+        System.setOut(curOut);
+    }
+
     // ============================
     protected JTextArea console = null;
     protected String curCpmPath = null;
@@ -87,8 +115,8 @@ public class Main extends JFrame {
     }
 
     public Main(String cpmPath) {
-        super("IDE80 ("+ cpmPath +")");
-        curCpmPath = cpmPath;
+        super("IDE80 ("+ cpmPath.toUpperCase() +")");
+        curCpmPath = cpmPath.toUpperCase();
 
         // ===========================
         // Dark Laf
@@ -121,11 +149,18 @@ public class Main extends JFrame {
         JButton compileBtn = new JButton("Compile");
         compileBtn.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                compileCpmTp3(curCpmPath);
+                compileCpmTp3(curCpmPath); // todo : compile on disk
             }
         } );
 
         JButton runBtn = new JButton("Run"); // todo : compile on disk / then add autorun
+        runBtn.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String execPath = curCpmPath.replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(".COM"));
+                runCpm(execPath);
+            }
+        } );
+
         btnPan.add( compileBtn );
         btnPan.add( runBtn );
         editorPane.add(btnPan, BorderLayout.NORTH);
