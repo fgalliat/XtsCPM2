@@ -64,11 +64,21 @@ public class XtsJ80BdosHandler {
                 int r = (test.charAt(10) << 8) + test.charAt(11);
                 if (fillType == 0x00) {
                     // draw outlines
-                    // screen.drawCircle( x,y,r, color );
-                    System.out.println("drawCircle(" + x + ", " + y + ", " + r + ", " + color + ")");
+
+                    if ( system.getConsole() instanceof XtsJ80Video ) {
+                        ((XtsJ80Video)system.getConsole()).drawCircle(x, y, r, color);
+                    } else {
+                        System.out.println("drawCircle(" + x + ", " + y + ", " + r + ", " + color + ")");
+                    }
+
                 } else {
-                    // screen.fillCircle( x,y,r, color );
-                    System.out.println("fillCircle(" + x + ", " + y + ", " + r + ", " + color + ")");
+
+                    if ( system.getConsole() instanceof XtsJ80Video ) {
+                        ((XtsJ80Video)system.getConsole()).fillCircle(x, y, r, color);
+                    } else {
+                        System.out.println("fillCircle(" + x + ", " + y + ", " + r + ", " + color + ")");
+                    }
+
                 }
             } else if (shapeType == 0x03) {
                 // Shape : line

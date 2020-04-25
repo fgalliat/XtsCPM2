@@ -283,6 +283,16 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
         dblBuff.fillRect(x1, y1, w, h);
     }
 
+    public void drawCircle(int x1, int y1, int radius, int colorNum) {
+        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.drawOval(x1, y1, radius, radius);
+    }
+
+    public void fillCircle(int x1, int y1, int radius, int colorNum) {
+        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.fillOval(x1, y1, radius, radius);
+    }
+
     // =======================
 
     public synchronized void put_ch(char ch) {
