@@ -1,19 +1,27 @@
 package com.xtase.ide80;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
+import javax.swing.text.DefaultCaret;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 
 public class Main extends JFrame {
@@ -49,8 +57,30 @@ public class Main extends JFrame {
         new Main(path);
     }
 
+    protected OutputStream consoleOut = new OutputStream(){
+        @Override
+        public void write(int b) throws IOException {
+            if ( b < 0 || b > 255 ) { return; }
+            if ( b == '\r' ) { b = (int)'\n'; }
+            console.append( ""+ (char)b );
+        }
+    };
+    protected PrintStream consoleStream = new PrintStream(consoleOut);
+
+    public void compileCpmTp3(String cpmPath) {
+        PrintStream curOut = System.out;
+        System.setOut( consoleStream );
+        try {
+            invokeMethodOnClass("com.xtase.jni80.JavaPascalCompiler", "compile", cpmPath);
+        } catch(Exception ex) {
+            status(ex.toString());
+        }
+        System.setOut(curOut);
+    }
+
     // ============================
     protected JTextArea console = null;
+    protected String curCpmPath = null;
 
     protected void status(Object o) {
         console.append(""+o+"\n");
@@ -58,6 +88,7 @@ public class Main extends JFrame {
 
     public Main(String cpmPath) {
         super("IDE80 ("+ cpmPath +")");
+        curCpmPath = cpmPath;
 
         // ===========================
         // Dark Laf
@@ -70,11 +101,36 @@ public class Main extends JFrame {
 
         console = new JTextArea("");
         console.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        
+        // === autoscroll ====
+        DefaultCaret caret = (DefaultCaret)console.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        // ===================
+
+        JScrollPane conScroller = new JScrollPane(console);
 
         PascalTextPane textPane = new PascalTextPane();
         JScrollPane scroller = new JScrollPane(textPane);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scroller, console) {
+        JPanel editorPane = new JPanel();
+        editorPane.setLayout( new BorderLayout() );
+        editorPane.add(scroller, BorderLayout.CENTER);
+
+        JPanel btnPan = new JPanel();
+        btnPan.setLayout( new FlowLayout(FlowLayout.LEFT) );
+        JButton compileBtn = new JButton("Compile");
+        compileBtn.addActionListener( new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                compileCpmTp3(curCpmPath);
+            }
+        } );
+
+        JButton runBtn = new JButton("Run"); // todo : compile on disk / then add autorun
+        btnPan.add( compileBtn );
+        btnPan.add( runBtn );
+        editorPane.add(btnPan, BorderLayout.NORTH);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editorPane, conScroller) {
             private boolean hasProportionalLocation = false;
             private double proportionalLocation = 0.5;
             private boolean isPainted = false;
