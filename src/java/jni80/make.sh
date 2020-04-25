@@ -1,12 +1,6 @@
-echo "Clean"
 rm -rf bin 2>/dev/null
 mkdir bin
 
-echo "Compile"
-# javac -d bin JavaRunCPM.java
-javac -d bin JavaRunCPM_GFX.java
-#javac -d bin JavaRunCPM_inMEM.java
-javac -d bin JavaPascalCompiler.java
-
-echo "Make Headers"
-javah -cp bin JavaRunCPM
+javac -d bin -h . -cp src/main/java src/main/java/com/xtase/jni80/JavaRunCPM.java
+javac -d bin -cp src/main/java src/main/java/com/xtase/jni80/JavaPascalCompiler.java
+javac -d bin -cp src/main/java src/main/java/com/xtase/jni80/JavaRunCPM_GFX.java

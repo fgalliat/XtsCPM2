@@ -1,3 +1,5 @@
+package com.xtase.jni80;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;

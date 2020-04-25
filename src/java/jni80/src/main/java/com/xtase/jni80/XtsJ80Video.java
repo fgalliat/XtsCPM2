@@ -1,3 +1,5 @@
+package com.xtase.jni80;
+
 /**
  * 
  * GFX(Swing) Output Console renderer

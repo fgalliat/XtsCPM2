@@ -1,3 +1,5 @@
+package com.xtase.jni80;
+
 /**
  * 
  * Generic Device interface

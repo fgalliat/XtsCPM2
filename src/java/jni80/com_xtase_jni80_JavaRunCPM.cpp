@@ -1,6 +1,6 @@
 #include <jni.h>
 
-#include "JavaRunCPM.h"
+#include "com_xtase_jni80_JavaRunCPM.h"
 
 // Globals
 static jmethodID midStr;
@@ -26,8 +26,6 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
     // printf("looking for Java method ...\n");
 
     jclass _class = (env)->GetObjectClass( o );
-    // Init - One time to initialize the method id, (use an init() function)
-    // midStr = (env)->GetMethodID( _class, "test_XtsBdosCall", sigStr);
 
     // public int XtsBdosCall(int reg, int value)
     midStr = (env)->GetMethodID( _class, "XtsBdosCall", "(II)I");
@@ -35,10 +33,6 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
     xtsBdosCallMeth_inited = true;
   }
 
-  // jstring string = (*env)->NewStringUTF(env, name);
-  // (env)->CallVoidMethod( o, midStr, reg, value);
-
-  // if (reg < 0) { reg = 256+reg; }
   reg &= 0xff;
   value &= 0xffff;
 
@@ -124,7 +118,7 @@ static jint XtsBdosCall(JNIEnv * env, jobject o,  jint reg, jint value) {
   }
 
 
-JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
+JNIEXPORT void JNICALL Java_com_xtase_jni80_JavaRunCPM_startCPM
   (JNIEnv * env, jobject _this) {
     if ( ! XtsInitMethods(env, _this) ) {
       printf("some methods failed\n");
@@ -140,13 +134,13 @@ JNIEXPORT void JNICALL Java_JavaRunCPM_startCPM
 #define MEMSIZE 64 * 1024
 extern uint8 RAM[MEMSIZE];
 
-JNIEXPORT jint JNICALL Java_JavaRunCPM_readRAM
+JNIEXPORT jint JNICALL Java_com_xtase_jni80_JavaRunCPM_readRAM
   (JNIEnv * env, jobject _this, jint address) {
     address &= 0xffff;
     return RAM[address];
 }
 
-JNIEXPORT void JNICALL Java_JavaRunCPM_writeRAM
+JNIEXPORT void JNICALL Java_com_xtase_jni80_JavaRunCPM_writeRAM
   (JNIEnv * env, jobject _this, jint address, jint value) {
     address &= 0xffff;
     value &= 0xff;

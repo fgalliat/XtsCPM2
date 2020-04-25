@@ -1,3 +1,5 @@
+package com.xtase.jni80;
+
 public class XtsJ80TextOnlyOutputConsole implements XtsJ80GenericOutputConsole {
 
     protected XtsJ80System system;

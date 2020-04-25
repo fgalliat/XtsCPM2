@@ -1,3 +1,11 @@
+package com.xtase.jni80;
+
+/**
+ * Xtase fgalliat @Apr2020
+ * 
+ * Generic encapsulation for JNI80 cpp code
+ */
+
 public class JavaRunCPM {
 
     static boolean libraryLoaded = false;

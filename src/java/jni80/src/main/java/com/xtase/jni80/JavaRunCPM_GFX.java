@@ -1,3 +1,5 @@
+package com.xtase.jni80;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 

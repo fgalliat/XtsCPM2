@@ -1,3 +1,5 @@
+package com.xtase.jni80;
+
 /**
  * 
  * XtsYATxx specific Bdos Calls Handler

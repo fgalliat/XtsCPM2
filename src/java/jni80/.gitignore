@@ -3,3 +3,4 @@ distro
 *.class
 *.so
 *.o
+jni80.jar
