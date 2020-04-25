@@ -9,21 +9,25 @@ package com.xtase.jni80;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Font;
+import java.awt.Dimension;
+import java.awt.Image;
 
 import javax.swing.JLabel;
 
-import java.awt.Font;
-import java.awt.Dimension;
 
 public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     protected static final int zoom = 2;
 
-    protected static final int SCREEN_WIDTH = 480 * zoom;
-    protected static final int SCREEN_HEIGHT = 320 * zoom;
+    protected static final int SCREEN_WIDTH = 480;
+    protected static final int SCREEN_HEIGHT = 320;
 
-    protected static final int FONT_HEIGHT = 8 * zoom;
-    protected static final int FONT_WIDTH = 6 * zoom;
+    protected static final int zoomed_SCREEN_WIDTH = SCREEN_WIDTH * zoom;
+    protected static final int zoomed_SCREEN_HEIGHT = SCREEN_HEIGHT * zoom;
+
+    protected static final int FONT_HEIGHT = 8;
+    protected static final int FONT_WIDTH = 6;
 
     protected static final int TTY_COLS = 80;
     protected static final int TTY_ROWS = 40;
@@ -39,6 +43,11 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     protected boolean ttyDirty = false;
     protected boolean bufDirty = false;
 
+    protected Graphics dblBuff = null;
+    protected Image dblBuffSupport = null;
+
+
+
     public XtsJ80Video(XtsJ80System system) {
         super("");
         this.system = system;
@@ -48,8 +57,9 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
         setOpaque(true);
         setBackground(Color.BLACK);
         setForeground(Color.BLUE);
-        setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
-        monospaced = new Font("Monospaced", Font.BOLD, 8 * zoom);
+        setPreferredSize(new Dimension(zoomed_SCREEN_WIDTH, zoomed_SCREEN_HEIGHT));
+        monospaced = new Font("Monospaced", Font.PLAIN, FONT_HEIGHT);
+
     }
 
     // ==========================
@@ -66,18 +76,30 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     @Override
     public void paint(Graphics g) {
-        g.setColor(Color.BLUE);
-        g.setFont(monospaced);
+        if ( dblBuffSupport == null) {
+            dblBuffSupport = createImage(SCREEN_WIDTH, SCREEN_HEIGHT);
+            dblBuff = dblBuffSupport.getGraphics();
+        }
+
+        render();
+
+        g.drawImage(dblBuffSupport, 0, 0, zoomed_SCREEN_WIDTH, zoomed_SCREEN_HEIGHT, null);
+
+    }
+
+    public void render() {
+        dblBuff.setColor(Color.BLUE);
+        dblBuff.setFont(monospaced);
 
         // g.drawString("= XtsJ80 =", 10, FONT_HEIGHT+10);
 
         // TODO : use a dblBuff
 
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        dblBuff.setColor(Color.BLACK);
+        dblBuff.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         if (true || ttyDirty) {
-            g.setColor(Color.BLUE);
+            dblBuff.setColor(Color.BLUE);
             for (int y = 0; y < TTY_ROWS; y++) {
                 // for(int x=0; x < TTY_COLS; x++) {
                 // char ch = tty[y][x];
@@ -86,12 +108,12 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
                 // }
                 // }
                 // FIXME : escapes char ....
-                g.drawChars(tty[y], 0, TTY_COLS, 0, FONT_HEIGHT + (y * FONT_HEIGHT));
+                dblBuff.drawChars(tty[y], 0, TTY_COLS, 0, FONT_HEIGHT + (y * FONT_HEIGHT));
             }
             ttyDirty = false;
         }
+    } 
 
-    }
 
     public void cls() {
         for (int y = 0; y < TTY_ROWS; y++) {
