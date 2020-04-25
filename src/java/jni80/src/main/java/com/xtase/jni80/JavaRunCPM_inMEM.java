@@ -172,6 +172,11 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
             cmdBuffer.add("b:turbo" + XtsJ80Keyb.EOL);
             cmdBuffer.add("y");
 
+            if ( !compileInMemOnly ) {
+                // [O]ption / .[C]om compile / [Q]uit options
+                cmdBuffer.add("ocq");
+            }
+
             firstKeybRequest = false;
         }
 
@@ -193,6 +198,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     static final char silentEOL = '\n';
 
     boolean silentOutput = false;
+    boolean compileInMemOnly = true;
 
     protected void _ext_putch(char ch) {
         if (ch == silentEOL) {
@@ -351,7 +357,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         // ==================
     }
 
-    public static boolean compilePascalPrg(String cpmPasFile) throws IOException {
+    public static boolean compilePascalPrg(String cpmPasFile, boolean inMemOnly) throws IOException {
         if (!libraryLoaded) {
             throw new IOException("Could not load jni80 system lib.");
         }
@@ -360,6 +366,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
 
         JavaRunCPM emul = new JavaRunCPM_inMEM(fileToCompile);
 
+        ((JavaRunCPM_inMEM) emul).compileInMemOnly = inMemOnly;
         ((JavaRunCPM_inMEM) emul).silentOutput = true;
 
         emul.startCPM();
@@ -387,7 +394,7 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
             fileToCompile = args[0];
         }
 
-        JavaRunCPM_inMEM.compilePascalPrg(fileToCompile);
+        JavaRunCPM_inMEM.compilePascalPrg(fileToCompile, true);
     }
 
 }

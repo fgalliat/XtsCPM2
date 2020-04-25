@@ -9,6 +9,7 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultCaret;
 
+import com.xtase.jni80.JavaPascalCompiler;
 import com.xtase.jni80.JavaRunCPM_GFX;
 
 import java.awt.BorderLayout;
@@ -61,49 +62,65 @@ public class Main extends JFrame {
         new Main(path);
     }
 
-    protected OutputStream consoleOut = new OutputStream(){
+    protected OutputStream consoleOut = new OutputStream() {
         @Override
         public void write(int b) throws IOException {
-            if ( b < 0 || b > 255 ) { return; }
-            if ( b == '\r' ) { b = (int)'\n'; }
-            console.append( ""+ (char)b );
+            if (b < 0 || b > 255) {
+                return;
+            }
+            if (b == '\r') {
+                b = (int) '\n';
+            }
+            console.append("" + (char) b);
         }
     };
     protected PrintStream consoleStream = new PrintStream(consoleOut);
 
-    public void compileCpmTp3(String cpmPath) {
-        PrintStream curOut = System.out;
-        System.setOut( consoleStream );
+    public void compileCpmTp3(String cpmPath, boolean inMemOnly) {
         try {
-            invokeMethodOnClass("com.xtase.jni80.JavaPascalCompiler", "compile", cpmPath);
-        } catch(Exception ex) {
+            // invokeMethodOnClass("com.xtase.jni80.JavaPascalCompiler", "compile",
+            // cpmPath);
+            // boolean inMemOnly = true;
+
+            if (inMemOnly) {
+                System.out.println("Will compile in Memory only");
+            } else {
+                System.out.println("Will compile on Disk");
+            }
+            new JavaPascalCompiler().compile(cpmPath, inMemOnly);
+        } catch (Exception ex) {
             status(ex.toString());
         }
-        System.setOut(curOut);
     }
 
-    public void runCpm(String cpmPath) {
-        PrintStream curOut = System.out;
-        // System.setOut( consoleStream );
+    public void runCpmTp3(String cpmPath) {
+        // c:bmp.pas => "c:bmp" (not c:bmp.com)
+        final String _cpmPath = curCpmPath.replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(""));
+
         try {
-            System.out.println("will exec : "+cpmPath);
+            System.out.println("will exec : " + _cpmPath);
             new Thread() {
                 public void run() {
                     try {
-                        // TODO : avoid System.exit(x)
-                        // TODO : set AUTORUN() value
-                        JavaRunCPM_GFX.main( new String[] { cpmPath } );
-                    } catch(Exception ex) {
-                        //status(ex.toString());
-                        System.out.println( ex.toString() );
+
+                        if (!(_cpmPath.charAt(1) == ':')) {
+                            throw new IOException("Invalid CPM path (" + _cpmPath + ")");
+                        }
+
+                        // 1st : enter on proper drive
+                        // 2nd : launch executable
+                        String autorun = _cpmPath.charAt(0) + ":" + "\r" + _cpmPath.substring(2) + "\r";
+
+                        new JavaRunCPM_GFX().runCPM(autorun, false);
+                    } catch (Exception ex) {
+                        // status(ex.toString());
+                        System.out.println(ex.toString());
                     }
                 }
             }.start();
-        } catch(Exception ex) {
-            //status(ex.toString());
-            System.out.println( ex.toString() );
+        } catch (Exception ex) {
+            System.out.println(ex.toString());
         }
-        System.setOut(curOut);
     }
 
     // ============================
@@ -111,11 +128,15 @@ public class Main extends JFrame {
     protected String curCpmPath = null;
 
     protected void status(Object o) {
-        console.append(""+o+"\n");
+        try {
+            console.append("" + o + "\n");
+        } catch (Exception ex) {
+            System.out.println("(DBG) " + o);
+        }
     }
 
     public Main(String cpmPath) {
-        super("IDE80 ("+ cpmPath.toUpperCase() +")");
+        super("IDE80 (" + cpmPath.toUpperCase() + ")");
         curCpmPath = cpmPath.toUpperCase();
 
         // ===========================
@@ -129,11 +150,14 @@ public class Main extends JFrame {
 
         console = new JTextArea("");
         console.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        
         // === autoscroll ====
-        DefaultCaret caret = (DefaultCaret)console.getCaret();
+        DefaultCaret caret = (DefaultCaret) console.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         // ===================
+
+        // ==== System Output ========
+        System.setOut(consoleStream);
+        // ==== System Output ========
 
         JScrollPane conScroller = new JScrollPane(console);
 
@@ -141,28 +165,35 @@ public class Main extends JFrame {
         JScrollPane scroller = new JScrollPane(textPane);
 
         JPanel editorPane = new JPanel();
-        editorPane.setLayout( new BorderLayout() );
+        editorPane.setLayout(new BorderLayout());
         editorPane.add(scroller, BorderLayout.CENTER);
 
         JPanel btnPan = new JPanel();
-        btnPan.setLayout( new FlowLayout(FlowLayout.LEFT) );
+        btnPan.setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton compileBtn = new JButton("Compile");
-        compileBtn.addActionListener( new ActionListener() {
+        compileBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                compileCpmTp3(curCpmPath); // todo : compile on disk
+                compileCpmTp3(curCpmPath, true);
             }
-        } );
+        });
+
+        JButton compileDiskBtn = new JButton("Compile on Disk");
+        compileDiskBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                compileCpmTp3(curCpmPath, false);
+            }
+        });
 
         JButton runBtn = new JButton("Run"); // todo : compile on disk / then add autorun
-        runBtn.addActionListener( new ActionListener() {
+        runBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String execPath = curCpmPath.replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(".COM"));
-                runCpm(execPath);
+                runCpmTp3(curCpmPath);
             }
-        } );
+        });
 
-        btnPan.add( compileBtn );
-        btnPan.add( runBtn );
+        btnPan.add(compileBtn);
+        btnPan.add(compileDiskBtn);
+        btnPan.add(runBtn);
         editorPane.add(btnPan, BorderLayout.NORTH);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editorPane, conScroller) {
@@ -213,25 +244,6 @@ public class Main extends JFrame {
             status("Could not get CPM path [" + ex.toString() + "]");
         }
 
-        // try {
-        // File file = (File) invokeMethodOnClass("XtsJ80FileSystem", "resolveCPMPath",
-        // fileToCompile);
-        // System.out.println("CPM File : " + file.getPath());
-        // fileToEdit = file;
-
-        // invokeMethodOnClass("JavaPascalCompiler", "compile", fileToCompile);
-
-        // System.out.println("JavaPascalCompiler is available ;-) ");
-        // } catch (ClassNotFoundException ex) {
-        // System.out.println("JavaPascalCompiler is not available :-( ");
-        // } catch (InstantiationException | IllegalAccessException ex) {
-        // System.out.println("JavaPascalCompiler is not instanciable :-( ");
-        // } catch (InvocationTargetException ex) {
-        // System.out.println("JavaPascalCompiler.compile() is not invokable :-( ");
-        // } catch (Exception ex) {
-        // System.out.println("JavaPascalCompiler.compile() failed ");
-        // }
-
         try {
             String text = "";
 
@@ -255,6 +267,7 @@ public class Main extends JFrame {
                 text = text.substring(0, text.length() - 1);
             }
 
+            // // print an extract
             // System.out.println(text.substring(0, 250));
 
             textPane.setText(text);

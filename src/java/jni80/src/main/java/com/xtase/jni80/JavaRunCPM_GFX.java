@@ -36,7 +36,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     }
 
     protected void initGUI() {
-        frm = new JFrame("GUI JavaRunCPM (Xtase - fgalliat Apr2020)");
+        frm = new JFrame("JNI80 JavaRunCPM (Xtase - fgalliat Apr2020)");
 
         JPanel mainPanel = new JPanel();
         mainPanel.add((XtsJ80Video) console);
@@ -81,7 +81,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
                     ((XtsJ80Video) console).refresh();
                     Zzz(100);
                 }
-                System.out.println("Exit redraw Thread.");
+                // System.out.println("Exit redraw Thread.");
             }
         }.start();
 
@@ -119,11 +119,11 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     }
 
     protected void _ext_coninit() {
-        System.out.println("J> Init the console.\n");
+        // System.out.println("J> Init the console.\n");
     }
 
     protected void _ext_conrelease() {
-        System.out.println("J> Release the console.\n");
+        // System.out.println("J> Release the console.\n");
     }
 
     protected void _ext_clrscr() {
@@ -164,7 +164,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     // .....
 
     protected void ISR_1stKeyReq() {
-        System.out.println("Got my 1st Keyb REQUEST !!!!");
+        // System.out.println("Got my 1st Keyb REQUEST !!!!");
 
         String autorun = AUTORUN();
         if (autorun != null) {
@@ -249,6 +249,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         // todo : detect reboot code
 
         this.halt();
+        DBUG("CPM Halted");
     }
 
     public static void main(String[] args) throws Exception {
