@@ -9,6 +9,7 @@ package com.xtase.jni80;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Font;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -249,48 +250,114 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     // =======================
 
     public Color mapColor(int colorNum) {
-        if ( colorNum >= 16 ) {
-            System.out.println("(!!) Color 565("+ colorNum +")");
+        if (colorNum >= 16) {
+            System.out.println("(!!) Color 565(" + colorNum + ")");
             return Color.PINK;
         }
 
-        if ( colorNum == 0 ) { return Color.BLACK; }
-        if ( colorNum == 1 ) { return Color.WHITE; }
-        if ( colorNum == 2 ) { return Color.RED; }
-        if ( colorNum == 3 ) { return Color.GREEN; }
-        if ( colorNum == 4 ) { return Color.BLUE; }
-        if ( colorNum == 5 ) { return Color.YELLOW; }
-        //if ( colorNum == 6 ) { return Color.PURPLE; }
-        if ( colorNum == 6 ) { return Color.PINK; }
-        if ( colorNum == 7 ) { return Color.CYAN; }
-        if ( colorNum == 8 ) { return Color.ORANGE; }
-        if ( colorNum == 9 ) { return Color.MAGENTA; }
+        if (colorNum == 0) {
+            return Color.BLACK;
+        }
+        if (colorNum == 1) {
+            return Color.WHITE;
+        }
+        if (colorNum == 2) {
+            return Color.RED;
+        }
+        if (colorNum == 3) {
+            return Color.GREEN;
+        }
+        if (colorNum == 4) {
+            return Color.BLUE;
+        }
+        if (colorNum == 5) {
+            return Color.YELLOW;
+        }
+        // if ( colorNum == 6 ) { return Color.PURPLE; }
+        if (colorNum == 6) {
+            return Color.PINK;
+        }
+        if (colorNum == 7) {
+            return Color.CYAN;
+        }
+        if (colorNum == 8) {
+            return Color.ORANGE;
+        }
+        if (colorNum == 9) {
+            return Color.MAGENTA;
+        }
         return Color.PINK;
     }
 
     public void drawLine(int x1, int y1, int x2, int y2, int colorNum) {
-        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.setColor(mapColor(colorNum));
         dblBuff.drawLine(x1, y1, x2, y2);
     }
 
     public void drawRect(int x1, int y1, int w, int h, int colorNum) {
-        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.setColor(mapColor(colorNum));
         dblBuff.drawRect(x1, y1, w, h);
     }
 
     public void fillRect(int x1, int y1, int w, int h, int colorNum) {
-        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.setColor(mapColor(colorNum));
         dblBuff.fillRect(x1, y1, w, h);
     }
 
+    public void fillRect(int x1, int y1, int w, int h, int[] raster) {
+        int i = 0;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int colorRGB = (255<<24) | raster[i++]; // TODO 565 -> 24b
+                dblBuff.setColor(new Color(colorRGB));
+                dblBuff.fillRect(x1 + x, y1 + y, 1, 1);
+            }
+        }
+    }
+
     public void drawCircle(int x1, int y1, int radius, int colorNum) {
-        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.setColor(mapColor(colorNum));
         dblBuff.drawOval(x1, y1, radius, radius);
     }
 
     public void fillCircle(int x1, int y1, int radius, int colorNum) {
-        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.setColor(mapColor(colorNum));
         dblBuff.fillOval(x1, y1, radius, radius);
+    }
+
+    public int getScreenWidth() {
+        return SCREEN_WIDTH;
+    }
+
+    public int getScreenHeight() {
+        return SCREEN_HEIGHT;
+    }
+
+    public void warn(String str) {
+        put_str("=== WARNING ===");
+        put_str(str);
+        put_str("===============");
+    }
+
+    public void setRotated(boolean rotated) {
+        System.out.println("ROTATE NYI");
+        if ( rotated ) {
+            Graphics2D g2 = ((Graphics2D)dblBuff);
+            g2.translate(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+            // g2.translate(SCREEN_HEIGHT/2, SCREEN_WIDTH/2);
+            g2.rotate(Math.toRadians(90));  
+            // g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
+            g2.translate(-SCREEN_HEIGHT/2, -SCREEN_WIDTH/2);
+        }
+        else {
+            Graphics2D g2 = ((Graphics2D)dblBuff);
+            //g2.translate(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+            g2.translate(SCREEN_HEIGHT/2, SCREEN_WIDTH/2);
+            g2.rotate(Math.toRadians(-90));  
+            // g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
+            // g2.translate(-SCREEN_HEIGHT/2, -SCREEN_WIDTH/2);
+            g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
+        }
     }
 
     // =======================

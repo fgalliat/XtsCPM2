@@ -128,6 +128,20 @@ public class XtsJ80BdosHandler {
             return drawingShapesBdos(ramString);
         } else {
             System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" + ramString + "'");
+
+            if ( ramString.startsWith("!") ) {
+                System.out.println("Sprite loading => ....");
+            } else {
+                // TODO better
+                XtsJ80FileSystem fs = new XtsJ80FileSystem();
+                try {
+                    new XtsJ80ImageDecoder((XtsJ80Video)system.getConsole(), fs, system.getLed()).drawBitmapFile(ramString, 0, 0, true);
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
         }
 
         return 0;

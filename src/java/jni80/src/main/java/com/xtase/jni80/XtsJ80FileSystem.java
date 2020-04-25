@@ -43,4 +43,15 @@ public class XtsJ80FileSystem {
         return resolveCPMPath(cpmPath).exists();
     }
 
+    /**
+     * 'ishar.pak' -> 'z:ishar.pak' -> './Z/0/ISHAR.PAK' <br/>
+     * 'y:pack1.pak' -> 'y:pack1.pak' -> './Y/0/PACK1.PAK' <br/>
+     */
+    public File resolveAssetPath(String assetPath) throws IllegalArgumentException {
+        if (assetPath.charAt(1) != ':') {
+            assetPath = "z:" + assetPath;
+        }
+        return resolveCPMPath(assetPath);
+    }
+
 }

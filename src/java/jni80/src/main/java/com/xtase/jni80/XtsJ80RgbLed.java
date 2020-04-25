@@ -35,7 +35,11 @@ public class XtsJ80RgbLed extends JLabel implements XtsJ80Device {
 
     public void rgb(int r, int g, int b) {
         setBackground(new Color(r, g, b));
-        // need repaint ?
+    }
+
+    public void drive_led(boolean state) {
+        if ( state ) { rgb(255, 0, 0); } // TODO : save prev. color
+        else { off(); } // TODO : restore color
     }
 
 }
