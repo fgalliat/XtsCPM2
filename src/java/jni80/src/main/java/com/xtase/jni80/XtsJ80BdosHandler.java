@@ -42,12 +42,22 @@ public class XtsJ80BdosHandler {
                 int h = (test.charAt(12) << 8) + test.charAt(13);
                 if (fillType == 0x00) {
                     // draw outlines
-                    // screen.drawRect( x, y, w, h, color );
-                    System.out.println("drawRect(" + x + ", " + y + ", " + w + ", " + h + ", " + color + ")");
+
+                    if ( system.getConsole() instanceof XtsJ80Video ) {
+                        ((XtsJ80Video)system.getConsole()).drawRect(x, y, w, h, color);
+                    } else {
+                        System.out.println("drawRect(" + x + ", " + y + ", " + w + ", " + h + ", " + color + ")");
+                    }
+
                 } else if (fillType == 0x01) {
                     // fills the rect
-                    // screen.fillRect( x, y, w, h, color );
-                    System.out.println("fillRect(" + x + ", " + y + ", " + w + ", " + h + ", " + color + ")");
+
+                    if ( system.getConsole() instanceof XtsJ80Video ) {
+                        ((XtsJ80Video)system.getConsole()).fillRect(x, y, w, h, color);
+                    } else {
+                        System.out.println("fillRect(" + x + ", " + y + ", " + w + ", " + h + ", " + color + ")");
+                    }
+
                 }
             } else if (shapeType == 0x02) {
                 // Shape : circle
@@ -64,8 +74,13 @@ public class XtsJ80BdosHandler {
                 // Shape : line
                 int x2 = (test.charAt(10) << 8) + test.charAt(11);
                 int y2 = (test.charAt(12) << 8) + test.charAt(13);
-                // screen.drawLine( x, y, x2, y2, color );
-                System.out.println("drawLine(" + x + ", " + y + ", " + x2 + ", " + y2 + ", " + color + ")");
+
+                if ( system.getConsole() instanceof XtsJ80Video ) {
+                    ((XtsJ80Video)system.getConsole()).drawLine(x, y, x2, y2, color);
+                } else {
+                    System.out.println("drawLine(" + x + ", " + y + ", " + x2 + ", " + y2 + ", " + color + ")");
+                }
+
             }
         } else if (OpType == 0x80) {
             // manage Sprite

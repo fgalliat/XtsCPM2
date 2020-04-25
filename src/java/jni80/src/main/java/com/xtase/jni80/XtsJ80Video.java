@@ -103,37 +103,32 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     }
 
     protected char[] _chs = { 0x00 };
-    protected void drawOneChar(int x, int y, char ch, int attr) {
-        if ( ch == ' ' ) {
-            dblBuff.setColor(BGCOLOR);
-            dblBuff.fillRect( x * FONT_WIDTH, (y * FONT_HEIGHT), FONT_WIDTH, FONT_HEIGHT);
-        } //else {
-            if ( attr == 0x00 ) {
-                dblBuff.setColor(FGCOLOR);
-            } else if ( attr == 0x01 ) {
-                dblBuff.setColor(ACCCOLOR);
-            } else {
-                dblBuff.setColor(Color.RED);
-            }
-            // (!!) beware w/ accent color
-            _chs[0] = ch;
-            dblBuff.drawChars( _chs, 0, 1, x * FONT_WIDTH, FONT_HEIGHT + (y * FONT_HEIGHT));
-        //}
-    }
 
+    protected void drawOneChar(int x, int y, char ch, int attr) {
+        if (ch == ' ') {
+            dblBuff.setColor(BGCOLOR);
+            dblBuff.fillRect(x * FONT_WIDTH, (y * FONT_HEIGHT), FONT_WIDTH, FONT_HEIGHT);
+        }
+        if (attr == 0x00) {
+            dblBuff.setColor(FGCOLOR);
+        } else if (attr == 0x01) {
+            dblBuff.setColor(ACCCOLOR);
+        } else {
+            dblBuff.setColor(Color.RED);
+        }
+        _chs[0] = ch;
+        dblBuff.drawChars(_chs, 0, 1, x * FONT_WIDTH, FONT_HEIGHT + (y * FONT_HEIGHT));
+    }
 
     public void render() {
         buffCls();
-        if (true || ttyDirty) {
-            for (int y = 0; y < TTY_ROWS; y++) {
-                for (int x = 0; x < TTY_COLS; x++) {
-                    char ch = tty[y][x];
-                    if (ch != 0) {
-                        drawOneChar(x, y, ch, ttyAttrs[y][x]);
-                    }
+        for (int y = 0; y < TTY_ROWS; y++) {
+            for (int x = 0; x < TTY_COLS; x++) {
+                char ch = tty[y][x];
+                if (ch != 0) {
+                    drawOneChar(x, y, ch, ttyAttrs[y][x]);
                 }
             }
-            ttyDirty = false;
         }
     }
 
@@ -209,7 +204,7 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     public void write(char ch) {
         tty[ttyCursorY][ttyCursorX] = ch;
 
-        if ( dblbuffReady() ) {
+        if (dblbuffReady()) {
             drawOneChar(ttyCursorX, ttyCursorY, ch, ttyAttrs[ttyCursorY][ttyCursorX]);
         }
 
@@ -240,7 +235,7 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     @Override
     public void charAttr(int attrValue) {
-        ttyAttrs[ttyCursorY][ttyCursorX] = (char)attrValue;
+        ttyAttrs[ttyCursorY][ttyCursorX] = (char) attrValue;
     }
 
     @Override
@@ -249,6 +244,43 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
             tty[ttyCursorY][i] = 0x00;
         }
         ttyDirty = true;
+    }
+
+    // =======================
+
+    public Color mapColor(int colorNum) {
+        if ( colorNum >= 16 ) {
+            System.out.println("(!!) Color 565("+ colorNum +")");
+            return Color.PINK;
+        }
+
+        if ( colorNum == 0 ) { return Color.BLACK; }
+        if ( colorNum == 1 ) { return Color.WHITE; }
+        if ( colorNum == 2 ) { return Color.RED; }
+        if ( colorNum == 3 ) { return Color.GREEN; }
+        if ( colorNum == 4 ) { return Color.BLUE; }
+        if ( colorNum == 5 ) { return Color.YELLOW; }
+        //if ( colorNum == 6 ) { return Color.PURPLE; }
+        if ( colorNum == 6 ) { return Color.PINK; }
+        if ( colorNum == 7 ) { return Color.CYAN; }
+        if ( colorNum == 8 ) { return Color.ORANGE; }
+        if ( colorNum == 9 ) { return Color.MAGENTA; }
+        return Color.PINK;
+    }
+
+    public void drawLine(int x1, int y1, int x2, int y2, int colorNum) {
+        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.drawLine(x1, y1, x2, y2);
+    }
+
+    public void drawRect(int x1, int y1, int w, int h, int colorNum) {
+        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.drawRect(x1, y1, w, h);
+    }
+
+    public void fillRect(int x1, int y1, int w, int h, int colorNum) {
+        dblBuff.setColor( mapColor(colorNum) );
+        dblBuff.fillRect(x1, y1, w, h);
     }
 
     // =======================
