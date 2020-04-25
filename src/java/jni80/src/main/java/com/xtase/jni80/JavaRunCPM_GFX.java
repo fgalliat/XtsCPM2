@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 
@@ -26,8 +27,16 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     protected XtsJ80BdosHandler bdosHdl;
     // ===============================
 
+    protected boolean inRun = false;
+    protected JFrame frm = null;
+    protected boolean forceExit = true;
+
+    public void setDefaultClosingMode(boolean forceExit) {
+        this.forceExit = forceExit;
+    }
+
     protected void initGUI() {
-        JFrame frm = new JFrame("GUI JavaRunCPM (Xtase - fgalliat Apr2020)");
+        frm = new JFrame("GUI JavaRunCPM (Xtase - fgalliat Apr2020)");
 
         JPanel mainPanel = new JPanel();
         mainPanel.add((XtsJ80Video) console);
@@ -67,11 +76,12 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
         new Thread() {
             public void run() {
-                boolean inRun = true;
+                inRun = true;
                 while (inRun) {
                     ((XtsJ80Video) console).refresh();
                     Zzz(100);
                 }
+                System.out.println("Exit redraw Thread.");
             }
         }.start();
 
@@ -86,8 +96,6 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         return res;
     }
 
-
-
     // blocking char read
     protected char _ext_getch() {
         if (firstKeybRequest) {
@@ -95,9 +103,9 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
             firstKeybRequest = false;
         }
 
-if ( keyb.available() == 0 ) {
-    // System.out.println("GET_CH request");
-}
+        // if ( keyb.available() == 0 ) {
+        // // System.out.println("GET_CH request");
+        // }
 
         while (keyb.available() <= 0) {
             Zzz(5);
@@ -125,10 +133,16 @@ if ( keyb.available() == 0 ) {
     // ============================================
 
     public void halt(boolean kill) {
-        if (!kill) {
-            // FIXME : nice C++ code shutdown !
+        inRun = false;
+        frm.setVisible(false);
+        // if (!kill) {
+        // // FIXME : nice C++ code shutdown !
+        // return;
+        // }
+
+        if (kill || forceExit) {
+            System.exit(0);
         }
-        System.exit(0);
     }
 
     public void halt() {
@@ -158,9 +172,15 @@ if ( keyb.available() == 0 ) {
         }
     }
 
+    protected String autorunSeq = null;
+
+    public void setAUTORUN(String seq) {
+        this.autorunSeq = seq;
+    }
+
     // the autorun sequence
     protected String AUTORUN() {
-        return "DIR" + XtsJ80Keyb.EOL;
+        return this.autorunSeq;
     }
 
     @Override
@@ -216,6 +236,21 @@ if ( keyb.available() == 0 ) {
         // vid.put_str("Hello World from Xtase !");
     }
 
+    public void runCPM(String autorun, boolean forceKill) throws IOException {
+        if (!libraryLoaded) {
+            throw new IOException("Could not load native library (jni80)");
+        }
+
+        this.setDefaultClosingMode(forceKill);
+        this.setAUTORUN(autorun);
+
+        this.startCPM();
+
+        // todo : detect reboot code
+
+        this.halt();
+    }
+
     public static void main(String[] args) throws Exception {
         DBUG("Starting Gfx version");
         if (!libraryLoaded) {
@@ -223,11 +258,9 @@ if ( keyb.available() == 0 ) {
         }
         JavaRunCPM_GFX emul = new JavaRunCPM_GFX();
 
-        emul.startCPM();
+        emul.runCPM("DIR" + XtsJ80Keyb.EOL, true);
 
-        // todo : detect reboot code
-
-        emul.halt();
+        DBUG("Ending Gfx version");
     }
 
 }
