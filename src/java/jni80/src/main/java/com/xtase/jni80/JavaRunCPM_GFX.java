@@ -51,7 +51,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
                 halt();
             }
             public void windowOpened(WindowEvent e) {
-                ready();
+                // ready();
             }
         });
 
@@ -83,6 +83,10 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
                 while (inRun) {
                     ((XtsJ80Video) console).refresh();
                     Zzz(100);
+
+                    if ( !readyFlag && ((XtsJ80Video) console).dblbuffReady() ) {
+                        ready();
+                    }
                 }
                 // System.out.println("Exit redraw Thread.");
             }
