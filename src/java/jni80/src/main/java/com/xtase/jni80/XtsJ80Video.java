@@ -351,6 +351,10 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
         put_str("=== WARNING ===");
         put_str(str);
         put_str("===============");
+
+        System.out.println("=== WARNING ===");
+        System.out.println(str);
+        System.out.println("===============");
     }
 
     public void setRotated(boolean rotated) {
@@ -367,6 +371,10 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
             g2.rotate(Math.toRadians(-90));  
             g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
         }
+    }
+
+    public int color565(int r, int g, int b) {
+        return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
     }
 
     // =======================

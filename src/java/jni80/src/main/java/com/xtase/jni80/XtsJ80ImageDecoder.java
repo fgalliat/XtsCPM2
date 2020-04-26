@@ -217,7 +217,7 @@ public class XtsJ80ImageDecoder {
       }
 
       for (int i = 0; i < _scanArray16.length; i++) {
-        _scanArray16[i] = ( byteToUint8( scanArray[(i * 2) + 0] ) << 8) + byteToUint8(scanArray[(i * 2) + 1]);
+        _scanArray16[i] = (byteToUint8(scanArray[(i * 2) + 0]) << 8) + byteToUint8(scanArray[(i * 2) + 1]);
       }
 
       int usedHeight = SCAN_ARRAY_HEIGHT;
@@ -238,4 +238,271 @@ public class XtsJ80ImageDecoder {
     } catch (Exception ex) {
     }
   }
+
+  // ========== Sprites support ============
+
+  final int SPRITE_AREA_WIDTH = 160;
+  final int SPRITE_AREA_HEIGHT = 120;
+  final int SPRITE_AREA_SIZE = (SPRITE_AREA_WIDTH * SPRITE_AREA_HEIGHT);
+
+  int spriteInstanceCounter = 0;
+
+  class Sprite {
+    private int idx;
+    private int addr;
+
+    public int x, y, w, h;
+
+    Sprite() {
+      this.invalid();
+      this.idx = spriteInstanceCounter++;
+      this.addr = -1;
+    }
+
+    void setBounds(int x, int y, int w, int h) {
+      this.x = x;
+      this.y = y;
+      this.w = w;
+      this.h = h;
+    }
+
+    boolean isValid() {
+      return this.x > -1 && this.y > -1;
+    }
+
+    void invalid() {
+      this.x = -1;
+      this.y = -1;
+      this.addr = -1;
+    }
+
+    void drawClip(int x, int y) {
+      if (w < 0 || h < 0) {
+        return;
+      }
+      if (!isValid()) {
+        return;
+      }
+
+      // uint16_t row[ w ];
+      int[] row = new int[w];
+      for (int i = 0; i < h; i++) {
+        if (i + y >= screen.getScreenHeight()) {
+          break;
+        }
+
+        // // *2 cf uint16_t
+        // memcpy( &row[0], &spriteArea[ ( (this->y+i) * SPRITE_AREA_WIDTH )+this->x ],
+        // w*2 );
+        for (int col = 0; col < w; col++) {
+          row[col] = spriteArea[((this.y + i) * SPRITE_AREA_WIDTH) + this.x + col];
+        }
+
+        screen.fillRect(x, i + y, w, 1, row);
+        // System.out.println(".");
+      }
+    }
+
+  };
+
+  void cleanSprites() {
+    // memset(spriteArea, 0, SPRITE_AREA_SIZE);
+    for (int i = 0; i < SPRITE_AREA_SIZE; i++) {
+      spriteArea[i] = 0;
+    }
+
+    System.out.println("cleanSprites()");
+
+    spriteInstanceCounter = 0;
+    lastAddr = 0;
+    for (int i = 0; i < NB_SPRITES; i++) {
+      // Java specific
+      sprites[i] = new Sprite();
+
+        System.out.println("feeding sprite #"+i);
+
+      sprites[i].invalid();
+    }
+  }
+
+  final int BUFFPIXEL = 80;
+
+  // will takes only 160x120 px of bmp file
+  boolean _feedSprites(String filename, int x, int y) throws IOException {
+    if (filename == null || (filename.length()) <= 0 || (filename.length()) >= 32) {
+      console.warn("Wrong BMP filename !");
+      return false;
+    }
+
+    FileInputStream bmpFile;
+    int bmpWidth, bmpHeight; // W+H in pixels
+    int bmpDepth; // Bit depth (currently must be 24)
+    int bmpImageoffset; // Start of image data in file
+    int rowSize; // Not always = bmpWidth; may have padding
+    byte[] sdbuffer = new byte[3 * BUFFPIXEL]; // pixel buffer (R+G+B per pixel)
+    int buffidx = sizeof(sdbuffer); // Current position in sdbuffer
+    boolean goodBmp = false; // Set to true on valid header parse
+    boolean flip = true; // BMP is stored bottom-to-top
+    int w, h, row, col;
+    int r, g, b;
+    int pos = 0;// , startTime = millis();
+
+    int[] awColors = new int[320]; // hold colors for one row at a time...
+    // uint16_t awColors[160]; // hold colors for one row at a time...
+    for (int i = 0; i < 320; i++) {
+      awColors[i] = 0;
+    }
+
+    // if ((x >= tft.width()) || (y >= tft.height()))
+    // return;
+
+    // Open requested file on SD card
+    File f = fs.resolveAssetPath(filename);
+    if (!(f.exists())) {
+      console.warn("BMP File not found");
+      return false;
+    }
+
+    bmpFile = new FileInputStream(f);
+
+    // Parse BMP header
+    if (read16(bmpFile) == 0x4D42) { // BMP signature
+      read32(bmpFile);
+
+      read32(bmpFile); // Read & ignore creator bytes
+      bmpImageoffset = read32(bmpFile); // Start of image data
+      read32(bmpFile);
+
+      bmpWidth = read32(bmpFile);
+      bmpHeight = read32(bmpFile);
+      if (read16(bmpFile) == 1) { // # planes -- must be '1'
+        bmpDepth = read16(bmpFile); // bits per pixel
+        if ((bmpDepth == 24) && (read32(bmpFile) == 0)) { // 0 = uncompressed
+          goodBmp = true; // Supported BMP format -- proceed!
+
+          // BMP rows are padded (if needed) to 4-byte boundary
+          rowSize = (bmpWidth * 3 + 3) & ~3;
+
+          // If bmpHeight is negative, image is in top-down order.
+          // This is not canon but has been observed in the wild.
+          if (bmpHeight < 0) {
+            bmpHeight = -bmpHeight;
+            flip = false;
+          }
+
+          if ((x >= bmpWidth) || (y >= bmpHeight)) {
+            console.warn("Sprite OutOfBounds");
+            return false;
+          }
+
+          // Crop area to be loaded
+          // w = bmpWidth;
+          // h = bmpHeight;
+          w = SPRITE_AREA_WIDTH;
+          h = SPRITE_AREA_HEIGHT;
+          if ((x + w - 1) >= bmpWidth)
+            w = bmpWidth - x;
+          if ((y + h - 1) >= bmpHeight)
+            h = bmpHeight - y;
+
+          for (row = 0; row < h; row++) { // For each scanline...
+
+            // Seek to start of scan line. It might seem labor-
+            // intensive to be doing this on every line, but this
+            // method covers a lot of gritty details like cropping
+            // and scanline padding. Also, the seek only takes
+            // place if the file position actually needs to change
+            // (avoids a lot of cluster math in SD library).
+            if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
+              pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
+            else // Bitmap is stored top-to-bottom
+              pos = bmpImageoffset + row * rowSize;
+
+            // see if need to restore that code
+            // if (bmpFile.position() != pos) { // Need seek?
+            // bmpFile.seek(pos);
+            // buffidx = sizeof(sdbuffer); // Force buffer reload
+            // }
+
+            for (col = 0; col < w; col++) { // For each pixel...
+              // Time to read more pixel data?
+              if (buffidx >= sizeof(sdbuffer)) { // Indeed
+                bmpFile.read(sdbuffer, 0, sizeof(sdbuffer));
+                buffidx = 0; // Set index to beginning
+              }
+
+              // Convert pixel from BMP to TFT format, push to display
+              b = byteToUint8(sdbuffer[buffidx++]);
+              g = byteToUint8(sdbuffer[buffidx++]);
+              r = byteToUint8(sdbuffer[buffidx++]);
+
+              awColors[col] = screen.color565(r, g, b);
+            } // end pixel
+
+            // *2 Cf uint16_t
+            // memcpy( &spriteArea[ (row*SPRITE_AREA_WIDTH)+col ], &awColors[x], w*2 );
+            // HERE IS A BUG -- DEADLOCK
+            for (int i = 0; i < w; i++) {
+              // fails if goes up to 120
+              if (row >= SPRITE_AREA_HEIGHT - 1) {
+                break;
+              }
+              spriteArea[((row * SPRITE_AREA_WIDTH) + col) + i] = awColors[x + i];
+            }
+
+          } // end scanline
+          // long timeElapsed = millis() - startTime;
+        } // end goodBmp
+      }
+    }
+    bmpFile.close();
+    if (!goodBmp) {
+      console.warn("BMP format not recognized.");
+      return false;
+    }
+    return true;
+  }
+
+  boolean grabbSprites(String imageName, int offsetX, int offsetY) throws IOException {
+    // char* fileName = Fs.getAssetsFileEntry( imageName );
+    String fileName = imageName;
+    cleanSprites();
+    return _feedSprites(fileName, offsetX, offsetY);
+  }
+
+  final int NB_SPRITES = 15;
+  Sprite[] sprites = new Sprite[NB_SPRITES];
+
+  int[] spriteArea = new int[SPRITE_AREA_SIZE];
+  int lastAddr = 0;
+
+  boolean loadBMPSpriteBoard(String filename) throws IOException {
+    boolean ok = grabbSprites(filename, 0, 0);
+    return ok;
+  }
+
+  boolean defineSprite(int spriteNum, int x, int y, int w, int h) {
+    if (spriteNum < 0 || spriteNum >= NB_SPRITES) {
+      return false;
+    }
+    if ( sprites[spriteNum] == null ) {
+      System.out.println("null sprite #"+spriteNum);
+      return false;
+    }
+    sprites[spriteNum].setBounds(x, y, w, h);
+    return true;
+  }
+
+  boolean drawSprite(int spriteNum, int x, int y) {
+    if (spriteNum < 0 || spriteNum >= NB_SPRITES) {
+      return false;
+    }
+    if ( sprites[spriteNum] == null ) {
+      // System.out.println("null sprite #"+spriteNum);
+      return false;
+    }
+    sprites[spriteNum].drawClip(x, y);
+    return true;
+  }
+
 }

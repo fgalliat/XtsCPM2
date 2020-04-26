@@ -12,9 +12,17 @@ import java.util.regex.Pattern;
 public class XtsJ80BdosHandler {
 
     protected XtsJ80System system;
+    protected XtsJ80ImageDecoder imageDecoder = null;
+    protected XtsJ80FileSystem fs;
 
     public XtsJ80BdosHandler(XtsJ80System system) {
         this.system = system;
+        fs = new XtsJ80FileSystem();
+        try {
+            imageDecoder = new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed());
+        } catch (Exception ex) {
+            System.out.println("(!!) Failed to instanciate ImageDecoder (" + ex.toString() + ")");
+        }
     }
 
     protected String readPascalStringFromRam(int addr) {
@@ -106,14 +114,15 @@ public class XtsJ80BdosHandler {
 
                 int num = test.charAt(14);
 
-                // screen.defineSprite(num, x, y, w, h);
-                System.out.println("defineSprite(" + num + ", " + x + ", " + y + ", " + w + ", " + h + ");");
+                // System.out.println("defineSprite(" + num + ", " + x + ", " + y + ", " + w + ", " + h + ");");
+                imageDecoder.defineSprite(num, x, y, w, h);
             } else if (shapeType == 0x02) {
                 // draw sprite
                 int num = test.charAt(10);
 
                 // screen.drawSprite(num, x, y);
-                System.out.println("drawSprite(" + num + ", " + x + ", " + y + ");");
+                // System.out.println("drawSprite(" + num + ", " + x + ", " + y + ");");
+                imageDecoder.drawSprite(num, x, y);
             }
 
         }
@@ -131,10 +140,10 @@ public class XtsJ80BdosHandler {
         } else {
             System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" + ramString + "'");
 
-            if (ramString.startsWith("!")) {
+            /* if (ramString.startsWith("!")) {
                 System.out.println("Sprite loading => ....");
-            } else {
-                // TODO better
+            } else*/ {
+                // TODO better + no multiple instance of ImageDecoder nor Fs
                 XtsJ80FileSystem fs = new XtsJ80FileSystem();
 
                 if (ramString.toUpperCase().endsWith(".PAK")) {
@@ -154,21 +163,25 @@ public class XtsJ80BdosHandler {
                         filename = tks[2];
                     }
 
-System.out.println("draw Pak : ("+filename+") @"+x+", "+y);
+                    // System.out.println("draw Pak : ("+filename+") @"+x+", "+y);
 
                     try {
-                        new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed())
-                                .drawPakFile(filename, x, y, numImg);
+                        imageDecoder.drawPakFile(filename, x, y, numImg);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } else if (ramString.toUpperCase().endsWith(".BMP")) {
+                    try {
+                        if (ramString.startsWith("!")) {
+                            imageDecoder.loadBMPSpriteBoard(ramString.substring(1));
+                        } else {
+                            imageDecoder.drawBitmapFile(ramString, 0, 0, true);
+                        }
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
-                    try {
-                        new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed())
-                                .drawBitmapFile(ramString, 0, 0, true);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    System.out.println("Unknwon image format (" + ramString + ")");
                 }
 
             }
