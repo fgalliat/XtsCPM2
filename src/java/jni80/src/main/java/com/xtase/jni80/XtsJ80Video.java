@@ -316,8 +316,14 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
                 int _g = (int)(( ((color) >> 5) % (int)0x40) * (255/63));
                 int _b = (int)(color % (int)0x20) * (255/31);
 
-                int colorRGB = (255<<24) | ( _b << 16 ) | ( _g << 8) | _r;
-                dblBuff.setColor(new Color(colorRGB));
+                if ( _r > 255 ) { _r = 255; }
+                if ( _g > 255 ) { _g = 255; }
+                if ( _b > 255 ) { _b = 255; }
+
+                // int colorRGB = (255<<24) | ( _b << 16 ) | ( _g << 8) | _r;
+                // dblBuff.setColor(new Color(colorRGB));
+                dblBuff.setColor(new Color( _r, _g, _b));
+
                 dblBuff.fillRect(x1 + x, y1 + y, 1, 1);
             }
         }

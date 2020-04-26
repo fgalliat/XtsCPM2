@@ -128,9 +128,9 @@ public class XtsJ80ImageDecoder {
           // Convert 24 to 16 bit colours
           int ii = 0;
           for (int col = 0; col < w; col++) {
-            b = byteToUint8(bptr[ii++]);
-            g = byteToUint8(bptr[ii++]);
             r = byteToUint8(bptr[ii++]);
+            g = byteToUint8(bptr[ii++]);
+            b = byteToUint8(bptr[ii++]);
 
             // rgb to color 565
             tptr[col] = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
@@ -217,7 +217,7 @@ public class XtsJ80ImageDecoder {
       }
 
       for (int i = 0; i < _scanArray16.length; i++) {
-        _scanArray16[i] = (scanArray[(i * 2) + 0] << 8) + scanArray[(i * 2) + 1];
+        _scanArray16[i] = ( byteToUint8( scanArray[(i * 2) + 0] ) << 8) + byteToUint8(scanArray[(i * 2) + 1]);
       }
 
       int usedHeight = SCAN_ARRAY_HEIGHT;
