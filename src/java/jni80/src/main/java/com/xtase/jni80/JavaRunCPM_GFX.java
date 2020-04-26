@@ -50,6 +50,7 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
             public void windowClosing(WindowEvent e) {
                 halt();
             }
+
             public void windowOpened(WindowEvent e) {
                 // ready();
             }
@@ -84,14 +85,13 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
                     ((XtsJ80Video) console).refresh();
                     Zzz(100);
 
-                    if ( !readyFlag && ((XtsJ80Video) console).dblbuffReady() ) {
+                    if (!readyFlag && ((XtsJ80Video) console).dblbuffReady()) {
                         ready();
                     }
                 }
                 // System.out.println("Exit redraw Thread.");
             }
         }.start();
-
 
         while (!readyFlag) {
             Zzz(100);
@@ -249,11 +249,11 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     }
 
     boolean readyFlag = false;
+
     public void ready() {
         readyFlag = true;
         System.out.println("GUI ready");
     }
-
 
     public void runCPM(String autorun, boolean forceKill) throws IOException {
         if (!libraryLoaded) {

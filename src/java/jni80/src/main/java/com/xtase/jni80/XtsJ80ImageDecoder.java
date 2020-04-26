@@ -276,7 +276,7 @@ public class XtsJ80ImageDecoder {
       this.addr = -1;
     }
 
-    void drawClip(int x, int y) {
+    void drawClip(int _x, int _y) {
       if (w < 0 || h < 0) {
         return;
       }
@@ -284,23 +284,20 @@ public class XtsJ80ImageDecoder {
         return;
       }
 
-      // uint16_t row[ w ];
       int[] row = new int[w];
       for (int i = 0; i < h; i++) {
-        if (i + y >= screen.getScreenHeight()) {
+        if (i + _y >= screen.getScreenHeight()) {
           break;
         }
 
-        // // *2 cf uint16_t
-        // memcpy( &row[0], &spriteArea[ ( (this->y+i) * SPRITE_AREA_WIDTH )+this->x ],
-        // w*2 );
         for (int col = 0; col < w; col++) {
-          row[col] = spriteArea[((this.y + i) * SPRITE_AREA_WIDTH) + this.x + col];
+          int _addr = ((this.y + i) * SPRITE_AREA_WIDTH) + this.x + col;
+          row[col] = spriteArea[_addr];
         }
 
-        screen.fillRect(x, i + y, w, 1, row);
-        // System.out.println(".");
+        screen.fillRect(_x, i + _y, w, 1, row);
       }
+
     }
 
   };
@@ -311,16 +308,11 @@ public class XtsJ80ImageDecoder {
       spriteArea[i] = 0;
     }
 
-    System.out.println("cleanSprites()");
-
     spriteInstanceCounter = 0;
     lastAddr = 0;
     for (int i = 0; i < NB_SPRITES; i++) {
       // Java specific
       sprites[i] = new Sprite();
-
-        System.out.println("feeding sprite #"+i);
-
       sprites[i].invalid();
     }
   }
@@ -385,8 +377,13 @@ public class XtsJ80ImageDecoder {
         // should be 0 for 320x240
         // System.out.println("padding="+padding);
 
-        if ( h > 120 ) { h = 120; }
-        if ( w > 160 ) { w = 160; }
+        // beware w/ that
+        if (h > 120) {
+          h = 120;
+        }
+        if (w > 160) {
+          w = 160;
+        }
 
         for (row = 0; row < h; row++) {
           bmpFS.read(lineBuffer, 0, sizeof(lineBuffer));
@@ -413,8 +410,11 @@ public class XtsJ80ImageDecoder {
           // screen.fillRect(x, y--, w, 1, tptr);
 
           for (int col = 0; col < w; col++) {
-            if ( row >= SPRITE_AREA_HEIGHT-1 ) { continue; } // there is a misterous bug here
-            spriteArea[ (row*SPRITE_AREA_WIDTH) + col ] = tptr[col];
+            // flipped !!!!!
+            if ((h - row) >= SPRITE_AREA_HEIGHT - 1) {
+              continue;
+            } // there is a misterous bug here
+            spriteArea[((h - row) * SPRITE_AREA_WIDTH) + col] = tptr[col];
           }
 
           // Zzz(10);
@@ -444,7 +444,7 @@ public class XtsJ80ImageDecoder {
     // int[] awColors = new int[320]; // hold colors for one row at a time...
     // // uint16_t awColors[160]; // hold colors for one row at a time...
     // for (int i = 0; i < 320; i++) {
-    //   awColors[i] = 0;
+    // awColors[i] = 0;
     // }
 
     // // if ((x >= tft.width()) || (y >= tft.height()))
@@ -453,106 +453,106 @@ public class XtsJ80ImageDecoder {
     // // Open requested file on SD card
     // File f = fs.resolveAssetPath(filename);
     // if (!(f.exists())) {
-    //   console.warn("BMP File not found");
-    //   return false;
+    // console.warn("BMP File not found");
+    // return false;
     // }
 
     // bmpFile = new FileInputStream(f);
 
     // // Parse BMP header
     // if (read16(bmpFile) == 0x4D42) { // BMP signature
-    //   read32(bmpFile);
+    // read32(bmpFile);
 
-    //   read32(bmpFile); // Read & ignore creator bytes
-    //   bmpImageoffset = read32(bmpFile); // Start of image data
-    //   read32(bmpFile);
+    // read32(bmpFile); // Read & ignore creator bytes
+    // bmpImageoffset = read32(bmpFile); // Start of image data
+    // read32(bmpFile);
 
-    //   bmpWidth = read32(bmpFile);
-    //   bmpHeight = read32(bmpFile);
-    //   if (read16(bmpFile) == 1) { // # planes -- must be '1'
-    //     bmpDepth = read16(bmpFile); // bits per pixel
-    //     if ((bmpDepth == 24) && (read32(bmpFile) == 0)) { // 0 = uncompressed
-    //       goodBmp = true; // Supported BMP format -- proceed!
+    // bmpWidth = read32(bmpFile);
+    // bmpHeight = read32(bmpFile);
+    // if (read16(bmpFile) == 1) { // # planes -- must be '1'
+    // bmpDepth = read16(bmpFile); // bits per pixel
+    // if ((bmpDepth == 24) && (read32(bmpFile) == 0)) { // 0 = uncompressed
+    // goodBmp = true; // Supported BMP format -- proceed!
 
-    //       // BMP rows are padded (if needed) to 4-byte boundary
-    //       rowSize = (bmpWidth * 3 + 3) & ~3;
+    // // BMP rows are padded (if needed) to 4-byte boundary
+    // rowSize = (bmpWidth * 3 + 3) & ~3;
 
-    //       // If bmpHeight is negative, image is in top-down order.
-    //       // This is not canon but has been observed in the wild.
-    //       if (bmpHeight < 0) {
-    //         bmpHeight = -bmpHeight;
-    //         flip = false;
-    //       }
+    // // If bmpHeight is negative, image is in top-down order.
+    // // This is not canon but has been observed in the wild.
+    // if (bmpHeight < 0) {
+    // bmpHeight = -bmpHeight;
+    // flip = false;
+    // }
 
-    //       if ((x >= bmpWidth) || (y >= bmpHeight)) {
-    //         console.warn("Sprite OutOfBounds");
-    //         return false;
-    //       }
+    // if ((x >= bmpWidth) || (y >= bmpHeight)) {
+    // console.warn("Sprite OutOfBounds");
+    // return false;
+    // }
 
-    //       // Crop area to be loaded
-    //       // w = bmpWidth;
-    //       // h = bmpHeight;
-    //       w = SPRITE_AREA_WIDTH;
-    //       h = SPRITE_AREA_HEIGHT;
-    //       if ((x + w - 1) >= bmpWidth)
-    //         w = bmpWidth - x;
-    //       if ((y + h - 1) >= bmpHeight)
-    //         h = bmpHeight - y;
+    // // Crop area to be loaded
+    // // w = bmpWidth;
+    // // h = bmpHeight;
+    // w = SPRITE_AREA_WIDTH;
+    // h = SPRITE_AREA_HEIGHT;
+    // if ((x + w - 1) >= bmpWidth)
+    // w = bmpWidth - x;
+    // if ((y + h - 1) >= bmpHeight)
+    // h = bmpHeight - y;
 
-    //       for (row = 0; row < h; row++) { // For each scanline...
+    // for (row = 0; row < h; row++) { // For each scanline...
 
-    //         // Seek to start of scan line. It might seem labor-
-    //         // intensive to be doing this on every line, but this
-    //         // method covers a lot of gritty details like cropping
-    //         // and scanline padding. Also, the seek only takes
-    //         // place if the file position actually needs to change
-    //         // (avoids a lot of cluster math in SD library).
-    //         if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
-    //           pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
-    //         else // Bitmap is stored top-to-bottom
-    //           pos = bmpImageoffset + row * rowSize;
+    // // Seek to start of scan line. It might seem labor-
+    // // intensive to be doing this on every line, but this
+    // // method covers a lot of gritty details like cropping
+    // // and scanline padding. Also, the seek only takes
+    // // place if the file position actually needs to change
+    // // (avoids a lot of cluster math in SD library).
+    // if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
+    // pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
+    // else // Bitmap is stored top-to-bottom
+    // pos = bmpImageoffset + row * rowSize;
 
-    //         // see if need to restore that code
-    //         // if (bmpFile.position() != pos) { // Need seek?
-    //         // bmpFile.seek(pos);
-    //         // buffidx = sizeof(sdbuffer); // Force buffer reload
-    //         // }
+    // // see if need to restore that code
+    // // if (bmpFile.position() != pos) { // Need seek?
+    // // bmpFile.seek(pos);
+    // // buffidx = sizeof(sdbuffer); // Force buffer reload
+    // // }
 
-    //         for (col = 0; col < w; col++) { // For each pixel...
-    //           // Time to read more pixel data?
-    //           if (buffidx >= sizeof(sdbuffer)) { // Indeed
-    //             bmpFile.read(sdbuffer, 0, sizeof(sdbuffer));
-    //             buffidx = 0; // Set index to beginning
-    //           }
+    // for (col = 0; col < w; col++) { // For each pixel...
+    // // Time to read more pixel data?
+    // if (buffidx >= sizeof(sdbuffer)) { // Indeed
+    // bmpFile.read(sdbuffer, 0, sizeof(sdbuffer));
+    // buffidx = 0; // Set index to beginning
+    // }
 
-    //           // Convert pixel from BMP to TFT format, push to display
-    //           b = byteToUint8(sdbuffer[buffidx++]);
-    //           g = byteToUint8(sdbuffer[buffidx++]);
-    //           r = byteToUint8(sdbuffer[buffidx++]);
+    // // Convert pixel from BMP to TFT format, push to display
+    // b = byteToUint8(sdbuffer[buffidx++]);
+    // g = byteToUint8(sdbuffer[buffidx++]);
+    // r = byteToUint8(sdbuffer[buffidx++]);
 
-    //           awColors[col] = screen.color565(r, g, b);
-    //         } // end pixel
+    // awColors[col] = screen.color565(r, g, b);
+    // } // end pixel
 
-    //         // *2 Cf uint16_t
-    //         // memcpy( &spriteArea[ (row*SPRITE_AREA_WIDTH)+col ], &awColors[x], w*2 );
-    //         // HERE IS A BUG -- DEADLOCK
-    //         for (int i = 0; i < w; i++) {
-    //           // fails if goes up to 120
-    //           if (row >= SPRITE_AREA_HEIGHT - 1) {
-    //             break;
-    //           }
-    //           spriteArea[((row * SPRITE_AREA_WIDTH) /*+ col*/) + i] = awColors[/*x +*/ i];
-    //         }
+    // // *2 Cf uint16_t
+    // // memcpy( &spriteArea[ (row*SPRITE_AREA_WIDTH)+col ], &awColors[x], w*2 );
+    // // HERE IS A BUG -- DEADLOCK
+    // for (int i = 0; i < w; i++) {
+    // // fails if goes up to 120
+    // if (row >= SPRITE_AREA_HEIGHT - 1) {
+    // break;
+    // }
+    // spriteArea[((row * SPRITE_AREA_WIDTH) /*+ col*/) + i] = awColors[/*x +*/ i];
+    // }
 
-    //       } // end scanline
-    //       // long timeElapsed = millis() - startTime;
-    //     } // end goodBmp
-    //   }
+    // } // end scanline
+    // // long timeElapsed = millis() - startTime;
+    // } // end goodBmp
+    // }
     // }
     // bmpFile.close();
     // if (!goodBmp) {
-    //   console.warn("BMP format not recognized.");
-    //   return false;
+    // console.warn("BMP format not recognized.");
+    // return false;
     // }
     // return true;
   }
@@ -579,8 +579,8 @@ public class XtsJ80ImageDecoder {
     if (spriteNum < 0 || spriteNum >= NB_SPRITES) {
       return false;
     }
-    if ( sprites[spriteNum] == null ) {
-      System.out.println("null sprite #"+spriteNum);
+    if (sprites[spriteNum] == null) {
+      System.out.println("null sprite #" + spriteNum);
       return false;
     }
     sprites[spriteNum].setBounds(x, y, w, h);
@@ -591,7 +591,7 @@ public class XtsJ80ImageDecoder {
     if (spriteNum < 0 || spriteNum >= NB_SPRITES) {
       return false;
     }
-    if ( sprites[spriteNum] == null ) {
+    if (sprites[spriteNum] == null) {
       // System.out.println("null sprite #"+spriteNum);
       return false;
     }

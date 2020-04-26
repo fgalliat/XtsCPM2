@@ -107,9 +107,10 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     protected char[] _chs = { 0x00 };
 
     protected void drawOneChar(int x, int y, char ch, int attr) {
+        dblBuff.setColor(BGCOLOR);
+        dblBuff.fillRect(x * FONT_WIDTH, (y * FONT_HEIGHT), FONT_WIDTH, FONT_HEIGHT);
         if (ch == ' ') {
-            dblBuff.setColor(BGCOLOR);
-            dblBuff.fillRect(x * FONT_WIDTH, (y * FONT_HEIGHT), FONT_WIDTH, FONT_HEIGHT);
+            return;
         }
         if (attr == 0x00) {
             dblBuff.setColor(FGCOLOR);
@@ -312,17 +313,23 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
                 // color 565 to 24b
                 int color = raster[i++];
-                int _r = (int)((color >> 11) * (255/31) );
-                int _g = (int)(( ((color) >> 5) % (int)0x40) * (255/63));
-                int _b = (int)(color % (int)0x20) * (255/31);
+                int _r = (int) ((color >> 11) * (255 / 31));
+                int _g = (int) ((((color) >> 5) % (int) 0x40) * (255 / 63));
+                int _b = (int) (color % (int) 0x20) * (255 / 31);
 
-                if ( _r > 255 ) { _r = 255; }
-                if ( _g > 255 ) { _g = 255; }
-                if ( _b > 255 ) { _b = 255; }
+                if (_r > 255) {
+                    _r = 255;
+                }
+                if (_g > 255) {
+                    _g = 255;
+                }
+                if (_b > 255) {
+                    _b = 255;
+                }
 
                 // int colorRGB = (255<<24) | ( _b << 16 ) | ( _g << 8) | _r;
                 // dblBuff.setColor(new Color(colorRGB));
-                dblBuff.setColor(new Color( _r, _g, _b));
+                dblBuff.setColor(new Color(_r, _g, _b));
 
                 dblBuff.fillRect(x1 + x, y1 + y, 1, 1);
             }
@@ -358,18 +365,17 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     }
 
     public void setRotated(boolean rotated) {
-        if ( rotated ) {
-            Graphics2D g2 = ((Graphics2D)dblBuff);
-            g2.translate(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
-            g2.rotate(Math.toRadians(90));  
-            g2.translate(-SCREEN_HEIGHT/2, -SCREEN_WIDTH/2);
+        if (rotated) {
+            Graphics2D g2 = ((Graphics2D) dblBuff);
+            g2.translate(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+            g2.rotate(Math.toRadians(90));
+            g2.translate(-SCREEN_HEIGHT / 2, -SCREEN_WIDTH / 2);
 
-        }
-        else {
-            Graphics2D g2 = ((Graphics2D)dblBuff);
-            g2.translate(SCREEN_HEIGHT/2, SCREEN_WIDTH/2);
-            g2.rotate(Math.toRadians(-90));  
-            g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
+        } else {
+            Graphics2D g2 = ((Graphics2D) dblBuff);
+            g2.translate(SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2);
+            g2.rotate(Math.toRadians(-90));
+            g2.translate(-SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2);
         }
     }
 

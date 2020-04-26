@@ -114,7 +114,8 @@ public class XtsJ80BdosHandler {
 
                 int num = test.charAt(14);
 
-                // System.out.println("defineSprite(" + num + ", " + x + ", " + y + ", " + w + ", " + h + ");");
+                // System.out.println("defineSprite(" + num + ", " + x + ", " + y + ", " + w +
+                // ", " + h + ");");
                 imageDecoder.defineSprite(num, x, y, w, h);
             } else if (shapeType == 0x02) {
                 // draw sprite
@@ -138,11 +139,12 @@ public class XtsJ80BdosHandler {
             // System.out.println("drawShapes from Bdos");
             return drawingShapesBdos(ramString);
         } else {
-            System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" + ramString + "'");
+            // System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" + ramString + "'");
 
-            /* if (ramString.startsWith("!")) {
-                System.out.println("Sprite loading => ....");
-            } else*/ {
+            /*
+             * if (ramString.startsWith("!")) {
+             * System.out.println("Sprite loading => ...."); } else
+             */ {
                 // TODO better + no multiple instance of ImageDecoder nor Fs
                 XtsJ80FileSystem fs = new XtsJ80FileSystem();
 
