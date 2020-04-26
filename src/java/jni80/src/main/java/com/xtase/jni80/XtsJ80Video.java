@@ -13,6 +13,7 @@ import java.awt.Graphics2D;
 import java.awt.Font;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.JLabel;
 
@@ -308,7 +309,14 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
         int i = 0;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                int colorRGB = (255<<24) | raster[i++]; // TODO 565 -> 24b
+
+                // color 565 to 24b
+                int color = raster[i++];
+                int _r = (int)((color >> 11) * (255/31) );
+                int _g = (int)(( ((color) >> 5) % (int)0x40) * (255/63));
+                int _b = (int)(color % (int)0x20) * (255/31);
+
+                int colorRGB = (255<<24) | ( _b << 16 ) | ( _g << 8) | _r;
                 dblBuff.setColor(new Color(colorRGB));
                 dblBuff.fillRect(x1 + x, y1 + y, 1, 1);
             }
@@ -340,22 +348,17 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
     }
 
     public void setRotated(boolean rotated) {
-        System.out.println("ROTATE NYI");
         if ( rotated ) {
             Graphics2D g2 = ((Graphics2D)dblBuff);
             g2.translate(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
-            // g2.translate(SCREEN_HEIGHT/2, SCREEN_WIDTH/2);
             g2.rotate(Math.toRadians(90));  
-            // g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
             g2.translate(-SCREEN_HEIGHT/2, -SCREEN_WIDTH/2);
+
         }
         else {
             Graphics2D g2 = ((Graphics2D)dblBuff);
-            //g2.translate(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
             g2.translate(SCREEN_HEIGHT/2, SCREEN_WIDTH/2);
             g2.rotate(Math.toRadians(-90));  
-            // g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
-            // g2.translate(-SCREEN_HEIGHT/2, -SCREEN_WIDTH/2);
             g2.translate(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2);
         }
     }

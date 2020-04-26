@@ -53,6 +53,9 @@ public class XtsJ80ImageDecoder {
     boolean drawBitmapFile(String filename, int x, int y, boolean rotated) throws IOException {
         if ((x >= screen.getScreenWidth()) || (y >= screen.getScreenHeight())) return false;
       
+
+        // filename = "girl2.bmp";
+
         FileInputStream bmpFS;
       
         led.drive_led(true);
@@ -67,7 +70,7 @@ public class XtsJ80ImageDecoder {
           return false;
         }
       
-System.out.println(f+" was found !");
+// System.out.println(f+" was found !");
 
 
         bmpFS = new FileInputStream(f);
@@ -78,7 +81,7 @@ System.out.println(f+" was found !");
       
         int sign = read16(bmpFS);
 
-        System.out.println(Integer.toHexString(sign)+" instead of 0x4D42");
+        // System.out.println(Integer.toHexString(sign)+" instead of 0x4D42");
 
         if (sign == 0x4D42)
         {
@@ -92,6 +95,8 @@ System.out.println(f+" was found !");
           if ( rotated ) {
               // en fait : devient X
               y = screen.getScreenWidth() - y;
+              // spe
+              // x = screen.getScreenHeight() - x;
           }
       
           if ((read16(bmpFS) == 1) && (read16(bmpFS) == 24) && (read32(bmpFS) == 0))
@@ -100,13 +105,19 @@ System.out.println(f+" was found !");
       
             // TFT_eSPI specific may cause WEIRD_MODE on drawPAK !!!!!
             // tft.setSwapBytes(true);
-      
+
+// System.out.println("seekOffset="+seekOffset);
+seekOffset -= 32; // beware : spe
+
             // bmpFS.seek(seekOffset);
             bmpFS.skip(seekOffset);
       
             int padding = (4 - ((w * 3) & 3)) & 3;
             byte[] lineBuffer = new byte[w * 3];
       
+// should be 0 for 320x240
+// System.out.println("padding="+padding);
+
             if ( rotated ) { screen.setRotated(true); }
       
             for (row = 0; row < h; row++) {
@@ -120,21 +131,27 @@ System.out.println(f+" was found !");
               int ii=0;
               for (int col = 0; col < w; col++)
               {
-                b = bptr[ii++];
-                g = bptr[ii++];
-                r = bptr[ii++];
+                b = byteToUint8( bptr[ii++] );
+                g = byteToUint8( bptr[ii++] );
+                r = byteToUint8( bptr[ii++] );
+                
+                // rgb to color 565
                 tptr[col] = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
               }
               // Read any line padding
               byte[] gargabe = new byte[lineBuffer.length];
               if (padding != 0) bmpFS.read(gargabe, 0, padding);
+
               // Push the pixel row to screen, pushImage will crop the line if needed
               // tft.pushImage(x, y--, w, 1, (uint16_t*)lineBuffer);
               // tft.drawRGBBitmap(x, y--, (uint16_t*)lineBuffer, w, 1);
               
               //screen.fillRect(x, y--, w, 1, lineBuffer);
-               System.out.println("drawRaster("+x+", "+y+", "+w+", 1, raster)");
+              //  System.out.println("drawRaster("+x+", "+y+", "+w+", 1, raster)");
               screen.fillRect(x, y--, w, 1, tptr);
+
+              // Zzz(10);
+
             }
       
             if ( rotated ) { screen.setRotated(false); }
@@ -147,4 +164,10 @@ System.out.println(f+" was found !");
         return true;
       }
 
+
+      void Zzz(long millis) {
+        try {
+          Thread.sleep(millis);
+        }catch(Exception ex) {}
+      } 
 }
