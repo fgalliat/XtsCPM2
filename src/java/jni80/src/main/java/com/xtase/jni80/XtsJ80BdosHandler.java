@@ -1,5 +1,7 @@
 package com.xtase.jni80;
 
+import java.util.regex.Pattern;
+
 /**
  * 
  * XtsYATxx specific Bdos Calls Handler
@@ -43,8 +45,8 @@ public class XtsJ80BdosHandler {
                 if (fillType == 0x00) {
                     // draw outlines
 
-                    if ( system.getConsole() instanceof XtsJ80Video ) {
-                        ((XtsJ80Video)system.getConsole()).drawRect(x, y, w, h, color);
+                    if (system.getConsole() instanceof XtsJ80Video) {
+                        ((XtsJ80Video) system.getConsole()).drawRect(x, y, w, h, color);
                     } else {
                         System.out.println("drawRect(" + x + ", " + y + ", " + w + ", " + h + ", " + color + ")");
                     }
@@ -52,8 +54,8 @@ public class XtsJ80BdosHandler {
                 } else if (fillType == 0x01) {
                     // fills the rect
 
-                    if ( system.getConsole() instanceof XtsJ80Video ) {
-                        ((XtsJ80Video)system.getConsole()).fillRect(x, y, w, h, color);
+                    if (system.getConsole() instanceof XtsJ80Video) {
+                        ((XtsJ80Video) system.getConsole()).fillRect(x, y, w, h, color);
                     } else {
                         System.out.println("fillRect(" + x + ", " + y + ", " + w + ", " + h + ", " + color + ")");
                     }
@@ -65,16 +67,16 @@ public class XtsJ80BdosHandler {
                 if (fillType == 0x00) {
                     // draw outlines
 
-                    if ( system.getConsole() instanceof XtsJ80Video ) {
-                        ((XtsJ80Video)system.getConsole()).drawCircle(x, y, r, color);
+                    if (system.getConsole() instanceof XtsJ80Video) {
+                        ((XtsJ80Video) system.getConsole()).drawCircle(x, y, r, color);
                     } else {
                         System.out.println("drawCircle(" + x + ", " + y + ", " + r + ", " + color + ")");
                     }
 
                 } else {
 
-                    if ( system.getConsole() instanceof XtsJ80Video ) {
-                        ((XtsJ80Video)system.getConsole()).fillCircle(x, y, r, color);
+                    if (system.getConsole() instanceof XtsJ80Video) {
+                        ((XtsJ80Video) system.getConsole()).fillCircle(x, y, r, color);
                     } else {
                         System.out.println("fillCircle(" + x + ", " + y + ", " + r + ", " + color + ")");
                     }
@@ -85,8 +87,8 @@ public class XtsJ80BdosHandler {
                 int x2 = (test.charAt(10) << 8) + test.charAt(11);
                 int y2 = (test.charAt(12) << 8) + test.charAt(13);
 
-                if ( system.getConsole() instanceof XtsJ80Video ) {
-                    ((XtsJ80Video)system.getConsole()).drawLine(x, y, x2, y2, color);
+                if (system.getConsole() instanceof XtsJ80Video) {
+                    ((XtsJ80Video) system.getConsole()).drawLine(x, y, x2, y2, color);
                 } else {
                     System.out.println("drawLine(" + x + ", " + y + ", " + x2 + ", " + y2 + ", " + color + ")");
                 }
@@ -129,18 +131,47 @@ public class XtsJ80BdosHandler {
         } else {
             System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" + ramString + "'");
 
-            if ( ramString.startsWith("!") ) {
+            if (ramString.startsWith("!")) {
                 System.out.println("Sprite loading => ....");
             } else {
                 // TODO better
                 XtsJ80FileSystem fs = new XtsJ80FileSystem();
-                try {
-                    new XtsJ80ImageDecoder((XtsJ80Video)system.getConsole(), fs, system.getLed()).drawBitmapFile(ramString, 0, 0, true);
-                } catch(Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
 
+                if (ramString.toUpperCase().endsWith(".PAK")) {
+
+                    String test = ramString;
+                    int numImg = (int) test.charAt(0) - 1; // 1 based
+                    int x = -1;
+                    int y = -1; // centered
+
+                    String filename = test.substring(1);
+                    int tmp;
+                    if ((tmp = test.indexOf(',', 1)) > -1) {
+                        String[] tks = filename.split(Pattern.quote(","));
+
+                        x = Integer.parseInt(tks[0]);
+                        y = Integer.parseInt(tks[1]);
+                        filename = tks[2];
+                    }
+
+System.out.println("draw Pak : ("+filename+") @"+x+", "+y);
+
+                    try {
+                        new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed())
+                                .drawPakFile(filename, x, y, numImg);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    try {
+                        new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed())
+                                .drawBitmapFile(ramString, 0, 0, true);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+            }
 
         }
 
