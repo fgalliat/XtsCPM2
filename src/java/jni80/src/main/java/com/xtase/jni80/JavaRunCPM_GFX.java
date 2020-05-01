@@ -76,8 +76,16 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         // Yes : not on the JLabel itself
         frm.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
-                // FIXME : Handler Esc key ...
                 char ch = e.getKeyChar();
+
+                // if ( e.getModifiers() != 0 ) {
+                //     System.out.println( "Shift:"+ ((int)ch) );
+                // }
+                if ( ch == 65535 ) {
+                    // just SHIFT/ALT/CTRL PRESSED
+                    return;
+                }
+        
                 // System.out.println(ch);
 
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
