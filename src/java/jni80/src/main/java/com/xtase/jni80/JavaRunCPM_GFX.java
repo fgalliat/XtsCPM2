@@ -25,6 +25,20 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     protected XtsJ80RgbLed led;
 
     protected XtsJ80BdosHandler bdosHdl;
+
+    protected XtsJ80FileSystem fs = new XtsJ80FileSystem();
+    protected XtsJ80MP3Player musicPlayer = new XtsJ80MP3Player();
+
+    @Override
+    public XtsJ80FileSystem getFs() {
+        return fs;
+    }
+
+    @Override
+    public XtsJ80MP3Player getMusicPlayer() {
+        return musicPlayer;
+    }
+
     // ===============================
 
     protected boolean inRun = false;

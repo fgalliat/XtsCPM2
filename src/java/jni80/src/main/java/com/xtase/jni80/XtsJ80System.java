@@ -16,6 +16,10 @@ public interface XtsJ80System {
 
     XtsJ80RgbLed getLed();
 
+    XtsJ80FileSystem getFs();
+
+    XtsJ80MP3Player getMusicPlayer();
+
     void halt();
     void reboot();
 

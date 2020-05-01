@@ -52,7 +52,7 @@ public class XtsJ80MP3Player {
     protected int curTrkNum = 1;
     protected boolean endOfPlay = false;
 
-    public XtsJ80MP3Player() throws Exception {
+    public XtsJ80MP3Player() {
     }
 
     protected static void startOutput(AudioFormat playFormat) throws LineUnavailableException {
