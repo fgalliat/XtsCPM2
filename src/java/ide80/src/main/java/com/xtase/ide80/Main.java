@@ -1,14 +1,17 @@
 package com.xtase.ide80;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultCaret;
 
+import com.xtase.ide80.components.PascalTextPane;
 import com.xtase.jni80.JavaPascalCompiler;
 import com.xtase.jni80.JavaRunCPM_GFX;
 
@@ -135,6 +138,30 @@ public class Main extends JFrame {
         }
     }
 
+
+    // =========================================================
+    // =========================================================
+
+
+    public JComponent makeAnEditor(String cpmPath) {
+        cpmPath = cpmPath.toUpperCase();
+
+        CodeEditor editor = new CodeEditor(this);
+        editor.load(cpmPath);
+
+        return editor;
+    }
+
+    JTabbedPane tabbedPane = null;
+
+    public void openFile(String cpmPath) {
+        cpmPath = cpmPath.toUpperCase();
+        tabbedPane.addTab(cpmPath.substring(2), null, makeAnEditor(cpmPath), cpmPath);
+    }
+
+
+
+
     public Main(String cpmPath) {
         super("IDE80 (" + cpmPath.toUpperCase() + ")");
         curCpmPath = cpmPath.toUpperCase();
@@ -161,12 +188,16 @@ public class Main extends JFrame {
 
         JScrollPane conScroller = new JScrollPane(console);
 
-        PascalTextPane textPane = new PascalTextPane();
-        JScrollPane scroller = new JScrollPane(textPane);
+        tabbedPane = new JTabbedPane();
+        // tabbedPane.addTab(curCpmPath.substring(2), null, makeAnEditor(cpmPath), curCpmPath);
+        // tabbedPane.addTab("c:juke.pas".substring(2), null, makeAnEditor("c:juke.pas"), "c:juke.pas");
+
+        openFile(curCpmPath);
+        openFile("c:juke.pas");
 
         JPanel editorPane = new JPanel();
         editorPane.setLayout(new BorderLayout());
-        editorPane.add(scroller, BorderLayout.CENTER);
+        editorPane.add(tabbedPane, BorderLayout.CENTER);
 
         JPanel btnPan = new JPanel();
         btnPan.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -232,49 +263,49 @@ public class Main extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
 
-        File fileToEdit = null;
+        // File fileToEdit = null;
 
-        // new com.xtase.jni80.XtsJ80FileSystem().resolveCPMPath("c:test.pas");
+        // // new com.xtase.jni80.XtsJ80FileSystem().resolveCPMPath("c:test.pas");
 
-        try {
-            File file = (File) invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath", cpmPath);
-            status("CPM File : " + file.getPath());
-            fileToEdit = file;
-        } catch (Exception ex) {
-            status("Could not get CPM path [" + ex.toString() + "]");
-        }
+        // try {
+        //     File file = (File) invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath", cpmPath);
+        //     status("CPM File : " + file.getPath());
+        //     fileToEdit = file;
+        // } catch (Exception ex) {
+        //     status("Could not get CPM path [" + ex.toString() + "]");
+        // }
 
-        try {
-            String text = "";
+        // try {
+        //     String text = "";
 
-            String path = null;
-            if (fileToEdit != null && fileToEdit.exists()) {
-                // path = "./C/0/JUKE.PAS";
-                path = fileToEdit.getPath();
-            } else {
-                path = "../jni80/distro/C/0/JUKE.PAS";
-                status("Could not open file, select a default one");
-            }
+        //     String path = null;
+        //     if (fileToEdit != null && fileToEdit.exists()) {
+        //         // path = "./C/0/JUKE.PAS";
+        //         path = fileToEdit.getPath();
+        //     } else {
+        //         path = "../jni80/distro/C/0/JUKE.PAS";
+        //         status("Could not open file, select a default one");
+        //     }
 
-            BufferedReader reader = new BufferedReader(new FileReader(path));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // text += line+"\r";
-                text += line + "\n"; // BEWARE @ SAVE !!!!!
-            }
-            reader.close();
-            if (text.length() > 1) {
-                text = text.substring(0, text.length() - 1);
-            }
+        //     BufferedReader reader = new BufferedReader(new FileReader(path));
+        //     String line;
+        //     while ((line = reader.readLine()) != null) {
+        //         // text += line+"\r";
+        //         text += line + "\n"; // BEWARE @ SAVE !!!!!
+        //     }
+        //     reader.close();
+        //     if (text.length() > 1) {
+        //         text = text.substring(0, text.length() - 1);
+        //     }
 
-            // // print an extract
-            // System.out.println(text.substring(0, 250));
+        //     // // print an extract
+        //     // System.out.println(text.substring(0, 250));
 
-            textPane.setText(text);
-        } catch (Exception exp) {
-            exp.printStackTrace();
-            textPane.setText("File failed to open");
-        }
+        //     textPane.setText(text);
+        // } catch (Exception exp) {
+        //     exp.printStackTrace();
+        //     textPane.setText("File failed to open");
+        // }
 
     }
 

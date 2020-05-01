@@ -1,4 +1,4 @@
-package com.xtase.ide80;
+package com.xtase.ide80.components;
 
 /* Copyright xtase - fgalliat @Apr2020
  *

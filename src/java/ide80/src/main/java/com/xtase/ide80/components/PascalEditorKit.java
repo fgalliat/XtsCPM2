@@ -1,4 +1,4 @@
-package com.xtase.ide80;
+package com.xtase.ide80.components;
 
 /*
  * Copyright 2006-2008 Kees de Kooter
