@@ -254,7 +254,10 @@ public class Main extends JFrame {
         File[] content = disk.listFiles();
         DefaultListModel model = new DefaultListModel();
         for (File f : content) {
-            if (f.isFile() && !f.getName().endsWith(".COM") && !f.getName().endsWith(".class")) {
+            if (f.isFile() 
+                 && !f.getName().endsWith(".COM") 
+                 && !f.getName().endsWith(".class")
+                 && !f.getName().endsWith("~")) {
                 model.addElement(f.getName());
             }
         }
