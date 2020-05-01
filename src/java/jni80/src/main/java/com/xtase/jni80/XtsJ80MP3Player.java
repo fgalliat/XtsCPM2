@@ -46,11 +46,14 @@ public class XtsJ80MP3Player {
     private static Decoder decoder;
     private static SourceDataLine line;
     private BitStream bitstream;
-    private boolean playable = true;
+
+    // private boolean playable = true;
+    private boolean playable = false;
     private boolean inPause = false;
+    // protected boolean endOfPlay = false;
+    protected boolean endOfPlay = true;
 
     protected int curTrkNum = 1;
-    protected boolean endOfPlay = false;
 
     public XtsJ80MP3Player() {
     }
