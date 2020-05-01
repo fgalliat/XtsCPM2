@@ -20,6 +20,7 @@ public class CodeEditor extends JScrollPane {
     protected String cpmPath = null;
 
     boolean modified = false;
+    boolean modifierLocker = false;
 
     public CodeEditor(Main editorFrame) {
         super(new PascalTextPane());
@@ -30,18 +31,21 @@ public class CodeEditor extends JScrollPane {
         
             @Override
             public void removeUpdate(DocumentEvent e) {
+                if ( modifierLocker ) { return; }
                 modified = true;
                 editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
             }
         
             @Override
             public void insertUpdate(DocumentEvent e) {
+                if ( modifierLocker ) { return; }
                 modified = true;
                 editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
             }
         
             @Override
             public void changedUpdate(DocumentEvent e) {
+                if ( modifierLocker ) { return; }
                 modified = true;
                 editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
             }
@@ -66,6 +70,7 @@ public class CodeEditor extends JScrollPane {
     }
 
     public void load(String cpmPath) {
+        modifierLocker = true;
         cpmPath = cpmPath.toUpperCase();
         this.cpmPath = cpmPath;
         try {
@@ -108,6 +113,8 @@ public class CodeEditor extends JScrollPane {
             exp.printStackTrace();
             editor.setText("File failed to open");
         }
+        editor.setCaretPosition(0);
+        modifierLocker = false;
     }
 
 }

@@ -29,6 +29,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.awt.event.MouseListener;
 
 public class Main extends JFrame {
 
@@ -154,6 +156,11 @@ public class Main extends JFrame {
         }
     }
 
+    protected void halt() {
+        this.setVisible(false);
+        System.exit(0);
+    }
+
     // =========================================================
     // =========================================================
 
@@ -183,6 +190,9 @@ public class Main extends JFrame {
                 return;
             }
         }
+        if ( tabbedPane.getComponentCount() <= 1 ) {
+            halt();
+        }
         tabbedPane.removeTabAt(tabbedPane.getSelectedIndex());
     }
 
@@ -205,10 +215,16 @@ public class Main extends JFrame {
         });
 
         File disk = getCpmFile(curDrive);
+        if ( disk == null || !disk.exists() ) {
+            status("Drive not found !");
+            return null;
+        }
+
+
         File[] content = disk.listFiles();
         DefaultListModel model = new DefaultListModel();
         for (File f : content) {
-            if (f.isFile()) {
+            if (f.isFile() && !f.getName().endsWith(".COM") && !f.getName().endsWith(".class")) {
                 model.addElement(f.getName());
             }
         }
@@ -217,6 +233,32 @@ public class Main extends JFrame {
         list.setLayoutOrientation(JList.VERTICAL);
         list.setVisibleRowCount(8);
         list.setSelectedIndex(0);
+        list.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ( e.getClickCount() >= 2 ) {
+                    d.setVisible(false);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+        } );
 
         d.add(new JLabel("Select a file"), BorderLayout.NORTH);
         d.add(new JScrollPane(list), BorderLayout.CENTER);
@@ -288,6 +330,10 @@ public class Main extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // String file = promptValue("Filename to open");
                 String file = openDisk();
+
+                if ( file == null ) {
+                    return;
+                }
 
                 if (file.charAt(1) != ':') {
                     file = cpmPath.charAt(0) + ":" + file;
