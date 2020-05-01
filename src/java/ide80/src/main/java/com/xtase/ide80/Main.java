@@ -83,7 +83,31 @@ public class Main extends JFrame {
     }
 
     protected void updateTitle() {
-        Main.this.setTitle("IDE80 (" + getCurCpmPath() + ")"+ (getCurrentEditor().isChanged() ? " *" : "") );
+        String cpmPath = getCurCpmPath();
+        Main.this.setTitle("IDE80 (" + cpmPath + ")" + (getCurrentEditor().isChanged() ? " *" : ""));
+
+        if (cpmPath.endsWith(".PAS")) {
+            File pasFile = getCpmFile(cpmPath);
+            if (pasFile != null && pasFile.exists()) {
+                compileBtn.setEnabled(true);
+                compileDiskBtn.setEnabled(true);
+            } else {
+                compileBtn.setEnabled(false);
+                compileDiskBtn.setEnabled(false);
+            }
+
+            File comFile = getCpmFile(cpmPath.replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(".COM")));
+            if (comFile != null && comFile.exists()) {
+                runBtn.setEnabled(true);
+            } else {
+                runBtn.setEnabled(false);
+            }
+        } else {
+            compileBtn.setEnabled(false);
+            compileDiskBtn.setEnabled(false);
+            runBtn.setEnabled(false);
+        }
+
     }
 
     protected OutputStream consoleOut = new OutputStream() {
@@ -172,7 +196,7 @@ public class Main extends JFrame {
     }
 
     public String getCurCpmDrive() {
-        return getCurCpmPath().charAt(0)+":";
+        return getCurCpmPath().charAt(0) + ":";
     }
 
     public JComponent makeAnEditor(String cpmPath) {
@@ -197,7 +221,7 @@ public class Main extends JFrame {
                 return;
             }
         }
-        if ( tabbedPane.getComponentCount() <= 1 ) {
+        if (tabbedPane.getComponentCount() <= 1) {
             halt();
         }
         tabbedPane.removeTabAt(tabbedPane.getSelectedIndex());
@@ -222,11 +246,10 @@ public class Main extends JFrame {
         });
 
         File disk = getCpmFile(curDrive);
-        if ( disk == null || !disk.exists() ) {
+        if (disk == null || !disk.exists()) {
             status("Drive not found !");
             return null;
         }
-
 
         File[] content = disk.listFiles();
         DefaultListModel model = new DefaultListModel();
@@ -244,7 +267,7 @@ public class Main extends JFrame {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if ( e.getClickCount() >= 2 ) {
+                if (e.getClickCount() >= 2) {
                     d.setVisible(false);
                 }
             }
@@ -265,7 +288,7 @@ public class Main extends JFrame {
             public void mouseReleased(MouseEvent e) {
             }
 
-        } );
+        });
 
         d.add(new JLabel("Select a file"), BorderLayout.NORTH);
         d.add(new JScrollPane(list), BorderLayout.CENTER);
@@ -288,6 +311,10 @@ public class Main extends JFrame {
     }
     // ============
 
+    JButton runBtn = null;
+    JButton compileBtn = null;
+    JButton compileDiskBtn = null;
+
     public Main(final String cpmPath) {
         super("IDE80 (" + cpmPath.toUpperCase() + ")");
 
@@ -298,6 +325,10 @@ public class Main extends JFrame {
         } catch (Exception ex) {
             status("Failed to initialize LaF");
         }
+        // ===========================
+        runBtn = new JButton("Run");
+        compileBtn = new JButton("Compile");
+        compileDiskBtn = new JButton("Compile on Disk");
         // ===========================
 
         console = new JTextArea("");
@@ -313,7 +344,7 @@ public class Main extends JFrame {
 
         // ==== test 1st CPM disk ====
         File disk = getCpmFile("A:");
-        if ( disk == null || !disk.exists() ) {
+        if (disk == null || !disk.exists()) {
             status("A: Drive not found !");
         }
         // ===========================
@@ -326,7 +357,7 @@ public class Main extends JFrame {
                 // String file = promptValue("Filename to open");
                 String file = openDisk();
 
-                if ( file == null ) {
+                if (file == null) {
                     return;
                 }
 
@@ -348,7 +379,6 @@ public class Main extends JFrame {
         saveBtn.setMnemonic(KeyEvent.VK_S); // Alt + S
         btnPan.add(saveBtn);
 
-        JButton compileBtn = new JButton("Compile");
         compileBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (getCurrentEditor().isChanged()) {
@@ -361,7 +391,6 @@ public class Main extends JFrame {
         });
         btnPan.add(compileBtn);
 
-        JButton compileDiskBtn = new JButton("Compile on Disk");
         compileDiskBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (getCurrentEditor().isChanged()) {
@@ -375,7 +404,6 @@ public class Main extends JFrame {
         compileDiskBtn.setMnemonic(KeyEvent.VK_C); // Alt + C
         btnPan.add(compileDiskBtn);
 
-        JButton runBtn = new JButton("Run");
         runBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (getCurrentEditor().isChanged()) {
@@ -408,21 +436,9 @@ public class Main extends JFrame {
         tabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                CodeEditor editor = (CodeEditor) tabbedPane.getSelectedComponent();
-                String cpmPath = editor.getCpmPath();
-                
+                // CodeEditor editor = (CodeEditor) tabbedPane.getSelectedComponent();
+                // String cpmPath = editor.getCpmPath();
                 updateTitle();
-
-                if ( cpmPath.endsWith(".PAS") ) {
-                    compileBtn.setEnabled(true);
-                    compileDiskBtn.setEnabled(true);
-                    runBtn.setEnabled(true);
-                } else {
-                    compileBtn.setEnabled(false);
-                    compileDiskBtn.setEnabled(false);
-                    runBtn.setEnabled(false);
-                }
-
             }
         });
 
@@ -432,7 +448,6 @@ public class Main extends JFrame {
         editorPane.setLayout(new BorderLayout());
         editorPane.add(tabbedPane, BorderLayout.CENTER);
         // ===========================
-        
 
         editorPane.add(btnPan, BorderLayout.NORTH);
 
@@ -472,6 +487,7 @@ public class Main extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
 
+        updateTitle();
     }
 
 }
