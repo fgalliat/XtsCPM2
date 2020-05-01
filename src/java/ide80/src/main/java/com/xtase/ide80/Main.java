@@ -13,7 +13,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -81,6 +80,10 @@ public class Main extends JFrame {
             path = args[0];
         }
         new Main(path);
+    }
+
+    protected void updateTitle() {
+        Main.this.setTitle("IDE80 (" + getCurCpmPath() + ")"+ (getCurrentEditor().isChanged() ? " *" : "") );
     }
 
     protected OutputStream consoleOut = new OutputStream() {
@@ -168,6 +171,10 @@ public class Main extends JFrame {
         return getCurrentEditor().getCpmPath();
     }
 
+    public String getCurCpmDrive() {
+        return getCurCpmPath().charAt(0)+":";
+    }
+
     public JComponent makeAnEditor(String cpmPath) {
         cpmPath = cpmPath.toUpperCase();
 
@@ -203,7 +210,7 @@ public class Main extends JFrame {
     }
 
     public String openDisk() {
-        String curDrive = getCurCpmPath().charAt(0) + ":";
+        String curDrive = getCurCpmDrive();
 
         final JDialog d = new JDialog(Main.this, "Disk " + curDrive, true);
         d.setLayout(new BorderLayout());
@@ -304,24 +311,12 @@ public class Main extends JFrame {
         System.setOut(consoleStream);
         // ==== System Output ========
 
-        JScrollPane conScroller = new JScrollPane(console);
-
-        tabbedPane = new JTabbedPane();
-        tabbedPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                // int idx = tabbedPane.getSelectedIndex();
-                CodeEditor editor = (CodeEditor) tabbedPane.getSelectedComponent();
-                // System.out.println("now selected tab#"+idx);
-                Main.this.setTitle("IDE80 (" + editor.getCpmPath() + ")");
-            }
-        });
-        openFile(cpmPath);
-
-        JPanel editorPane = new JPanel();
-        editorPane.setLayout(new BorderLayout());
-        editorPane.add(tabbedPane, BorderLayout.CENTER);
-
+        // ==== test 1st CPM disk ====
+        File disk = getCpmFile("A:");
+        if ( disk == null || !disk.exists() ) {
+            status("A: Drive not found !");
+        }
+        // ===========================
         JPanel btnPan = new JPanel();
         btnPan.setLayout(new FlowLayout(FlowLayout.LEFT));
 
@@ -336,7 +331,7 @@ public class Main extends JFrame {
                 }
 
                 if (file.charAt(1) != ':') {
-                    file = cpmPath.charAt(0) + ":" + file;
+                    file = getCurCpmDrive() + file;
                 }
                 openFile(file);
             }
@@ -347,9 +342,7 @@ public class Main extends JFrame {
         JButton saveBtn = new JButton("Save");
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                status("Saving " + getCurCpmPath() + " NYI");
-                Main.this.setTitle("IDE80 (" + Main.this.getCurrentEditor().getCpmPath() + ")");
-                Main.this.getCurrentEditor().setChanged(false);
+                getCurrentEditor().save();
             }
         });
         saveBtn.setMnemonic(KeyEvent.VK_S); // Alt + S
@@ -358,6 +351,11 @@ public class Main extends JFrame {
         JButton compileBtn = new JButton("Compile");
         compileBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (getCurrentEditor().isChanged()) {
+                    if (!confirm("Current editor is modified\nCompile anyway ?")) {
+                        return;
+                    }
+                }
                 compileCpmTp3(getCurCpmPath(), true);
             }
         });
@@ -366,6 +364,11 @@ public class Main extends JFrame {
         JButton compileDiskBtn = new JButton("Compile on Disk");
         compileDiskBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (getCurrentEditor().isChanged()) {
+                    if (!confirm("Current editor is modified\nCompile anyway ?")) {
+                        return;
+                    }
+                }
                 compileCpmTp3(getCurCpmPath(), false);
             }
         });
@@ -375,6 +378,11 @@ public class Main extends JFrame {
         JButton runBtn = new JButton("Run");
         runBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (getCurrentEditor().isChanged()) {
+                    if (!confirm("Current editor is modified\nRun anyway ?")) {
+                        return;
+                    }
+                }
                 runCpmTp3(getCurCpmPath());
             }
         });
@@ -389,6 +397,42 @@ public class Main extends JFrame {
         });
         closeBtn.setMnemonic(KeyEvent.VK_X); // Alt + X
         btnPan.add(closeBtn);
+
+        compileBtn.setEnabled(false);
+        compileDiskBtn.setEnabled(false);
+        runBtn.setEnabled(false);
+
+        JScrollPane conScroller = new JScrollPane(console);
+
+        tabbedPane = new JTabbedPane();
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                CodeEditor editor = (CodeEditor) tabbedPane.getSelectedComponent();
+                String cpmPath = editor.getCpmPath();
+                
+                updateTitle();
+
+                if ( cpmPath.endsWith(".PAS") ) {
+                    compileBtn.setEnabled(true);
+                    compileDiskBtn.setEnabled(true);
+                    runBtn.setEnabled(true);
+                } else {
+                    compileBtn.setEnabled(false);
+                    compileDiskBtn.setEnabled(false);
+                    runBtn.setEnabled(false);
+                }
+
+            }
+        });
+
+        openFile(cpmPath);
+
+        JPanel editorPane = new JPanel();
+        editorPane.setLayout(new BorderLayout());
+        editorPane.add(tabbedPane, BorderLayout.CENTER);
+        // ===========================
+        
 
         editorPane.add(btnPan, BorderLayout.NORTH);
 

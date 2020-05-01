@@ -2,7 +2,9 @@ package com.xtase.ide80;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.OutputStream;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.DocumentEvent;
@@ -27,29 +29,35 @@ public class CodeEditor extends JScrollPane {
         editor = (PascalTextPane) getViewport().getComponent(0);
         this.editorFrame = editorFrame;
 
-        editor.getDocument().addDocumentListener( new DocumentListener(){
-        
+        editor.getDocument().addDocumentListener(new DocumentListener() {
+
             @Override
             public void removeUpdate(DocumentEvent e) {
-                if ( modifierLocker ) { return; }
+                if (modifierLocker) {
+                    return;
+                }
                 modified = true;
-                editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
+                editorFrame.updateTitle();
             }
-        
+
             @Override
             public void insertUpdate(DocumentEvent e) {
-                if ( modifierLocker ) { return; }
+                if (modifierLocker) {
+                    return;
+                }
                 modified = true;
-                editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
+                editorFrame.updateTitle();
             }
-        
+
             @Override
             public void changedUpdate(DocumentEvent e) {
-                if ( modifierLocker ) { return; }
+                if (modifierLocker) {
+                    return;
+                }
                 modified = true;
-                editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
+                editorFrame.updateTitle();
             }
-        } );
+        });
     }
 
     public PascalTextPane getEditor() {
@@ -60,10 +68,10 @@ public class CodeEditor extends JScrollPane {
         return modified;
     }
 
-    // TODO : better
-    protected void setChanged(boolean changed) {
-        modified = changed;
-    }
+    // // TODO : better
+    // protected void setChanged(boolean changed) {
+    // modified = changed;
+    // }
 
     public String getCpmPath() {
         return cpmPath;
@@ -74,8 +82,7 @@ public class CodeEditor extends JScrollPane {
         cpmPath = cpmPath.toUpperCase();
         this.cpmPath = cpmPath;
         try {
-            File file = (File) editorFrame.invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath",
-                    cpmPath);
+            File file = (File) editorFrame.getCpmFile(cpmPath);
             editorFrame.status("CPM File : " + file.getPath());
             fileToEdit = file;
         } catch (Exception ex) {
@@ -97,8 +104,7 @@ public class CodeEditor extends JScrollPane {
             BufferedReader reader = new BufferedReader(new FileReader(path));
             String line;
             while ((line = reader.readLine()) != null) {
-                // text += line+"\r";
-                text += line + "\n"; // BEWARE @ SAVE !!!!!
+                text += line + "\n"; // CR to LF
             }
             reader.close();
             if (text.length() > 1) {
@@ -115,6 +121,32 @@ public class CodeEditor extends JScrollPane {
         }
         editor.setCaretPosition(0);
         modifierLocker = false;
+    }
+
+    public void save() {
+        File file = null;
+        try {
+            file = (File) editorFrame.getCpmFile(cpmPath);
+            editorFrame.status("CPM File : " + file.getPath());
+        } catch (Exception ex) {
+            editorFrame.status("Could not get CPM path [" + ex.toString() + "]");
+        }
+
+        // LF to CR
+        String text = editor.getText().replace('\n', '\r');
+
+        try {
+            OutputStream fout = new FileOutputStream(file);
+            fout.write(text.getBytes());
+            fout.flush();
+            fout.close();
+
+            modified = false;
+        } catch (Exception ex) {
+            editorFrame.status(ex.toString());
+        }
+
+        editorFrame.updateTitle();
     }
 
 }
