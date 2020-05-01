@@ -1,21 +1,25 @@
 package com.xtase.ide80;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultCaret;
 
-import com.xtase.ide80.components.PascalTextPane;
 import com.xtase.jni80.JavaPascalCompiler;
 import com.xtase.jni80.JavaRunCPM_GFX;
 
@@ -26,10 +30,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -60,6 +61,16 @@ public class Main extends JFrame {
         }
 
         return foundMeth.invoke(instance, new Object[] { value });
+    }
+
+    protected File getCpmFile(String cpmPath) {
+        try {
+            File file = (File) invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath", cpmPath);
+            return file;
+        } catch (Exception ex) {
+            status(ex.toString());
+            return null;
+        }
     }
 
     public static void main(String[] args) {
@@ -103,7 +114,7 @@ public class Main extends JFrame {
 
     public void runCpmTp3(String cpmPath) {
         // c:bmp.pas => "c:bmp" (not c:bmp.com)
-        final String _cpmPath = getCurCpmPath().replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(""));
+        final String _cpmPath = cpmPath.replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(""));
 
         try {
             System.out.println("will exec : " + _cpmPath);
@@ -147,7 +158,7 @@ public class Main extends JFrame {
     // =========================================================
 
     public String getCurCpmPath() {
-        return "c:bmp.pas";
+        return getCurrentEditor().getCpmPath();
     }
 
     public JComponent makeAnEditor(String cpmPath) {
@@ -161,16 +172,72 @@ public class Main extends JFrame {
 
     JTabbedPane tabbedPane = null;
 
+    public CodeEditor getCurrentEditor() {
+        CodeEditor editor = (CodeEditor) tabbedPane.getSelectedComponent();
+        return editor;
+    }
+
+    public void closeCurrentEditor() {
+        if (getCurrentEditor().isChanged()) {
+            if (!confirm("Current editor is modified\nExit anyway ?")) {
+                return;
+            }
+        }
+        tabbedPane.removeTabAt(tabbedPane.getSelectedIndex());
+    }
+
     public void openFile(String cpmPath) {
         cpmPath = cpmPath.toUpperCase();
         tabbedPane.addTab(cpmPath.substring(2), null, makeAnEditor(cpmPath), cpmPath);
-        tabbedPane.setSelectedIndex( tabbedPane.getTabCount()-1 );
+        tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
     }
 
+    public String openDisk() {
+        String curDrive = getCurCpmPath().charAt(0) + ":";
+
+        final JDialog d = new JDialog(Main.this, "Disk " + curDrive, true);
+        d.setLayout(new BorderLayout());
+        JButton b = new JButton("OK");
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                d.setVisible(false);
+            }
+        });
+
+        File disk = getCpmFile(curDrive);
+        File[] content = disk.listFiles();
+        DefaultListModel model = new DefaultListModel();
+        for (File f : content) {
+            if (f.isFile()) {
+                model.addElement(f.getName());
+            }
+        }
+        JList list = new JList(model);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.setLayoutOrientation(JList.VERTICAL);
+        list.setVisibleRowCount(8);
+        list.setSelectedIndex(0);
+
+        d.add(new JLabel("Select a file"), BorderLayout.NORTH);
+        d.add(new JScrollPane(list), BorderLayout.CENTER);
+        d.add(b, BorderLayout.SOUTH);
+        d.setSize(400, 600);
+        d.setVisible(true);
+
+        return (String) model.get(list.getSelectedIndex());
+    }
+
+    // ============
     protected String promptValue(String message) {
         String name = JOptionPane.showInputDialog(this, message);
         return name;
     }
+
+    protected boolean confirm(String message) {
+        int v = JOptionPane.showConfirmDialog(this, message);
+        return v == JOptionPane.YES_OPTION;
+    }
+    // ============
 
     public Main(final String cpmPath) {
         super("IDE80 (" + cpmPath.toUpperCase() + ")");
@@ -198,15 +265,15 @@ public class Main extends JFrame {
         JScrollPane conScroller = new JScrollPane(console);
 
         tabbedPane = new JTabbedPane();
-        tabbedPane.addChangeListener( new ChangeListener(){
+        tabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 // int idx = tabbedPane.getSelectedIndex();
-                CodeEditor editor = (CodeEditor)tabbedPane.getSelectedComponent();
+                CodeEditor editor = (CodeEditor) tabbedPane.getSelectedComponent();
                 // System.out.println("now selected tab#"+idx);
-                Main.this.setTitle("IDE80 ("+ editor.getCpmPath() +")");
+                Main.this.setTitle("IDE80 (" + editor.getCpmPath() + ")");
             }
-        } );
+        });
         openFile(cpmPath);
 
         JPanel editorPane = new JPanel();
@@ -215,19 +282,32 @@ public class Main extends JFrame {
 
         JPanel btnPan = new JPanel();
         btnPan.setLayout(new FlowLayout(FlowLayout.LEFT));
-        
+
         JButton openBtn = new JButton("Open");
         openBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String file = promptValue("Filename to open");
-                if ( file.charAt(1) != ':' ) {
-                    file = cpmPath.charAt(0)+":"+file;
+                // String file = promptValue("Filename to open");
+                String file = openDisk();
+
+                if (file.charAt(1) != ':') {
+                    file = cpmPath.charAt(0) + ":" + file;
                 }
                 openFile(file);
             }
         });
-        openBtn.setMnemonic( KeyEvent.VK_O ); // Alt + O
+        openBtn.setMnemonic(KeyEvent.VK_O); // Alt + O
         btnPan.add(openBtn);
+
+        JButton saveBtn = new JButton("Save");
+        saveBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                status("Saving " + getCurCpmPath() + " NYI");
+                Main.this.setTitle("IDE80 (" + Main.this.getCurrentEditor().getCpmPath() + ")");
+                Main.this.getCurrentEditor().setChanged(false);
+            }
+        });
+        saveBtn.setMnemonic(KeyEvent.VK_S); // Alt + S
+        btnPan.add(saveBtn);
 
         JButton compileBtn = new JButton("Compile");
         compileBtn.addActionListener(new ActionListener() {
@@ -243,15 +323,26 @@ public class Main extends JFrame {
                 compileCpmTp3(getCurCpmPath(), false);
             }
         });
+        compileDiskBtn.setMnemonic(KeyEvent.VK_C); // Alt + C
         btnPan.add(compileDiskBtn);
 
-        JButton runBtn = new JButton("Run"); // todo : compile on disk / then add autorun
+        JButton runBtn = new JButton("Run");
         runBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 runCpmTp3(getCurCpmPath());
             }
         });
+        runBtn.setMnemonic(KeyEvent.VK_U); // Alt + U
         btnPan.add(runBtn);
+
+        JButton closeBtn = new JButton("Close");
+        closeBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                closeCurrentEditor();
+            }
+        });
+        closeBtn.setMnemonic(KeyEvent.VK_X); // Alt + X
+        btnPan.add(closeBtn);
 
         editorPane.add(btnPan, BorderLayout.NORTH);
 

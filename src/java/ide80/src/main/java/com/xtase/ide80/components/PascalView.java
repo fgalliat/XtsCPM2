@@ -72,7 +72,7 @@ public class PascalView extends PlainView {
     private static String TYPE_FCTPRC = "(function|procedure|program)";
     private static String TYPE_BEGEND = "(begin|end)";
     private static String TYPE_COND = "(if|else|then)";
-    private static String TYPE_FLOW = "(while| do |repeat|until)";
+    private static String TYPE_FLOW = "(while| do |repeat|until|for )";
     private static String TYPE_NUM = "[ ,=\\(\\*+\\-\\/)]([0-9\\.]+)";
 
     // protected Color FOREGROUND_COLOR = Color.black;

@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 
 import javax.swing.JScrollPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.xtase.ide80.components.PascalTextPane;
 
@@ -17,14 +19,46 @@ public class CodeEditor extends JScrollPane {
 
     protected String cpmPath = null;
 
+    boolean modified = false;
+
     public CodeEditor(Main editorFrame) {
         super(new PascalTextPane());
         editor = (PascalTextPane) getViewport().getComponent(0);
         this.editorFrame = editorFrame;
+
+        editor.getDocument().addDocumentListener( new DocumentListener(){
+        
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                modified = true;
+                editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
+            }
+        
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                modified = true;
+                editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
+            }
+        
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                modified = true;
+                editorFrame.setTitle("IDE80 ("+ cpmPath +") *");
+            }
+        } );
     }
 
     public PascalTextPane getEditor() {
         return editor;
+    }
+
+    public boolean isChanged() {
+        return modified;
+    }
+
+    // TODO : better
+    protected void setChanged(boolean changed) {
+        modified = changed;
     }
 
     public String getCpmPath() {
