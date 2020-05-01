@@ -21,20 +21,20 @@ public class XtsJ80VTExtHandler {
 
     public void put_ch(char ch) {
         if (inVt100Mode) {
+
             if (vt100Esc.isEmpty()) {
                 if (ch == '=') {
                     // cursor control
                     vt100Esc += ch;
                     return;
-                } else if ( ch == 'K' ) {
-                    renderer.eraseUntilEOL();
-                    inVt100Mode = false;
-                    vt100Esc = "";
+                } else if ( ch == '[' ) {
+                    // many vt100 begins
+                    vt100Esc += ch;
                     return;
                 }
+                
                 // display it anyway ...
                 inVt100Mode = false;
-                vt100Esc = "";
             } else {
                 if ( vt100Esc.startsWith("=") ) {
                     vt100Esc += ch;
@@ -43,9 +43,14 @@ public class XtsJ80VTExtHandler {
                         int x = ((int)vt100Esc.charAt(2)) - 31;
                         renderer.cursor(x, y);
                         inVt100Mode = false;
-                        vt100Esc = "";
                     }
                     return;
+                } else if ( vt100Esc.startsWith("[") ) {
+                    if ( ch == 'K' ) {
+                        renderer.eraseUntilEOL();
+                        inVt100Mode = false;
+                        return;
+                    }
                 }
             }
         }
@@ -67,6 +72,11 @@ public class XtsJ80VTExtHandler {
         } else if (ch == (char) 27) {
             // manage Esc (27)
             inVt100Mode = true;
+            vt100Esc = "";
+            return;
+        } else if (ch == (char) 24) {
+            // ClrEOL
+            renderer.eraseUntilEOL();
             return;
         }
 
