@@ -132,7 +132,17 @@ public class XtsJ80MP3Player {
             bitstream = new BitStream(new BufferedInputStream(new FileInputStream(mp3file), 2048));
 
             System.out.println("starting (" + mp3file + ")");
-            play();
+            
+            new Thread() {
+                public void run() {
+                    try {
+                        play();
+                    } catch(Exception ex) {
+                        System.out.println("(!!) "+ex);
+                    }
+                }
+            }.start();
+            
             System.out.println("ending");
 
         } catch (Exception e) {

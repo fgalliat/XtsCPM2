@@ -18,10 +18,12 @@ public class XtsJ80BdosHandler {
     public XtsJ80BdosHandler(XtsJ80System system) {
         this.system = system;
         fs = system.getFs();
-        try {
-            imageDecoder = new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed());
-        } catch (Exception ex) {
-            System.out.println("(!!) Failed to instanciate ImageDecoder (" + ex.toString() + ")");
+        if ( system.getConsole() instanceof XtsJ80Video) {
+            try {
+                imageDecoder = new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed());
+            } catch (Exception ex) {
+                System.out.println("(!!) Failed to instanciate ImageDecoder (" + ex.toString() + ")");
+            }
         }
     }
 
@@ -247,6 +249,7 @@ public class XtsJ80BdosHandler {
 
         } catch (Exception ex) {
             console.warn("Error in MP3 control");
+            System.out.println("(!!) Error in MP3 control");
         }
 
         return 0;
