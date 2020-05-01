@@ -17,6 +17,8 @@ public class XtsJ80VTExtHandler {
     protected boolean inVt100Mode = false;
     protected String vt100Esc = "";
 
+    // Const clreol$ = Chr$(27)+"[K"
+
     public void put_ch(char ch) {
         if (inVt100Mode) {
             if (vt100Esc.isEmpty()) {
@@ -24,7 +26,13 @@ public class XtsJ80VTExtHandler {
                     // cursor control
                     vt100Esc += ch;
                     return;
+                } else if ( ch == 'K' ) {
+                    renderer.eraseUntilEOL();
+                    inVt100Mode = false;
+                    vt100Esc = "";
+                    return;
                 }
+                // display it anyway ...
                 inVt100Mode = false;
                 vt100Esc = "";
             } else {

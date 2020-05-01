@@ -58,8 +58,9 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
         setBackground(Color.BLACK);
         setForeground(Color.BLUE);
         setPreferredSize(new Dimension(zoomed_SCREEN_WIDTH, zoomed_SCREEN_HEIGHT));
-        monospaced = new Font("Monospaced", Font.PLAIN, FONT_HEIGHT);
 
+        // monospaced = new Font("Monospaced", Font.PLAIN, FONT_HEIGHT);
+        monospaced = new Font("Courier", Font.PLAIN, FONT_HEIGHT);
     }
 
     // ==========================
