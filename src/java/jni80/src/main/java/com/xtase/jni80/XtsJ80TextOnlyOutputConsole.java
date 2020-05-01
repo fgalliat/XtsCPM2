@@ -58,4 +58,9 @@ public class XtsJ80TextOnlyOutputConsole implements XtsJ80GenericOutputConsole {
         return consoleEmulator;
     }
 
+    @Override
+    public void warn(String mesg) {
+        System.out.println("[!!] " + mesg);
+    }
+
 }

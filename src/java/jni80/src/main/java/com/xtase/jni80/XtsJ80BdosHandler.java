@@ -17,7 +17,7 @@ public class XtsJ80BdosHandler {
 
     public XtsJ80BdosHandler(XtsJ80System system) {
         this.system = system;
-        fs = new XtsJ80FileSystem();
+        fs = system.getFs();
         try {
             imageDecoder = new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed());
         } catch (Exception ex) {
@@ -139,7 +139,8 @@ public class XtsJ80BdosHandler {
             // System.out.println("drawShapes from Bdos");
             return drawingShapesBdos(ramString);
         } else {
-            // System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" + ramString + "'");
+            // System.out.println("Pascal String => [" + system.readRAM(value + 1) + "] '" +
+            // ramString + "'");
 
             /*
              * if (ramString.startsWith("!")) {
@@ -193,10 +194,72 @@ public class XtsJ80BdosHandler {
         return 0;
     }
 
+    public int mp3Bdos(int value) {
+        int a0 = value / 256;
+        int a1 = value % 256;
+
+        if (system.getMusicPlayer() == null) {
+            System.out.println("(!!) no music player on this system");
+            return 0;
+        }
+
+        XtsJ80GenericOutputConsole console = system.getConsole();
+        XtsJ80MP3Player snd = system.getMusicPlayer();
+
+        try {
+
+            if (a0 >= (1 << 6)) {
+                // 11000000 -> 11 play+loop -> 64(10)
+                // still 16000 addressable songs
+                boolean loopMode = a0 >= (1 << 7);
+
+                if (a0 >= 128) {
+                    a0 -= 128;
+                }
+
+                a0 -= 64;
+                int trkNum = (a0 << 8) + a1;
+
+                if (loopMode)
+                    console.warn("mp3 LOOP NYI");
+
+                if (loopMode) {
+                    ;
+                } else {
+                    snd.playTrack(trkNum);
+                }
+            } else if (a0 == 0x00) {
+                snd.stop();
+            } else if (a0 == 0x01) {
+                snd.pause();
+            } else if (a0 == 0x02) {
+                snd.next();
+            } else if (a0 == 0x03) {
+                snd.prev();
+            } else if (a0 == 0x04) {
+                // snd.volume( a1 ); // FIXME
+            } else if (a0 == 0x05) {
+                // for now : just for demo
+                snd.playTrack(65);
+            } else if (a0 == 0x06) {
+                return snd.isPlaying() ? 1 : 0;
+            }
+
+        } catch (Exception ex) {
+            console.warn("Error in MP3 control");
+        }
+
+        return 0;
+    }
+
     public int XtsBdosCall(int reg, int value) {
 
         if (reg == 225) {
             return drawingBdos(value);
+        }
+
+        if (reg == 227) {
+            return mp3Bdos(value);
         }
 
         if (reg == 228) {

@@ -27,4 +27,6 @@ public interface XtsJ80GenericOutputConsole extends XtsJ80Device {
 
     XtsJ80VTExtHandler getVtExtHandler();
 
+    void warn(String mesg);
+
 }
