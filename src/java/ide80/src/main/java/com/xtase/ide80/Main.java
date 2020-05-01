@@ -3,12 +3,16 @@ package com.xtase.ide80;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultCaret;
 
 import com.xtase.ide80.components.PascalTextPane;
@@ -20,6 +24,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 
 import java.io.BufferedReader;
@@ -98,7 +103,7 @@ public class Main extends JFrame {
 
     public void runCpmTp3(String cpmPath) {
         // c:bmp.pas => "c:bmp" (not c:bmp.com)
-        final String _cpmPath = curCpmPath.replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(""));
+        final String _cpmPath = getCurCpmPath().replaceAll(Pattern.quote(".PAS"), Matcher.quoteReplacement(""));
 
         try {
             System.out.println("will exec : " + _cpmPath);
@@ -128,7 +133,7 @@ public class Main extends JFrame {
 
     // ============================
     protected JTextArea console = null;
-    protected String curCpmPath = null;
+    // protected String curCpmPath = null;
 
     protected void status(Object o) {
         try {
@@ -138,10 +143,12 @@ public class Main extends JFrame {
         }
     }
 
-
     // =========================================================
     // =========================================================
 
+    public String getCurCpmPath() {
+        return "c:bmp.pas";
+    }
 
     public JComponent makeAnEditor(String cpmPath) {
         cpmPath = cpmPath.toUpperCase();
@@ -157,14 +164,16 @@ public class Main extends JFrame {
     public void openFile(String cpmPath) {
         cpmPath = cpmPath.toUpperCase();
         tabbedPane.addTab(cpmPath.substring(2), null, makeAnEditor(cpmPath), cpmPath);
+        tabbedPane.setSelectedIndex( tabbedPane.getTabCount()-1 );
     }
 
+    protected String promptValue(String message) {
+        String name = JOptionPane.showInputDialog(this, message);
+        return name;
+    }
 
-
-
-    public Main(String cpmPath) {
+    public Main(final String cpmPath) {
         super("IDE80 (" + cpmPath.toUpperCase() + ")");
-        curCpmPath = cpmPath.toUpperCase();
 
         // ===========================
         // Dark Laf
@@ -189,11 +198,16 @@ public class Main extends JFrame {
         JScrollPane conScroller = new JScrollPane(console);
 
         tabbedPane = new JTabbedPane();
-        // tabbedPane.addTab(curCpmPath.substring(2), null, makeAnEditor(cpmPath), curCpmPath);
-        // tabbedPane.addTab("c:juke.pas".substring(2), null, makeAnEditor("c:juke.pas"), "c:juke.pas");
-
-        openFile(curCpmPath);
-        openFile("c:juke.pas");
+        tabbedPane.addChangeListener( new ChangeListener(){
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                // int idx = tabbedPane.getSelectedIndex();
+                CodeEditor editor = (CodeEditor)tabbedPane.getSelectedComponent();
+                // System.out.println("now selected tab#"+idx);
+                Main.this.setTitle("IDE80 ("+ editor.getCpmPath() +")");
+            }
+        } );
+        openFile(cpmPath);
 
         JPanel editorPane = new JPanel();
         editorPane.setLayout(new BorderLayout());
@@ -201,30 +215,44 @@ public class Main extends JFrame {
 
         JPanel btnPan = new JPanel();
         btnPan.setLayout(new FlowLayout(FlowLayout.LEFT));
+        
+        JButton openBtn = new JButton("Open");
+        openBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String file = promptValue("Filename to open");
+                if ( file.charAt(1) != ':' ) {
+                    file = cpmPath.charAt(0)+":"+file;
+                }
+                openFile(file);
+            }
+        });
+        openBtn.setMnemonic( KeyEvent.VK_O ); // Alt + O
+        btnPan.add(openBtn);
+
         JButton compileBtn = new JButton("Compile");
         compileBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                compileCpmTp3(curCpmPath, true);
+                compileCpmTp3(getCurCpmPath(), true);
             }
         });
+        btnPan.add(compileBtn);
 
         JButton compileDiskBtn = new JButton("Compile on Disk");
         compileDiskBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                compileCpmTp3(curCpmPath, false);
+                compileCpmTp3(getCurCpmPath(), false);
             }
         });
+        btnPan.add(compileDiskBtn);
 
         JButton runBtn = new JButton("Run"); // todo : compile on disk / then add autorun
         runBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                runCpmTp3(curCpmPath);
+                runCpmTp3(getCurCpmPath());
             }
         });
-
-        btnPan.add(compileBtn);
-        btnPan.add(compileDiskBtn);
         btnPan.add(runBtn);
+
         editorPane.add(btnPan, BorderLayout.NORTH);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editorPane, conScroller) {
@@ -262,50 +290,6 @@ public class Main extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
-
-        // File fileToEdit = null;
-
-        // // new com.xtase.jni80.XtsJ80FileSystem().resolveCPMPath("c:test.pas");
-
-        // try {
-        //     File file = (File) invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath", cpmPath);
-        //     status("CPM File : " + file.getPath());
-        //     fileToEdit = file;
-        // } catch (Exception ex) {
-        //     status("Could not get CPM path [" + ex.toString() + "]");
-        // }
-
-        // try {
-        //     String text = "";
-
-        //     String path = null;
-        //     if (fileToEdit != null && fileToEdit.exists()) {
-        //         // path = "./C/0/JUKE.PAS";
-        //         path = fileToEdit.getPath();
-        //     } else {
-        //         path = "../jni80/distro/C/0/JUKE.PAS";
-        //         status("Could not open file, select a default one");
-        //     }
-
-        //     BufferedReader reader = new BufferedReader(new FileReader(path));
-        //     String line;
-        //     while ((line = reader.readLine()) != null) {
-        //         // text += line+"\r";
-        //         text += line + "\n"; // BEWARE @ SAVE !!!!!
-        //     }
-        //     reader.close();
-        //     if (text.length() > 1) {
-        //         text = text.substring(0, text.length() - 1);
-        //     }
-
-        //     // // print an extract
-        //     // System.out.println(text.substring(0, 250));
-
-        //     textPane.setText(text);
-        // } catch (Exception exp) {
-        //     exp.printStackTrace();
-        //     textPane.setText("File failed to open");
-        // }
 
     }
 

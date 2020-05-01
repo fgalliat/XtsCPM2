@@ -9,15 +9,17 @@ import javax.swing.JScrollPane;
 import com.xtase.ide80.components.PascalTextPane;
 
 public class CodeEditor extends JScrollPane {
-    
+
     protected Main editorFrame = null;
 
     protected PascalTextPane editor = null;
     protected File fileToEdit = null;
 
+    protected String cpmPath = null;
+
     public CodeEditor(Main editorFrame) {
-        super( new PascalTextPane() ); 
-        editor = (PascalTextPane)getViewport().getComponent(0);
+        super(new PascalTextPane());
+        editor = (PascalTextPane) getViewport().getComponent(0);
         this.editorFrame = editorFrame;
     }
 
@@ -25,10 +27,16 @@ public class CodeEditor extends JScrollPane {
         return editor;
     }
 
+    public String getCpmPath() {
+        return cpmPath;
+    }
 
     public void load(String cpmPath) {
+        cpmPath = cpmPath.toUpperCase();
+        this.cpmPath = cpmPath;
         try {
-            File file = (File) editorFrame.invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath", cpmPath);
+            File file = (File) editorFrame.invokeMethodOnClass("com.xtase.jni80.XtsJ80FileSystem", "resolveCPMPath",
+                    cpmPath);
             editorFrame.status("CPM File : " + file.getPath());
             fileToEdit = file;
         } catch (Exception ex) {
