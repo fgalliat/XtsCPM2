@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.awt.event.MouseListener;
@@ -253,14 +255,20 @@ public class Main extends JFrame {
 
         File[] content = disk.listFiles();
         DefaultListModel model = new DefaultListModel();
+
+        Set<String> set = new TreeSet<>();
         for (File f : content) {
             if (f.isFile() 
                  && !f.getName().endsWith(".COM") 
                  && !f.getName().endsWith(".class")
                  && !f.getName().endsWith("~")) {
-                model.addElement(f.getName());
+                set.add(f.getName());
             }
         }
+        for(String name : set) {
+            model.addElement(name);
+        }
+
         JList list = new JList(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setLayoutOrientation(JList.VERTICAL);
@@ -402,6 +410,7 @@ public class Main extends JFrame {
                     }
                 }
                 compileCpmTp3(getCurCpmPath(), false);
+                updateTitle();
             }
         });
         compileDiskBtn.setMnemonic(KeyEvent.VK_C); // Alt + C

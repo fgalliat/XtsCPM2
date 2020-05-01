@@ -181,7 +181,11 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
             ISR_1stKeyReq();
 
             inCompiller = false;
-            cmdBuffer.add("c:" + XtsJ80Keyb.EOL);
+
+            // goes on same drive that source code is
+            // cmdBuffer.add("c:" + XtsJ80Keyb.EOL);
+            cmdBuffer.add(fileToCompile.charAt(0) +":"+ XtsJ80Keyb.EOL);
+
             cmdBuffer.add("b:turbo" + XtsJ80Keyb.EOL);
             cmdBuffer.add("y");
 
@@ -316,7 +320,6 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
     protected String fileToCompile = null;
 
     public JavaRunCPM_inMEM(String fileToCompile) {
-        XtsJ80FileSystem fs = new XtsJ80FileSystem();
         boolean fsValid = true;
 
         this.fileToCompile = fileToCompile;
