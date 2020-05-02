@@ -18,7 +18,7 @@ public class XtsJ80BdosHandler {
     public XtsJ80BdosHandler(XtsJ80System system) {
         this.system = system;
         fs = system.getFs();
-        if ( system.getConsole() instanceof XtsJ80Video) {
+        if (system.getConsole() instanceof XtsJ80Video) {
             try {
                 imageDecoder = new XtsJ80ImageDecoder((XtsJ80Video) system.getConsole(), fs, system.getLed());
             } catch (Exception ex) {
@@ -255,6 +255,84 @@ public class XtsJ80BdosHandler {
         return 0;
     }
 
+    protected final int MEMXCHANGE_NOTINIT = 0;
+    protected int memXchangeAddr = MEMXCHANGE_NOTINIT;
+
+    protected int setSystemExchangeAddr(int addr) {
+        memXchangeAddr = addr;
+        return 1;
+    }
+
+    protected int subSystemBdosCall(int value) {
+        int hiB = (value / 256);
+
+        if (hiB == 0) {
+            int volts = (int) 0xFF; // 5v
+            return volts;
+        } else if (hiB == 1) {
+            system.reboot();
+            return 0;
+        } else if (hiB == 2) {
+            system.halt();
+            return 0;
+        } else if (hiB == 3) {
+            int LO = value % 256;
+            int r = 0, g = 0, b = 0;
+            if ((LO & 1) == 1) {
+                r = 0xFF;
+            }
+            if ((LO & 2) == 2) {
+                g = 0xFF;
+            }
+            if ((LO & 4) == 4) {
+                b = 0xFF;
+            }
+
+            system.getLed().rgb(r, g, b);
+            return 0;
+        } else if (hiB == 4) {
+            System.out.println("(!!) DownloadFromSerial NYI");
+        } else if (hiB == 5) {
+            System.out.println("(!!) DownloadFromWiFi NYI");
+        } else if (hiB == 6) {
+            int LO = value % 256;
+            int timeToSleep = LO * 10;
+            system.delay( timeToSleep );
+        } else if (hiB == 64) {
+            System.out.println("(!!) TelnetServer NYI");
+            return 0;
+        } else if (hiB == 65) {
+            System.out.println("(!!) Get/IP -MEMXCHANGE- NYI");
+            return 0;
+        } else if (hiB == 66) {
+            System.out.println("(!!) Get/SSID -MEMXCHANGE- NYI");
+            return 0;
+        } else if (hiB == 67) {
+            System.out.println("(!!) Connect/SSID NYI");
+            return 0;
+        } else if (hiB == 68) {
+            System.out.println("(!!) GetKnown/SSID NYI");
+            return 0;
+        } else if (hiB == 69) {
+            System.out.println("(!!) GetAvailable/SSID NYI");
+            return 0;
+        } else if (hiB == 70) {
+            System.out.println("(!!) Open SoftAP NYI");
+            return 0;
+        } else if (hiB == 71) {
+            System.out.println("(!!) isAtHome NYI");
+            return 1;
+        } else if (hiB == 72) {
+            System.out.println("(!!) wget NYI");
+            return 0;
+        }
+
+
+        return 0;
+    }
+
+
+
     public int XtsBdosCall(int reg, int value) {
 
         if (reg == 225) {
@@ -266,23 +344,11 @@ public class XtsJ80BdosHandler {
         }
 
         if (reg == 228) {
-            int HI = value / 256;
-            int LO = value % 256;
+            return subSystemBdosCall(value);
+        }
 
-            if (HI == 3) {
-                int r = 0, g = 0, b = 0;
-                if ((LO & 1) == 1) {
-                    r = 0xFF;
-                }
-                if ((LO & 2) == 2) {
-                    g = 0xFF;
-                }
-                if ((LO & 4) == 4) {
-                    b = 0xFF;
-                }
-
-                system.getLed().rgb(r, g, b);
-            }
+        if (reg == 229) {
+            return setSystemExchangeAddr(value);
         }
 
         return 0;

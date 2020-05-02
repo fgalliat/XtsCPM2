@@ -283,6 +283,9 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     boolean readyFlag = false;
 
     public void ready() {
+        //((XtsJ80Video) console).requestFocus();
+        frm.requestFocus(); // in order to make keyListener
+
         readyFlag = true;
         System.out.println("GUI ready");
     }
