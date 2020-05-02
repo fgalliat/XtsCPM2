@@ -243,8 +243,11 @@ public class XtsJ80Video extends JLabel implements XtsJ80GenericOutputConsole {
 
     @Override
     public void eraseUntilEOL() {
-        for (int i = 0; i < TTY_COLS; i++) {
-            tty[ttyCursorY][i] = 0x00;
+        for (int i = ttyCursorX; i < TTY_COLS; i++) {
+            tty[ttyCursorY][i] = 0x20;
+            if (dblbuffReady()) {
+                drawOneChar(i, ttyCursorY, (char)0x20, ttyAttrs[ttyCursorY][i]);
+            }
         }
         ttyDirty = true;
     }
