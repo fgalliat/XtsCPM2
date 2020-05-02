@@ -17,42 +17,46 @@ class IOConsole : public Print {
 
     public:
 
-    IOConsole(uint8_t mode);
+        IOConsole(uint8_t mode);
 
         bool hasSerial();
         bool isSerialDummy();
 
         bool hasScreen();
 
-    void setMode(uint8_t mode);
+        void setMode(uint8_t mode);
 
-    void setup();
+        void setup();
 
-    void cls();
+        void cls();
 
-    int getWidth();
-    int getHeight();
+        int getWidth();
+        int getHeight();
 
-    // 1-based
-    void cursor(int row, int col);
-    // 1-based
-    void gotoXY(int col, int row);
+        // 1-based
+        void cursor(int row, int col);
+        // 1-based
+        void gotoXY(int col, int row);
 
-    void attr_accent();
+        void attr_accent();
 
-    void attr_none();
+        void attr_none();
 
-    void splashScreen_SD();
+        void splashScreen_SD();
 
-    // coords : 1 based
-    void drawTextBox(int x1, int y1, int x2, int y2, bool clear=true);
-    void drawHline(int x1, int y1, int x2, char fill='-');
+        // coords : 1 based
+        void drawTextBox(int x1, int y1, int x2, int y2, bool clear=true);
+        void drawHline(int x1, int y1, int x2, char fill='-');
 
-    void window(int x1, int y1, int x2, int y2, char* title, bool clearBehind=true);
-    int menu(char* title, char* items[], int nbItems, int x1=-1, int y1=-1, int x2=-1, int y2=-1, bool clearBehind=true);
+        void window(int x1, int y1, int x2, int y2, char* title, bool clearBehind=true);
+        int menu(char* title, char* items[], int nbItems, int x1=-1, int y1=-1, int x2=-1, int y2=-1, bool clearBehind=true);
 
-    void warn(char* message);
+        void warn(char* message);
 
-    // inheritance
-    size_t write(uint8_t character);
+        // inheritance
+        size_t write(uint8_t character);
+
+        int kbhit();
+        uint8_t getch();
+        uint8_t getche();
 };

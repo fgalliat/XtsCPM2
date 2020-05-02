@@ -10,6 +10,16 @@ by Xtase - fgalliat @Feb 2020
 
 - Current stage :
 
+
+
+Now, it also provide a PC <u>TurboPascal IDE</u> (ide80) + a PC <u>Java/JNI emulator</u> (jni80)
+
+You can see those @ [Java Tools](./src/java/README.md) Section
+
+![Ide & Emulator & real Bord](./pictures/ide_emul_board.jpg)
+
+
+
 ![YatDb v1](./pictures/board_screen.jpg)
 
 
@@ -38,7 +48,7 @@ It has easily wire able **5 UARTs**, **one SPI**, **one SDCard** slot, **2+1 I2C
 
 
 
-The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
+The board currently run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
 
 
 
@@ -51,13 +61,16 @@ The board will run a version of XtsSupervisor + XtsCPM (w/ vZ80 emulation).
 - WiFi : connect to an AP, getID/SSID, call a remote REST service (~wget/curl)
 - deals w/ RGBLed
 - support SdCard FS
+- support GFX drawings, BMP, PAK & Sprites
 - call SuperVisor menu (to set console behavior, WiFi confs, audio (un)mute & test)
+- **run XtsCPM v2 software layer** (w/ vZ80 Emulation (no cycles emulation))
 
 **still TODO :** 
 
 - wire & use Ext. ports x2
 - /5v/GND/3.3v//TX/RX//SDA/SCL/GND/ bus x2
-- add XtsCPM software layer
+
+  
 
 **wiring diagram :**
 

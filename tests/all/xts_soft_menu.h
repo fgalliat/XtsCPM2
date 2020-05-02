@@ -12,6 +12,7 @@ bool audioMenu();
 bool wifiMenu();
 bool wifiConnectMenu();
 bool consoleMenu();
+bool videoTest();
 
 bool inMenu = false;
 
@@ -47,7 +48,7 @@ void menu() {
         (char*)"Console ->",
         (char*)"WiFi    ->",
         (char*)"Audio   ->",
-        (char*)"WiFi menu",
+        (char*)"Video Check",
         (char*)"",
         (char*)"Exit",
     };
@@ -62,6 +63,8 @@ void menu() {
             wifiMenu();
         } else if ( choice == 2 ) {
             audioMenu();
+        } else if ( choice == 3 ) {
+            videoTest();
         } else if ( choice == -1 ) {
             break;
         } 
@@ -226,7 +229,7 @@ bool wifiConnectMenu() {
     char* ssids = wifi.listAp();
     if ( ssids == NULL ) {
         led.clr_red();
-        console.warn("No WiFi SSID Found !");
+        console.warn((char*)"No WiFi SSID Found !");
         return true;
     }
     int nbSsids = str_count(ssids, '\n');
@@ -277,12 +280,13 @@ bool conSerialRaw = false;
 bool consoleMenu() {
     char* title = (char*)"[ Console Menu ]";
 
-    int nbItems = 5;
+    int nbItems = 6;
     char* items[nbItems] = {
         //      12345678901234567890123456789012
         (char*)activSerial,
         (char*)deactivScreen,
         (char*)"Serial mode ->",
+        (char*)"Serial Input",
         (char*)"",
         (char*)"Exit",
     };
@@ -323,8 +327,12 @@ bool consoleMenu() {
         } else if ( choice == 2 ) {
             // serial mode menu
         } else if ( choice == 3 ) {
-            // ...
+            console.println("Console input Test > (q to quit) ");
+            uint8_t ch;
+            while( ( ch = console.getche() ) != 'q' ) { ; }
         } else if ( choice == 4 ) {
+            // ...
+        } else if ( choice == 5 ) {
             return false;
         } else if ( choice == -1 ) {
             return true;
@@ -334,4 +342,60 @@ bool consoleMenu() {
 }
 
 
+bool videoTest() {
+    int w = 64;
+    int h = 64;
+    // int tlen = (480-20)*(320-20); // mem overflow
+    int tlen = w * h;
+    uint16_t raster[ tlen ];
+    for(int i=0; i < tlen; i++) { raster[i] = i % 3 == 0 ? screen.mapColor(15) : ( i % 3 == 1 ? screen.mapColor(5) : screen.mapColor(3) ); }
 
+    for(int i=0; i < 10; i++) {
+        int x = random( 480 - w );
+        int y = random( 320 - h );
+
+        screen.fillRect( x, y, w, h, raster );
+    }
+
+    screen.drawPakFile( (char*) "Z/0/ISHAR.PAK", 20, 20, 0);
+
+    screen.drawBitmapFile( (char*) "Z/0/GIRL.BMP", 40, 40);
+
+    /*
+    GFX.PAS
+
+    drawBmp('!sprite1.bmp'); {* loadSomeSprites *}
+    defineSprite(0, 0, 1, 19, 19); { upperL }
+    defineSprite(1, 40, 1, 19, 19); { upperR }
+    defineSprite(2, 40,20, 19, 19); { lowerR }
+
+    defineSprite(5, 20, 1, 19, 19); { title bck }
+
+    defineSprite(6, 62, 1, 31, 28); { file }
+    defineSprite(7, 95, 1, 31, 28); { folder }
+
+    drawSprite( 0, x, y ); ...
+
+    */
+
+
+    screen.fillCircle( 100, 100, 30, 4 ); // 4 BLUE
+    screen.drawCircle( 100, 100, 30, 5 ); // 5 YELLOW
+
+
+    screen.loadBMPSpriteBoard( (char*) "Z/0/sprite1.bmp");
+    screen.defineSprite(0, 0, 1, 19, 19); // upperL
+    screen.defineSprite(1, 40, 1, 19, 19); //{ upperR }
+    screen.defineSprite(2, 40,20, 19, 19); //{ lowerR }
+
+    screen.drawSprite(0, 100, 100);
+    screen.drawSprite(1, 100+19+3, 100);
+    screen.drawSprite(2, 100+19+3+19+3, 100);
+
+    screen.fillRect( 10, 10, w, h, raster );
+    // while(true) delay(10000);
+
+    delay(1000);
+
+return false;
+}

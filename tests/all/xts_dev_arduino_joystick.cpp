@@ -7,8 +7,52 @@
 
 #include <Arduino.h>
 
+#include "xts_soft_console.h"
+extern IOConsole console;
 
 #include "xts_dev_joystick.h"
+
+// ==== SerialIn JoystickKeys Support ====
+uint8_t virtualX = 3;
+uint8_t virtualY = 3;
+bool virtualXactive = false;
+bool virtualYactive = false;
+
+const char sKEY_UP = (char)65;
+const char sKEY_DOWN = (char)66;
+const char sKEY_RIGHT = (char)67;
+const char sKEY_LEFT = (char)68;
+
+// BEWARE : it port is not Serial0
+#define PORT Serial
+
+bool serialPoll() {
+    if ( !console.hasSerial() ) { return false; }
+    if ( console.isSerialDummy() ) { return false; }
+
+    int avail = PORT.available();
+
+    // Arrow Key 27, 91, {65, 66, 67, 68}
+    if ( avail >= 3 && PORT.peek() == 27 ) {
+        char chs[3]; memset(chs, 0x00, 3);
+        PORT.readBytes(chs, 3);
+        // see if need to restore UART Buffer ....
+        if ( chs[1] != (char)91 ) { return false; }
+        if ( chs[2] < sKEY_UP || chs[2] > sKEY_LEFT ) { return false; }
+
+        char dir = chs[2];
+        if ( dir == sKEY_UP )    { virtualY = 0; virtualYactive = true; }
+        else if ( dir == sKEY_DOWN )  { virtualY = 7; virtualYactive = true; }
+        if ( dir == sKEY_RIGHT ) { virtualX = 7; virtualXactive = true; }
+        else if ( dir == sKEY_LEFT )  { virtualX = 0; virtualXactive = true; }
+        return true;
+    }
+
+    // handle BackSpace (BTN2) / Enter (BTN1) / ?? (MENU) 
+    return false;
+}
+
+// =======================================
 
 // private symbols
 bool Joystick::incDebounce(int idx) {
@@ -80,25 +124,33 @@ void Joystick::poll() {
     states[1] = debounce[1];
     for(int i=0; i < nbBtns; i++) {
         states[2+i] = debounce[2+i] >= debounceMax ? 1 : 0;
-        // states[2+i] = debounce[2+i];
+    }
+
+    // Serial keys emulation
+    if ( !changedState ) {
+        changedState = serialPoll();
     }
 }
 
 uint8_t* Joystick::getState() { return states; }
 
 bool Joystick::isDirLeft() {
+    if ( virtualXactive && virtualX <= 1 ) { virtualXactive = false; return true; }
     return states[0] <= 1;
 }
 
 bool Joystick::isDirRight() {
+    if ( virtualXactive && virtualX >= 6 ) { virtualXactive = false; return true; }
     return states[0] >= 6;
 }
 
 bool Joystick::isDirUp() {
+    if ( virtualYactive && virtualY <= 1 ) { virtualYactive = false; return true; }
     return states[1] <= 1;
 }
 
 bool Joystick::isDirDown() {
+    if ( virtualYactive && virtualY >= 6 ) { virtualYactive = false; return true; }
     return states[1] >= 6;
 }
 

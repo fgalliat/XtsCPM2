@@ -1,7 +1,12 @@
  - [x] find PuttyCOM VTEsc for CLS, LOCATE
- - [x] find PuttyCOM int scan keys for arrowKeys
+ - [x] find PuttyCOM int scan keys for arrowKeys ( 27 + 91 + { 65, 66, 67, 68 (up, down, right,left) } )
+ - [ ] GFX API
+     - [x] drawBmp(rotated) / loadBmpSprites
+     - [x] drawLine, Rect, ....
+     - [x] drawPAK
+     - [ ] drawPct / load PctSprites
  - [ ] WiFi
-    - [ ] menu
+    - [x] menu
        - [x] add loading / connecting indicators (@least w/ RGB led ?)
        - [x] add SSID choice
        - [ ] ? add SSID free value cap. ?
@@ -26,7 +31,9 @@
          - [x] where color could be colors[ attr[ (y\*w)+x ] ] & bg = bg_colors[ attr[ (y*w)+x ] ]
          - [x] instead of using 'if'....
    - [ ] Inputs
-     - [x] [.] Serial in -> still todo : arrow Keys => Joystick control
+     - [x] Serial in -> **(wip)**
+       - [x] SerialArrowKeys -> OK -> emulates Joystick control
+       - [x] for menu : will handle Enter / Esc inside menu routine (not in Joystick)
      - [x] Analog Stick + btns
      - [ ] Ms ChatPad via UART
 
@@ -36,8 +43,7 @@
     - [x] add OutputConsole
       - [x] add TextBox
       - [x] make menu
-      - [ ] add Serial ArrowKeys Support too
- - continue WifiFs w/ menu support
+      - [x] add Serial ArrowKeys Support too
  - [x] OutputConsole.setMode(...)
  - [ ] DFPlayer
 

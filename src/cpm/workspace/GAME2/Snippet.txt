@@ -1,0 +1,81 @@
+SysUtils.ExecuteProcess(UTF8ToSys('/full/path/to/binary'), '', []);
+
+=====================================================
+
+
+uses ShellAPI;
+
+function TForm1.ShellExecute_AndWait(FileName: string; Params: string): bool;
+var
+  exInfo: TShellExecuteInfo;
+  Ph: DWORD;
+begin
+
+  FillChar(exInfo, SizeOf(exInfo), 0);
+  with exInfo do
+  begin
+    cbSize := SizeOf(exInfo);
+    fMask := SEE_MASK_NOCLOSEPROCESS or SEE_MASK_FLAG_DDEWAIT;
+    Wnd := GetActiveWindow();
+    exInfo.lpVerb := 'open';
+    exInfo.lpParameters := PChar(Params);
+    lpFile := PChar(FileName);
+    nShow := SW_SHOWNORMAL;
+  end;
+  if ShellExecuteEx(@exInfo) then
+    Ph := exInfo.hProcess
+  else
+  begin
+    ShowMessage(SysErrorMessage(GetLastError));
+    Result := true;
+    exit;
+  end;
+  while WaitForSingleObject(exInfo.hProcess, 50) <> WAIT_OBJECT_0 do
+    Application.ProcessMessages;
+  CloseHandle(Ph);
+
+  Result := true;
+
+end;
+
+
+=====================================================
+
+
+// This is a demo program that shows how to launch
+ // an external program.
+ program launchprogram;
+ 
+ // Here we include files that have useful functions
+ // and procedures we will need.
+ uses 
+   Classes, SysUtils, Process;
+ 
+ // This is defining the var "AProcess" as a variable 
+ // of the type "TProcess"
+ var 
+   AProcess: TProcess;
+ 
+ // This is where our program starts to run
+ begin
+   // Now we will create the TProcess object, and
+   // assign it to the var AProcess.
+   AProcess := TProcess.Create(nil);
+ 
+   // Tell the new AProcess what the command to execute is.
+   // Let's use the FreePascal compiler
+   AProcess.CommandLine := 'ppc386 -h';
+ 
+   // We will define an option for when the program
+   // is run. This option will make sure that our program
+   // does not continue until the program we will launch
+   // has stopped running.                vvvvvvvvvvvvvv
+   AProcess.Options := AProcess.Options + [poWaitOnExit];
+ 
+   // Now that AProcess knows what the commandline is 
+   // we will run it.
+   AProcess.Execute;
+ 
+   // This is not reached until ppc386 stops running.
+   AProcess.Free;   
+ end.

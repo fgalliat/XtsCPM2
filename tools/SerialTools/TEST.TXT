@@ -1,0 +1,4 @@
+Coucou,
+ceci est un test
+d'envoi serie
+avec Java
