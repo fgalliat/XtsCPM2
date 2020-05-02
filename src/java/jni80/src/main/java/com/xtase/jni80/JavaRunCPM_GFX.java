@@ -7,7 +7,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.KeyAdapter;
+import java.awt.event.MouseListener;
 
 /**
  * JNI 80 - CPM Emulator GFX frontend <br/>
@@ -56,12 +58,12 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
 
         JPanel mainPanel = new JPanel();
 
-        mainPanel.add( joypad.getLeftPanel() ); // PAD
+        mainPanel.add(joypad.getLeftPanel()); // PAD
 
         mainPanel.add((XtsJ80Video) console);
         mainPanel.add(led);
 
-        mainPanel.add( joypad.getRightPanel() ); // PAD
+        mainPanel.add(joypad.getRightPanel()); // PAD
 
         frm.setContentPane(mainPanel);
 
@@ -86,13 +88,13 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
                 char ch = e.getKeyChar();
 
                 // if ( e.getModifiers() != 0 ) {
-                //     System.out.println( "Shift:"+ ((int)ch) );
+                // System.out.println( "Shift:"+ ((int)ch) );
                 // }
-                if ( ch == 65535 ) {
+                if (ch == 65535) {
                     // just SHIFT/ALT/CTRL PRESSED
                     return;
                 }
-        
+
                 // System.out.println(ch);
 
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -283,8 +285,32 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     boolean readyFlag = false;
 
     public void ready() {
-        //((XtsJ80Video) console).requestFocus();
+        // ((XtsJ80Video) console).requestFocus();
         frm.requestFocus(); // in order to make keyListener
+        ((XtsJ80Video) console).addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                frm.requestFocus();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                frm.requestFocus();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+        });
 
         readyFlag = true;
         System.out.println("GUI ready");
