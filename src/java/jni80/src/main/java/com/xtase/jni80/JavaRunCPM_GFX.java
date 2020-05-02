@@ -29,6 +29,8 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
     protected XtsJ80FileSystem fs = new XtsJ80FileSystem();
     protected XtsJ80MP3Player musicPlayer = new XtsJ80MP3Player();
 
+    protected XtsJ80Joypad joypad;
+
     @Override
     public XtsJ80FileSystem getFs() {
         return fs;
@@ -53,8 +55,13 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         frm = new JFrame("JNI80 JavaRunCPM (Xtase - fgalliat Apr2020)");
 
         JPanel mainPanel = new JPanel();
+
+        mainPanel.add( joypad.getLeftPanel() ); // PAD
+
         mainPanel.add((XtsJ80Video) console);
         mainPanel.add(led);
+
+        mainPanel.add( joypad.getRightPanel() ); // PAD
 
         frm.setContentPane(mainPanel);
 
@@ -263,6 +270,9 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         led.setup();
 
         bdosHdl = new XtsJ80BdosHandler(this);
+
+        joypad = new XtsJ80Joypad(this);
+        joypad.setup();
         // ==================
 
         initGUI();
