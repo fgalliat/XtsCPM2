@@ -43,6 +43,11 @@ public class JavaRunCPM_GFX extends JavaRunCPM implements XtsJ80System {
         return musicPlayer;
     }
 
+    @Override
+    public XtsJ80Joypad getJoypad() {
+        return joypad;
+    }
+
     // ===============================
 
     protected boolean inRun = false;

@@ -327,6 +327,36 @@ public class XtsJ80BdosHandler {
             return 0;
         }
 
+        else if ( hiB == 80 ) {
+            // Joypad reading
+            int jPos = 0;
+            /*
+              8|1|2
+              7|0|3
+              6|5|4
+            */
+    
+            XtsJ80Joypad pad = system.getJoypad();
+            if ( pad.isDirUp() && pad.isDirLeft() ) { jPos = 8; }
+            else if ( pad.isDirUp() && pad.isDirRight() ) { jPos = 2; }
+            else if ( pad.isDirUp() ) { jPos = 1; }
+
+            else if ( pad.isDirDown() && pad.isDirLeft() ) { jPos = 6; }
+            else if ( pad.isDirDown() && pad.isDirRight() ) { jPos = 4; }
+            else if ( pad.isDirDown() ) { jPos = 5; }
+
+            else if ( pad.isDirLeft() ) { jPos = 7; }
+            else if ( pad.isDirRight() ) { jPos = 3; }
+    
+            int jBtn = 0;
+            if ( pad.isBtnB1() ) { jBtn += 1; }
+            if ( pad.isBtnB2() ) { jBtn += 2; }
+            if ( pad.isBtnMenu() ) { jBtn += 4; }
+
+            int result = (jPos * 16) + jBtn;
+
+            return result;
+          }
 
         return 0;
     }

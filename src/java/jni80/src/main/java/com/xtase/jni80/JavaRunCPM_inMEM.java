@@ -39,6 +39,11 @@ public class JavaRunCPM_inMEM extends JavaRunCPM implements XtsJ80System {
         return musicPlayer;
     }
 
+    @Override
+    public XtsJ80Joypad getJoypad() {
+        return null;
+    }
+
     // ============================================
 
     protected boolean firstKeybRequest = true;

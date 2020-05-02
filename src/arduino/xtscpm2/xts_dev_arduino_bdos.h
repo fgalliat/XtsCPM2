@@ -457,6 +457,37 @@ int32 bdosDraw(int32 value) {
         // return 1 if httpRC == 200
         return httpRc == 200 ? 1 : 0;
       }
+      else if ( hiB == 80 ) {
+        // Joypad reading
+        int jPos = 0;
+        /*
+          8|1|2
+          7|0|3
+          6|5|4
+        */
+
+    
+        if ( joystick.isDirUp() && joystick.isDirLeft() ) { jPos = 8; }
+        else if ( joystick.isDirUp() && joystick.isDirRight() ) { jPos = 2; }
+        else if ( joystick.isDirUp() ) { jPos = 1; }
+
+        else if ( joystick.isDirDown() && joystick.isDirLeft() ) { jPos = 6; }
+        else if ( joystick.isDirDown() && joystick.isDirRight() ) { jPos = 4; }
+        else if ( joystick.isDirDown() ) { jPos = 5; }
+
+        else if ( joystick.isDirLeft() ) { jPos = 7; }
+        else if ( joystick.isDirRight() ) { jPos = 3; }
+
+        int jBtn = 0;
+        if ( joystick.isBtn1() ) { jBtn += 1; }
+        if ( joystick.isBtn2() ) { jBtn += 2; }
+        if ( joystick.isBtnMenu() ) { jBtn += 4; }
+
+        int result = (jPos * 16) + jBtn;
+
+        return result;
+
+      }
 
       return 0;
   }

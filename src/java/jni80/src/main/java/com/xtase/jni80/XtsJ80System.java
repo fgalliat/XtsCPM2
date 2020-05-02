@@ -20,6 +20,8 @@ public interface XtsJ80System {
 
     XtsJ80MP3Player getMusicPlayer();
 
+    XtsJ80Joypad getJoypad();
+
     void halt();
     void reboot();
 
