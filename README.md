@@ -10,6 +10,16 @@ by Xtase - fgalliat @Feb 2020
 
 - Current stage :
 
+
+
+Now, it also provide a PC <u>TurboPascal IDE</u> (ide80) + a PC <u>Java/JNI emulator</u> (jni80)
+
+You can see those @ [Java Tools](./src/java/README.md) Section
+
+![Ide & Emulator & real Bord](./pictures/ide_emul_board.jpg)
+
+
+
 ![YatDb v1](./pictures/board_screen.jpg)
 
 
