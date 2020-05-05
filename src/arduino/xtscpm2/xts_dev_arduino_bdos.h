@@ -465,7 +465,7 @@ int32 bdosDraw(int32 value) {
           7|0|3
           6|5|4
         */
-
+        joystick.poll();
     
         if ( joystick.isDirUp() && joystick.isDirLeft() ) { jPos = 8; }
         else if ( joystick.isDirUp() && joystick.isDirRight() ) { jPos = 2; }

@@ -615,6 +615,10 @@ Serial.println();
         // Ctrl Z old style cls
         console->cls();
         return 0;
+    } else if ( character == 24 ) {
+        // Ctrl X eraseTillEOL
+        console->eraseTillEOL();
+        return 0;
     } else if ( character == 27 ) {
         memset( vt100seq, 0x00, vt100seqLen+1 );
         inVt100Seq = true;
