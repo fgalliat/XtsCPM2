@@ -1,0 +1,1 @@
+program tstWrite;begin  ClrScr;  GotoXY(1,9);  ClrEol;  writeln('You will fight : ');   ClrEol;end.

@@ -1,0 +1,1 @@
+program play;{ Xtase/fgalliat AdventureGame @May 2020 }begin ClrScr; Writeln('  Play the game !');end.
